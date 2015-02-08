@@ -100,6 +100,7 @@ begin
         begin
           RM.Map.Loaded := False;
           WriteLn('[RM] The map ' + MapToLoad + ' has no checkpoints in settings!');
+          DB_FinishQuery(DB_ID);
           Exit;
         end;
 
@@ -138,6 +139,7 @@ begin
           RM.Map.CheckPoints[I].Checked  := False;
         end;
 
+        DB_FinishQuery(DB_ID);
         WriteLn('[RM] The Map ' + MapToLoad + ' was loaded successfully!');
 
         WriteLn('[DB] Looking for a possible nextmap...');
@@ -147,17 +149,20 @@ begin
           begin
             WriteLn('[RM] Could not load any map! Set current map as next map!');
             RM.Map.NextMap := MapToLoad;
+            DB_FinishQuery(DB_ID);
             Exit;
           end;
 
           RM.Map.NextMap := DB_GetString(DB_ID, 0); // `mapname`
           WriteLn('[RM] Next map will be ' + RM.Map.NextMap + '!');
+          DB_FinishQuery(DB_ID);
         end;
       end else
       begin
         RM.Map.Loaded := False;
         WriteLn('[DB] Error in LoadMapSettings: ' + DB_Error());
         WriteLn('[RM] Error: The map ' + MapToLoad + ' could not been loaded!');
+        DB_FinishQuery(DB_ID);
         Exit;
       end;
     end else
@@ -165,6 +170,7 @@ begin
       RM.Map.Loaded := False;
       WriteLn('[RM] The map ' + MapToLoad + ' was not found in the Database! Please set it up.');
       WriteLn('[DB] Error in LoadMapSettings: ' + DB_Error());
+      DB_FinishQuery(DB_ID);
       Exit;
     end;
   end else
