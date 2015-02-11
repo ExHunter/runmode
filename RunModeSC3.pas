@@ -13,7 +13,7 @@ unit RunModeSC3;
 interface
 
 uses
-  Constants, libdb;
+  constants, libdb;
 
 type
   TVectorAdvanced = record

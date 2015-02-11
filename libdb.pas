@@ -13,7 +13,7 @@ unit libdb;
 interface
 
 uses
-  Constants;
+  constants;
 
 // =====================================
 //          C O N S T A N T S
