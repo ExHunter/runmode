@@ -434,7 +434,7 @@ begin
     RM.Runner.StartTime := Now();
     RM.Runner.PPlayer := p;
     RM.Runner.Laps := 0;
-    RM.Active := true;
+    RM.Active := True;
   end
   else
     OnJoinTeamInvalid(p, Team);
