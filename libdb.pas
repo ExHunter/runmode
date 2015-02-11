@@ -33,72 +33,161 @@ Const DB_Type_String = 4;
 
 // =====================================
 //        D E C L A R A T I O N S
+// DEFINE OS_WINDOWS IN CONFIG.INI IF YOU RUN ON WINDOWS
 // =====================================
 Procedure DB_Close(DatabaseID: Integer);
+{$IFDEF OS_WINDOWS}
 External 'DB_Close@libdb-0.2.dll cdecl';
+{$ELSE}
+External 'DB_Close@libdb-0.2.so cdecl';
+{$ENDIF}
 
 Function DB_ColumnName(DatabaseID, Column: Integer): PChar;
+{$IFDEF OS_WINDOWS}
 External 'DB_ColumnName@libdb-0.2.dll cdecl';
+{$ELSE}
+External 'DB_ColumnName@libdb-0.2.so cdecl';
+{$ENDIF}
 
 Function DB_ColumnSize(DatabaseID, Column: Integer): Integer;
+{$IFDEF OS_WINDOWS}
 External 'DB_ColumnSize@libdb-0.2.dll cdecl';
+{$ELSE}
+External 'DB_ColumnSize@libdb-0.2.so cdecl';
+{$ENDIF}
 
 Function DB_ColumnType(DatabaseID, Column: Integer): Integer;
+{$IFDEF OS_WINDOWS}
 External 'DB_ColumnType@libdb-0.2.dll cdecl';
+{$ELSE}
+External 'DB_ColumnType@libdb-0.2.so cdecl';
+{$ENDIF}
 
 Function DB_Columns(DatabaseID: Integer): Integer;
+{$IFDEF OS_WINDOWS}
 External 'DB_Columns@libdb-0.2.dll cdecl';
+{$ELSE}
+External 'DB_Columns@libdb-0.2.so cdecl';
+{$ENDIF}
 
 Function DB_Error(): PChar;
+{$IFDEF OS_WINDOWS}
 External 'DB_Error@libdb-0.2.dll cdecl';
+{$ELSE}
+External 'DB_Error@libdb-0.2.so cdecl';
+{$ENDIF}
 
 Function DB_Query(DatabaseID: Integer; Query: PChar): Integer;
+{$IFDEF OS_WINDOWS}
 External 'DB_Query@libdb-0.2.dll cdecl';
+{$ELSE}
+External 'DB_Query@libdb-0.2.so cdecl';
+{$ENDIF}
 
 Function DB_Update(DatabaseID: Integer; Query: PChar): Integer;
+{$IFDEF OS_WINDOWS}
 External 'DB_Update@libdb-0.2.dll cdecl';
+{$ELSE}
+External 'DB_Update@libdb-0.2.so cdecl';
+{$ENDIF}
 
 Procedure DB_FinishQuery(DatabaseID: Integer);
+{$IFDEF OS_WINDOWS}
 External 'DB_FinishQuery@libdb-0.2.dll cdecl';
+{$ELSE}
+External 'DB_FinishQuery@libdb-0.2.so cdecl';
+{$ENDIF}
 
 Function DB_FirstRow(DatabaseID: Integer): Integer;
+{$IFDEF OS_WINDOWS}
 External 'DB_FirstRow@libdb-0.2.dll cdecl';
+{$ELSE}
+External 'DB_FirstRow@libdb-0.2.so cdecl';
+{$ENDIF}
 
 Function DB_GetDouble(DatabaseID, Column: Integer): Double;
+{$IFDEF OS_WINDOWS}
 External 'DB_GetDouble@libdb-0.2.dll cdecl';
+{$ELSE}
+External 'DB_GetDouble@libdb-0.2.so cdecl';
+{$ENDIF}
 
 Function DB_GetFloat(DatabaseID, Column: Integer): Single;
+{$IFDEF OS_WINDOWS}
 External 'DB_GetFloat@libdb-0.2.dll cdecl';
+{$ELSE}
+External 'DB_GetFloat@libdb-0.2.so cdecl';
+{$ENDIF}
 
 Function DB_GetLong(DatabaseID, Column: Integer): LongInt;
+{$IFDEF OS_WINDOWS}
 External 'DB_GetLong@libdb-0.2.dll cdecl';
+{$ELSE}
+External 'DB_GetLong@libdb-0.2.so cdecl';
+{$ENDIF}
 
 Function DB_GetString(DatabaseID, Column: Integer): PChar;
+{$IFDEF OS_WINDOWS}
 External 'DB_GetString@libdb-0.2.dll cdecl';
+{$ELSE}
+External 'DB_GetString@libdb-0.2.so cdecl';
+{$ENDIF}
 
 Function DB_IsDatabase(DatabaseID: Integer): Integer;
+{$IFDEF OS_WINDOWS}
 External 'DB_IsDatabase@libdb-0.2.dll cdecl';
+{$ELSE}
+External 'DB_IsDatabase@libdb-0.2.so cdecl';
+{$ENDIF}
 
 Function DB_NextRow(DatabaseID: Integer): Integer;
+{$IFDEF OS_WINDOWS}
 External 'DB_NextRow@libdb-0.2.dll cdecl';
+{$ELSE}
+External 'DB_NextRow@libdb-0.2.so cdecl';
+{$ENDIF}
 
 Function DB_Open(DatabaseID: Integer; DatabaseName, User, Password: PChar; Plugin: Integer): Integer;
+{$IFDEF OS_WINDOWS}
 External 'DB_Open@libdb-0.2.dll cdecl';
+{$ELSE}
+External 'DB_Open@libdb-0.2.so cdecl';
+{$ENDIF}
 
 Function DB_ExamineDrivers(): Integer;
+{$IFDEF OS_WINDOWS}
 External 'DB_ExamineDrivers@libdb-0.2.dll cdecl';
+{$ELSE}
+External 'DB_ExamineDrivers@libdb-0.2.so cdecl';
+{$ENDIF}
 
 Function DB_NextDriver(): Integer;
+{$IFDEF OS_WINDOWS}
 External 'DB_NextDriver@libdb-0.2.dll cdecl';
+{$ELSE}
+External 'DB_NextDriver@libdb-0.2.so cdecl';
+{$ENDIF}
 
 Function DB_DriverDescription(): PChar;
+{$IFDEF OS_WINDOWS}
 External 'DB_DriverDescription@libdb-0.2.dll cdecl';
+{$ELSE}
+External 'DB_DriverDescription@libdb-0.2.so cdecl';
+{$ENDIF}
 
 Function DB_DriverName(): PChar;
+{$IFDEF OS_WINDOWS}
 External 'DB_DriverName@libdb-0.2.dll cdecl';
+{$ELSE}
+External 'DB_DriverName@libdb-0.2.so cdecl';
+{$ENDIF}
 
 Function DB_GetVersion(): Integer;
+{$IFDEF OS_WINDOWS}
 External 'DB_GetVersion@libdb-0.2.dll cdecl';
+{$ELSE}
+External 'DB_GetVersion@libdb-0.2.so cdecl';
+{$ENDIF}
 
 procedure DB_Establish_Connection();
 procedure DB_Ping_Server();
