@@ -219,7 +219,7 @@ begin
     end else
     begin
       WriteLn('[DB_ERROR (DB_Establish_Connection)] ' + DB_Error());
-      DB_CONNECTED := false;
+      DB_CONNECTED := False;
     end;
   end else
   begin
@@ -247,8 +247,8 @@ end;
 
 function DB_Escape_String(Input: string): string;
 begin
-  Result := ReplaceRegExpr('''', Input, '''''', FALSE);
-  Result := ReplaceRegExpr('\',  Result, '\\',  FALSE);
+  Result := ReplaceRegExpr('''', Input, '''''', False);
+  Result := ReplaceRegExpr('\',  Result, '\\',  False);
 end;
 
 procedure DB_PerformQuery(used_loc: string; Query: PChar);
@@ -271,47 +271,47 @@ end;
 
 function DB_Query_Replace_Val1(Query, Val1: string): string;
 begin
-  Result := ReplaceRegExpr('VAL1', Query, Val1, FALSE);
+  Result := ReplaceRegExpr('VAL1', Query, Val1, False);
 end;
 
 function DB_Query_Replace_Val2(Query, Val1, Val2: string): string;
 begin
-  Result := ReplaceRegExpr('VAL1', Query,  Val1, FALSE);
-  Result := ReplaceRegExpr('VAL2', Result, Val2, FALSE);
+  Result := ReplaceRegExpr('VAL1', Query,  Val1, False);
+  Result := ReplaceRegExpr('VAL2', Result, Val2, False);
 end;
 
 function DB_Query_Replace_Val3(Query, Val1, Val2, Val3: string): string;
 begin
-  Result := ReplaceRegExpr('VAL1', Query,  Val1, FALSE);
-  Result := ReplaceRegExpr('VAL2', Result, Val2, FALSE);
-  Result := ReplaceRegExpr('VAL3', Result, Val3, FALSE);
+  Result := ReplaceRegExpr('VAL1', Query,  Val1, False);
+  Result := ReplaceRegExpr('VAL2', Result, Val2, False);
+  Result := ReplaceRegExpr('VAL3', Result, Val3, False);
 end;
 
 function DB_Query_Replace_Val4(Query, Val1, Val2, Val3, Val4: string): string;
 begin
-  Result := ReplaceRegExpr('VAL1', Query,  Val1, FALSE);
-  Result := ReplaceRegExpr('VAL2', Result, Val2, FALSE);
-  Result := ReplaceRegExpr('VAL3', Result, Val3, FALSE);
-  Result := ReplaceRegExpr('VAL4', Result, Val4, FALSE);
+  Result := ReplaceRegExpr('VAL1', Query,  Val1, False);
+  Result := ReplaceRegExpr('VAL2', Result, Val2, False);
+  Result := ReplaceRegExpr('VAL3', Result, Val3, False);
+  Result := ReplaceRegExpr('VAL4', Result, Val4, False);
 end;
 
 function DB_Query_Replace_Val5(Query, Val1, Val2, Val3, Val4, Val5: string): string;
 begin
-  Result := ReplaceRegExpr('VAL1', Query,  Val1, FALSE);
-  Result := ReplaceRegExpr('VAL2', Result, Val2, FALSE);
-  Result := ReplaceRegExpr('VAL3', Result, Val3, FALSE);
-  Result := ReplaceRegExpr('VAL4', Result, Val4, FALSE);
-  Result := ReplaceRegExpr('VAL5', Result, Val5, FALSE);
+  Result := ReplaceRegExpr('VAL1', Query,  Val1, False);
+  Result := ReplaceRegExpr('VAL2', Result, Val2, False);
+  Result := ReplaceRegExpr('VAL3', Result, Val3, False);
+  Result := ReplaceRegExpr('VAL4', Result, Val4, False);
+  Result := ReplaceRegExpr('VAL5', Result, Val5, False);
 end;
 
 function DB_Query_Replace_Val6(Query, Val1, Val2, Val3, Val4, Val5, Val6: string): string;
 begin
-  Result := ReplaceRegExpr('VAL1', Query,  Val1, FALSE);
-  Result := ReplaceRegExpr('VAL2', Result, Val2, FALSE);
-  Result := ReplaceRegExpr('VAL3', Result, Val3, FALSE);
-  Result := ReplaceRegExpr('VAL4', Result, Val4, FALSE);
-  Result := ReplaceRegExpr('VAL5', Result, Val5, FALSE);
-  Result := ReplaceRegExpr('VAL6', Result, Val6, FALSE);
+  Result := ReplaceRegExpr('VAL1', Query,  Val1, False);
+  Result := ReplaceRegExpr('VAL2', Result, Val2, False);
+  Result := ReplaceRegExpr('VAL3', Result, Val3, False);
+  Result := ReplaceRegExpr('VAL4', Result, Val4, False);
+  Result := ReplaceRegExpr('VAL5', Result, Val5, False);
+  Result := ReplaceRegExpr('VAL6', Result, Val6, False);
 end;
 
 end.
