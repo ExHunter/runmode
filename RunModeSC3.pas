@@ -408,8 +408,16 @@ begin
 end;
 
 procedure GameOnLeave(p: TActivePlayer; Kicked: Boolean);
+var
+  I: Byte;
 begin
-
+  if HighID = p.ID then
+    for I := HighID - 1 downto 1 do
+      if Players[I].Active then
+      begin 
+        HighID := I;
+        break;
+      end;
 end;
 
 procedure OnJoinTeamInvalid(p: TActivePlayer; Team: TTeam);
