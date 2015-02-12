@@ -68,6 +68,90 @@ var
 
 implementation
 
+function Explode_RunData(Source: string): Array of TReplay;
+var
+  Position, DelLength_NEWLINE, DelLength_ROW, ResLength: integer;
+begin
+  DelLength_NEWLINE := Length(FILE_NEWLINE);
+  DelLength_ROW     := Length(FILE_ROW);
+  Source            := Source + FILE_NEWLINE;
+  ResLength         := 0;
+  repeat
+    SetArrayLength(Result, ResLength + 1);
+    // KeyUp
+    Position := Pos(FILE_ROW, Source);
+    Result[ResLength].KeyUp := iif(Copy(Source, 1, Position - 1) = '1', True, False);
+    Delete(Source, 1, Position + DelLength_ROW - 1);
+    // KeyLeft
+    Position := Pos(FILE_ROW, Source);
+    Result[ResLength].KeyLeft := iif(Copy(Source, 1, Position - 1) = '1', True, False);
+    Delete(Source, 1, Position + DelLength_ROW - 1);
+    // KeyRight
+    Position := Pos(FILE_ROW, Source);
+    Result[ResLength].KeyRight := iif(Copy(Source, 1, Position - 1) = '1', True, False);
+    Delete(Source, 1, Position + DelLength_ROW - 1);
+    // KeyJetpack
+    Position := Pos(FILE_ROW, Source);
+    Result[ResLength].KeyJetpack := iif(Copy(Source, 1, Position - 1) = '1', True, False);
+    Delete(Source, 1, Position + DelLength_ROW - 1);
+    // KeyGrenade
+    Position := Pos(FILE_ROW, Source);
+    Result[ResLength].KeyGrenade := iif(Copy(Source, 1, Position - 1) = '1', True, False);
+    Delete(Source, 1, Position + DelLength_ROW - 1);
+    // KeyChangeWeap
+    Position := Pos(FILE_ROW, Source);
+    Result[ResLength].KeyChangeWeap := iif(Copy(Source, 1, Position - 1) = '1', True, False);
+    Delete(Source, 1, Position + DelLength_ROW - 1);
+    // KeyThrow
+    Position := Pos(FILE_ROW, Source);
+    Result[ResLength].KeyThrow := iif(Copy(Source, 1, Position - 1) = '1', True, False);
+    Delete(Source, 1, Position + DelLength_ROW - 1);
+    // KeyCrouch
+    Position := Pos(FILE_ROW, Source);
+    Result[ResLength].KeyCrouch := iif(Copy(Source, 1, Position - 1) = '1', True, False);
+    Delete(Source, 1, Position + DelLength_ROW - 1);
+    // KeyProne
+    Position := Pos(FILE_ROW, Source);
+    Result[ResLength].KeyProne := iif(Copy(Source, 1, Position - 1) = '1', True, False);
+    Delete(Source, 1, Position + DelLength_ROW - 1);
+    // AimX
+    Position := Pos(FILE_ROW, Source);
+    try
+      Result[ResLength].AimX := StrToInt(Copy(Source, 1, Position - 1));
+    except
+      Result[ResLength].AimX := 0;
+    end;
+    Delete(Source, 1, Position + DelLength_ROW - 1);
+    // AimY
+    Position := Pos(FILE_ROW, Source);
+    try
+      Result[ResLength].AimY := StrToInt(Copy(Source, 1, Position - 1));
+    except
+      Result[ResLength].AimY := 0;
+    end;
+    Delete(Source, 1, Position + DelLength_ROW - 1);
+    // PosX
+    Position := Pos(FILE_ROW, Source);
+    try
+      Result[ResLength].PosX := StrToFloat(Copy(Source, 1, Position - 1));
+    except
+      Result[ResLength].PosX := 0;
+    end;
+    Delete(Source, 1, Position + DelLength_ROW - 1);
+    // PosY
+    Position := Pos(FILE_ROW, Source);
+    try
+      Result[ResLength].PosY := StrToFloat(Copy(Source, 1, Position - 1));
+    except
+      Result[ResLength].PosY := 0;
+    end;
+    Delete(Source, 1, Position + DelLength_ROW - 1);
+    ResLength := ResLength + 1;
+    Delete(Source, 1, Position + DelLength_NEWLINE - 1);
+  until (Position = 0);
+  SetArrayLength(Result, ResLength - 1);
+end;
+
 procedure LoadMapSettings(MapToLoad: string);
 var
   I: Byte;
