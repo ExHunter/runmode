@@ -156,6 +156,35 @@ begin
   SetArrayLength(Result, ResLength - 1);
 end;
 
+function Save_RunData(FileName: string; RunData: Array of TReplay): Boolean;
+var
+  I: Integer;
+  RunData_File: TStringList;
+begin
+  Result := True;
+  try
+    RunData_File := File.CreateStringList();
+    for I := 0 to GetArrayLength(RunData) - 1 do
+      RunData_File.Append(iif(RunData[I].KeyUp, '1', '0') + FILE_ROW +
+                          iif(RunData[I].KeyLeft, '1', '0') + FILE_ROW +
+                          iif(RunData[I].KeyRight, '1', '0') + FILE_ROW +
+                          iif(RunData[I].KeyJetpack, '1', '0') + FILE_ROW +
+                          iif(RunData[I].KeyGrenade, '1', '0') + FILE_ROW +
+                          iif(RunData[I].KeyChangeWeap, '1', '0') + FILE_ROW +
+                          iif(RunData[I].KeyThrow, '1', '0') + FILE_ROW +
+                          iif(RunData[I].KeyCrouch, '1', '0') + FILE_ROW +
+                          IntToStr(RunData[I].AimX) + FILE_ROW +
+                          IntToStr(RunData[I].AimY) + FILE_ROW +
+                          IntToStr(RunData[I].PosX) + FILE_ROW +
+                          IntToStr(RunData[I].PosY) + FILE_ROW);
+    RunData_File.SaveToFile(PATH_REPLAYS + FileName + FILE_EXTENSION_RPLY);
+  except
+    Result := False;
+  finally
+    RunData_File.Free;
+  end;
+end;
+
 procedure LoadMapSettings(MapToLoad: string);
 var
   I: Byte;

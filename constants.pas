@@ -29,8 +29,9 @@ const
 
   FILE_ROW             = #9;
   FILE_NEWLINE         = #13#10;
-  FILE_EXTENSION_SQL   = '.sql'; // will be unused
-  FILE_EXTENSION_INI   = '.ini'; // will be unused
+  FILE_EXTENSION_SQL   = '.sql';  // will be unused
+  FILE_EXTENSION_INI   = '.ini';  // will be unused
+  FILE_EXTENSION_RPLY  = '.rply'; // will be used - replay data
 
   // SQL STUFF - USING LATER ON STRREPLACE TO REPLACE VAL<num>
   SQL_PING_SERVER      = '/* ping */ SELECT 1;';
