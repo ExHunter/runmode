@@ -451,7 +451,7 @@ begin
   end;
 end;
 
-procedure Thatbot();
+procedure CheckForReplayBot();
 var
   i: Byte;
 begin
@@ -469,8 +469,6 @@ begin
   if Text = '!play' then
     if not RM.Active then
       p.Team := TEAM_RUNNER;
-  if Text = '!addbot' then
-    Thatbot;
   if Text = '!replay' then
   begin
     BotActive := True;
@@ -520,8 +518,10 @@ begin
     if RM.Active then
       if p.ID = RM.Runner.PPlayer.ID then
         RM.Active := False;
-  p.WriteConsole('[HELP] Welcome to !RunMode. Type !help if you are new.', MESSAGE_COLOR_SYSTEM);
-  p.Team := TEAM_SPECTATOR;
+  if p.Human then
+    p.WriteConsole('[HELP] Welcome to !RunMode. Type !help if you are new.', MESSAGE_COLOR_SYSTEM);
+  if p.Team <> TEAM_SPECTATOR then
+    p.Team := TEAM_SPECTATOR;
 end;
 
 procedure GameOnLeave(p: TActivePlayer; Kicked: Boolean);
@@ -593,7 +593,8 @@ begin
   if RM.Active then
     if p.ID = RM.Runner.PPlayer.ID then
       EndSingleGame(False);
-  p.WriteConsole('[GAME] You are now spectating. Type !play or !freerun to play.', MESSAGE_COLOR_GAME);
+  if p.Human then
+    p.WriteConsole('[GAME] You are now spectating. Type !play or !freerun to play.', MESSAGE_COLOR_GAME);
 end;
 
 procedure SetupRM();
@@ -626,7 +627,7 @@ begin
     if Players[i].Active then
       HighID := i;
   end;
-
+  CheckForReplayBot;
   WriteLn('[RM] RunMode3 setup finished. Script runs now...');
   // on server startup this is empty, because map is not loaded yet.
   // used for recompile instead of restart map.
