@@ -119,7 +119,8 @@ begin
     try
       Result[ResLength].AimX := StrToInt(Copy(Source, 1, Position - 1));
     except
-      Result[ResLength].AimX := 0;
+      SetArrayLength(Result, 0);
+      Exit;
     end;
     Delete(Source, 1, Position + DelLength_ROW - 1);
     // AimY
@@ -127,7 +128,8 @@ begin
     try
       Result[ResLength].AimY := StrToInt(Copy(Source, 1, Position - 1));
     except
-      Result[ResLength].AimY := 0;
+      SetArrayLength(Result, 0);
+      Exit;
     end;
     Delete(Source, 1, Position + DelLength_ROW - 1);
     // PosX
@@ -135,7 +137,8 @@ begin
     try
       Result[ResLength].PosX := StrToFloat(Copy(Source, 1, Position - 1));
     except
-      Result[ResLength].PosX := 0;
+      SetArrayLength(Result, 0);
+      Exit;
     end;
     Delete(Source, 1, Position + DelLength_ROW - 1);
     // PosY
@@ -143,7 +146,8 @@ begin
     try
       Result[ResLength].PosY := StrToFloat(Copy(Source, 1, Position - 1));
     except
-      Result[ResLength].PosY := 0;
+      SetArrayLength(Result, 0);
+      Exit;
     end;
     Delete(Source, 1, Position + DelLength_ROW - 1);
     ResLength := ResLength + 1;
