@@ -29,9 +29,10 @@ const
 
   FILE_ROW             = #9;
   FILE_NEWLINE         = #13#10;
-  FILE_EXTENSION_SQL   = '.sql';  // will be unused
-  FILE_EXTENSION_INI   = '.ini';  // will be unused
-  FILE_EXTENSION_RPLY  = '.rply'; // will be used - replay data
+  FILE_EXTENSION_SQL   = '.sql';
+  FILE_EXTENSION_DB    = '.db';
+  FILE_EXTENSION_INI   = '.ini';
+  FILE_EXTENSION_RPLY  = '.rply'; // replay data - will be removed soon
 
   // SQL STUFF - USING LATER ON STRREPLACE TO REPLACE VAL<num>
   SQL_PING_SERVER      = '/* ping */ SELECT 1;';
@@ -45,16 +46,13 @@ const
   SQL_GET_TOP          = 'VAL1';
   SQL_GET_PLAYER       = 'VAL1';
 
-  PATH_CHECKPOINTS     = 'scripts/RunModeSC3/data/CHECKPOINTS/'; // will be unused
-  PATH_SAVEDDATA       = '~\SQL\';                               // will be unused
-  PATH_PATHTRACKER     = '~\PATHTRACKER\';                       // will be unused
-  PATH_REPLAYS         = '~\REPLAYS\';                           // will be used
-  PATH_LOGS            = '~\LOGS\';                              // will be unused
+  PATH_REPLAYS         = 'data\REPLAYS\';
   
   DB_CONNECTION_STRING = 'DB_HNS';  // insert ODBC connection string to databasse
   DB_USER = '';                     // keep blank
   DB_PASS = '';                     // keep blank
   DB_ID = 0;                        // keep it for all files 0
+  DB_ID_SQLLITE = 1;                // used for SQLLite replays loading
   DB_SERVER_ID = 1;                 // used in database, hns eu has 2... rm na 3.. etc..
 
   TEAM_EDITOR          = 1;
