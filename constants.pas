@@ -46,6 +46,25 @@ const
   SQL_GET_TOP          = 'VAL1';
   SQL_GET_PLAYER       = 'VAL1';
 
+  // SQLL = SQL LITE
+  SQLL_REPLAY_TABLE    = 'CREATE TABLE IF NOT EXISTS replay (' +
+                            'ID INTEGER NOT NULL PRIMARY KEY, ' +
+                            'KeyUp INTEGER NOT NULL DEFAULT ''0'', ' +
+                            'KeyLeft INTEGER NOT NULL DEFAULT ''0'', ' +
+                            'KeyRight INTEGER NOT NULL DEFAULT ''0'', ' +
+                            'KeyJetpack INTEGER NOT NULL DEFAULT ''0'', ' +
+                            'KeyGrenade INTEGER NOT NULL DEFAULT ''0'', ' +
+                            'KeyChangeWeap INTEGER NOT NULL DEFAULT ''0'', ' +
+                            'KeyThrow INTEGER NOT NULL DEFAULT ''0'', ' +
+                            'KeyCrouch INTEGER NOT NULL DEFAULT ''0'', ' +
+                            'KeyProne INTEGER NOT NULL DEFAULT ''0'', ' +
+                            'AimX INTEGER NOT NULL DEFAULT ''0'', ' +
+                            'AimY INTEGER NOT NULL DEFAULT ''0'', ' +
+                            'PosX REAL NOT NULL DEFAULT ''0'', ' +
+                            'PosY REAL NOT NULL DEFAULT ''0''' +
+                         ')';
+  SQLL_GET_REPLAY      = 'SELECT KeyUp, KeyLeft, KeyRight, KeyJetpack, KeyGrenade, KeyChangeWeap, KeyThrow, KeyCrouch, KeyProne, AimX, AimY, PosX, PosY FROM replay;';
+
   PATH_REPLAYS         = 'data\REPLAYS\';
   
   DB_CONNECTION_STRING = 'DB_HNS';  // insert ODBC connection string to databasse

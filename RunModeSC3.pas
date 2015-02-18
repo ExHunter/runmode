@@ -68,92 +68,59 @@ var
 
 implementation
 
-function Explode_RunData(Source: string): Array of TReplay;
+function Explode_RunData(FilePathName: string): Array of TReplay;
 var
-  Position, DelLength_NEWLINE, DelLength_ROW, ResLength: integer;
+  Length: Integer;
 begin
-  DelLength_NEWLINE := Length(FILE_NEWLINE);
-  DelLength_ROW     := Length(FILE_ROW);
-  Source            := Source + FILE_NEWLINE;
-  ResLength         := 0;
-  repeat
-    SetArrayLength(Result, ResLength + 1);
-    // KeyUp
-    Position := Pos(FILE_ROW, Source);
-    Result[ResLength].KeyUp := iif(Copy(Source, 1, Position - 1) = '1', True, False);
-    Delete(Source, 1, Position + DelLength_ROW - 1);
-    // KeyLeft
-    Position := Pos(FILE_ROW, Source);
-    Result[ResLength].KeyLeft := iif(Copy(Source, 1, Position - 1) = '1', True, False);
-    Delete(Source, 1, Position + DelLength_ROW - 1);
-    // KeyRight
-    Position := Pos(FILE_ROW, Source);
-    Result[ResLength].KeyRight := iif(Copy(Source, 1, Position - 1) = '1', True, False);
-    Delete(Source, 1, Position + DelLength_ROW - 1);
-    // KeyJetpack
-    Position := Pos(FILE_ROW, Source);
-    Result[ResLength].KeyJetpack := iif(Copy(Source, 1, Position - 1) = '1', True, False);
-    Delete(Source, 1, Position + DelLength_ROW - 1);
-    // KeyGrenade
-    Position := Pos(FILE_ROW, Source);
-    Result[ResLength].KeyGrenade := iif(Copy(Source, 1, Position - 1) = '1', True, False);
-    Delete(Source, 1, Position + DelLength_ROW - 1);
-    // KeyChangeWeap
-    Position := Pos(FILE_ROW, Source);
-    Result[ResLength].KeyChangeWeap := iif(Copy(Source, 1, Position - 1) = '1', True, False);
-    Delete(Source, 1, Position + DelLength_ROW - 1);
-    // KeyThrow
-    Position := Pos(FILE_ROW, Source);
-    Result[ResLength].KeyThrow := iif(Copy(Source, 1, Position - 1) = '1', True, False);
-    Delete(Source, 1, Position + DelLength_ROW - 1);
-    // KeyCrouch
-    Position := Pos(FILE_ROW, Source);
-    Result[ResLength].KeyCrouch := iif(Copy(Source, 1, Position - 1) = '1', True, False);
-    Delete(Source, 1, Position + DelLength_ROW - 1);
-    // KeyProne
-    Position := Pos(FILE_ROW, Source);
-    Result[ResLength].KeyProne := iif(Copy(Source, 1, Position - 1) = '1', True, False);
-    Delete(Source, 1, Position + DelLength_ROW - 1);
-    // AimX
-    Position := Pos(FILE_ROW, Source);
-    try
-      Result[ResLength].AimX := StrToInt(Copy(Source, 1, Position - 1));
-    except
+  try
+    if File.Exists(FilePathName) then
+    begin
+      if DB_Open(DB_ID_SQLLITE, FilePathName, '', '', DB_Plugin_SQLite) <> 0 then
+      begin
+        if DB_Query(DB_ID_SQLLITE, SQLL_GET_REPLAY) <> 0 then
+        begin
+          Length := 0;
+          SetArrayLength(Result, 0);
+          while DB_NextRow(DB_ID_SQLLITE) <> 0 do
+          begin
+            SetArrayLength(Result, Length + 1);
+            Result[Length].KeyUp         := iif(DB_GetLong(DB_ID_SQLLITE, 0) = 1, True, False); // `KeyUp`
+            Result[Length].KeyLeft       := iif(DB_GetLong(DB_ID_SQLLITE, 1) = 1, True, False); // `KeyLeft`
+            Result[Length].KeyRight      := iif(DB_GetLong(DB_ID_SQLLITE, 2) = 1, True, False); // `KeyRight`
+            Result[Length].KeyJetpack    := iif(DB_GetLong(DB_ID_SQLLITE, 3) = 1, True, False); // `KeyJetpack`
+            Result[Length].KeyGrenade    := iif(DB_GetLong(DB_ID_SQLLITE, 4) = 1, True, False); // `KeyGrenade`
+            Result[Length].KeyChangeWeap := iif(DB_GetLong(DB_ID_SQLLITE, 5) = 1, True, False); // `KeyChangeWeap`
+            Result[Length].KeyThrow      := iif(DB_GetLong(DB_ID_SQLLITE, 6) = 1, True, False); // `KeyThrow`
+            Result[Length].KeyCrouch     := iif(DB_GetLong(DB_ID_SQLLITE, 7) = 1, True, False); // `KeyCrouch`
+            Result[Length].KeyProne      := iif(DB_GetLong(DB_ID_SQLLITE, 8) = 1, True, False); // `KeyProne`
+            Result[Length].AimX          := DB_GetLong(DB_ID_SQLLITE, 9);                       // `AimX`
+            Result[Length].AimY          := DB_GetLong(DB_ID_SQLLITE, 10);                      // `AimY`
+            Result[Length].PosX          := DB_GetFloat(DB_ID_SQLLITE, 11);                     // `PosX`
+            Result[Length].PosY          := DB_GetFloat(DB_ID_SQLLITE, 12);                     // `PosY`
+            Length := Length + 1;
+          end;
+          DB_FinishQuery(DB_ID_SQLLITE);
+          DB_Close(DB_ID_SQLLITE);
+        end else
+        begin
+          SetArrayLength(Result, 0);
+          WriteLn('[DB] Error in Explode_RunData: ' + DB_Error());
+        end;
+      end else
+      begin
+        SetArrayLength(Result, 0);
+        WriteLn('[DB] Replay file seems to be corrupt!');
+      end;
+    end else
+    begin
       SetArrayLength(Result, 0);
-      Exit;
+      WriteLn('[DB] Replay file does not exist!');
     end;
-    Delete(Source, 1, Position + DelLength_ROW - 1);
-    // AimY
-    Position := Pos(FILE_ROW, Source);
-    try
-      Result[ResLength].AimY := StrToInt(Copy(Source, 1, Position - 1));
-    except
-      SetArrayLength(Result, 0);
-      Exit;
-    end;
-    Delete(Source, 1, Position + DelLength_ROW - 1);
-    // PosX
-    Position := Pos(FILE_ROW, Source);
-    try
-      Result[ResLength].PosX := StrToFloat(Copy(Source, 1, Position - 1));
-    except
-      SetArrayLength(Result, 0);
-      Exit;
-    end;
-    Delete(Source, 1, Position + DelLength_ROW - 1);
-    // PosY
-    Position := Pos(FILE_NEWLINE, Source);
-    try
-      Result[ResLength].PosY := StrToFloat(Copy(Source, 1, Position - 1));
-    except
-      SetArrayLength(Result, 0);
-      Exit;
-    end;
-    ResLength := ResLength + 1;
-    Delete(Source, 1, Position + DelLength_NEWLINE - 1);
-    Position := Pos(FILE_NEWLINE, Source);
-  until (Position = 0);
-  // SetArrayLength(Result, ResLength - 1);
+  except
+    SetArrayLength(Result, 0);
+    WriteLn('[DB] Failed to open replay file!');
+  end;
+  
 end;
 
 function Save_RunData(FileName: string; RunData: Array of TReplay): Boolean;
@@ -162,30 +129,73 @@ var
   RunData_File: TStringList;
 begin
   Result := True;
-  //try
-    RunData_File := File.CreateStringList();
+
+  try
+    if File.Exists(Script.Dir + PATH_REPLAYS + FileName + FILE_EXTENSION_DB) then
+    begin
+      WriteLn('[DB] Deleting existing replay...');
+      File.Delete(Script.Dir + PATH_REPLAYS + FileName + FILE_EXTENSION_DB);
+    end else
+      WriteLn('[DB] No replay for this player on this map yet...');
+
+    try
+      WriteLn('[DB] Creating new replay file (' + Script.Dir + PATH_REPLAYS + FileName + FILE_EXTENSION_DB + ')...');
+      RunData_File := File.CreateStringList();
+      RunData_File.SaveToFile(Script.Dir + PATH_REPLAYS + FileName + FILE_EXTENSION_DB);
+    finally
+      RunData_File.Free;
+    end;
+
+  except
+    WriteLn('[DB] Failed to check for existing replay database!');
+    Result := False;
+    Exit;
+  end;
+
+  if DB_Open(DB_ID_SQLLITE, Script.Dir + PATH_REPLAYS + FileName + FILE_EXTENSION_DB, '', '', DB_Plugin_SQLite) <> 0 then
+  begin
+    WriteLn('[DB] Creating replay table...');
+    DB_PerformQuery(DB_ID_SQLLITE, 'Save_RunData', SQLL_REPLAY_TABLE);
+    WriteLn('[DB] Inserting replay data...');
+    DB_Update(DB_ID_SQLLITE, 'BEGIN;');
     for I := 0 to GetArrayLength(RunData) - 1 do
-      RunData_File.Append(iif(RunData[I].KeyUp, '1', '0') + FILE_ROW +
-                          iif(RunData[I].KeyLeft, '1', '0') + FILE_ROW +
-                          iif(RunData[I].KeyRight, '1', '0') + FILE_ROW +
-                          iif(RunData[I].KeyJetpack, '1', '0') + FILE_ROW +
-                          iif(RunData[I].KeyGrenade, '1', '0') + FILE_ROW +
-                          iif(RunData[I].KeyChangeWeap, '1', '0') + FILE_ROW +
-                          iif(RunData[I].KeyThrow, '1', '0') + FILE_ROW +
-                          iif(RunData[I].KeyCrouch, '1', '0') + FILE_ROW +
-                          iif(RunData[I].KeyProne, '1', '0') + FILE_ROW +
-                          IntToStr(RunData[I].AimX) + FILE_ROW +
-                          IntToStr(RunData[I].AimY) + FILE_ROW +
-                          FloatToStr(RunData[I].PosX) + FILE_ROW +
-                          FloatToStr(RunData[I].PosY));
-    WriteLn(Script.Dir + PATH_REPLAYS + FileName + FILE_EXTENSION_RPLY);
-    
-    RunData_File.SaveToFile(Script.Dir + PATH_REPLAYS + FileName + FILE_EXTENSION_RPLY);
-  //except
-  //  Result := False;
-  //finally
-    RunData_File.Free;
-  //end;
+    begin
+      DB_Update(DB_ID_SQLLITE, 'INSERT INTO `replay` (`KeyUp`,' +
+                                                     '`KeyLeft`,' +
+                                                     '`KeyRight`,' +
+                                                     '`KeyJetpack`,' +
+                                                     '`KeyGrenade`,' +
+                                                     '`KeyChangeWeap`,' +
+                                                     '`KeyThrow`,' +
+                                                     '`KeyCrouch`,' +
+                                                     '`KeyProne`,' +
+                                                     '`AimX`,' +
+                                                     '`AimY`,' +
+                                                     '`PosX`,' +
+                                                     '`PosY`) ' +
+                                                     'VALUES (' +
+                                                     iif(RunData[I].KeyUp, '1', '0') + ', ' +
+                                                     iif(RunData[I].KeyLeft, '1', '0') + ', ' +
+                                                     iif(RunData[I].KeyRight, '1', '0') + ', ' +
+                                                     iif(RunData[I].KeyJetpack, '1', '0') + ', ' +
+                                                     iif(RunData[I].KeyGrenade, '1', '0') + ', ' +
+                                                     iif(RunData[I].KeyChangeWeap, '1', '0') + ', ' +
+                                                     iif(RunData[I].KeyThrow, '1', '0') + ', ' +
+                                                     iif(RunData[I].KeyCrouch, '1', '0') + ', ' +
+                                                     iif(RunData[I].KeyProne, '1', '0') + ', ' +
+                                                     IntToStr(RunData[I].AimX) + ', ' + 
+                                                     IntToStr(RunData[I].AimY) + ', ' + 
+                                                     FloatToStr(RunData[I].PosX) + ', ' + 
+                                                     FloatToStr(RunData[I].PosY) + ')');
+    end;
+    DB_Update(DB_ID_SQLLITE, 'COMMIT;');
+    DB_Close(DB_ID_SQLLITE);
+    WriteLn('[DB] Finished... Database closed!');
+  end else
+  begin
+    WriteLn('[DB] Could not open replay database!');
+    Result := False;
+  end;
 end;
 
 procedure LoadMapSettings(MapToLoad: string);
@@ -357,10 +367,15 @@ begin
     WriteLn('[RM] ' + RM.Runner.PPlayer.Name + ' has finished a run.');
     WriteLn('[RM] Time: ' + FormatDateTime('nn:ss.zzz', RunTime));
     Players.WriteConsole('[RM] ' + RM.Runner.PPlayer.Name + ' has finished a run in ' + FormatDateTime('nn:ss.zzz', RunTime), MESSAGE_COLOR_GAME);
-    if Save_RunData('TEST', ReplayValues) then
-      WriteLn('Saved run test.')
-    else
-      WriteLn('Failed run test');
+    if BotActive then
+    begin
+      CurrentLoop := 0;
+      BotActive := False;
+    end else
+      if Save_RunData('TEST', ReplayValues) then
+        WriteLn('Saved run test.')
+      else
+        WriteLn('Failed run test.');
     if DB_CONNECTED then
     begin
     
@@ -484,7 +499,7 @@ begin
       p.Team := TEAM_RUNNER;
   if Text = '!replay' then
   begin
-    ReplayValues := Explode_RunData(ReadFromFile(Script.Dir + PATH_REPLAYS + 'TEST' + FILE_EXTENSION_RPLY));
+    ReplayValues := Explode_RunData(Script.Dir + PATH_REPLAYS + 'TEST' + FILE_EXTENSION_DB);
     if GetArrayLength(ReplayValues) > 0 then
     begin
       BotActive := True;
@@ -571,6 +586,9 @@ begin
       EndSingleGame(False);
   if not RM.Active then
   begin
+    if ReplayBot <> NIL then
+      if ReplayBot.ID <> p.ID then
+       SetArrayLength(ReplayValues, 0);
     RM.Runner.StartTime := Now();
     RM.Runner.PPlayer := p;
     RM.Runner.Laps := 0;

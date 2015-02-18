@@ -193,7 +193,7 @@ procedure DB_Establish_Connection();
 procedure DB_Ping_Server();
 
 function DB_Escape_String(input: string): string;
-procedure DB_PerformQuery(used_loc: string; Query: PChar);
+procedure DB_PerformQuery(DatabaseID: Integer; used_loc: string; Query: PChar);
 procedure DB_PerformConnectedQuery(used_loc: string; Query: PChar);
 
 function DB_Query_Replace_Val1(Query, Val1: string): string;
@@ -251,9 +251,9 @@ begin
   Result := ReplaceRegExpr('\',  Result, '\\',  False);
 end;
 
-procedure DB_PerformQuery(used_loc: string; Query: PChar);
+procedure DB_PerformQuery(DatabaseID: Integer; used_loc: string; Query: PChar);
 begin
-  if DB_Update(DB_ID, Query) = 0 then
+  if DB_Update(DatabaseID, Query) = 0 then
     WriteLn('[DB] Error in ' + used_loc + ': ' + DB_Error());
 end;
 
