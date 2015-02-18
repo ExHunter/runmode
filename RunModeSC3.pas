@@ -68,7 +68,7 @@ var
 
 implementation
 
-function Explode_RunData(FilePathName: string): Array of TReplay;
+function Explode_ReplayData(FilePathName: string): Array of TReplay;
 var
   Length: Integer;
 begin
@@ -104,7 +104,7 @@ begin
         end else
         begin
           SetArrayLength(Result, 0);
-          WriteLn('[DB] Error in Explode_RunData: ' + DB_Error());
+          WriteLn('[DB] Error in Explode_ReplayData: ' + DB_Error());
         end;
       end else
       begin
@@ -123,10 +123,10 @@ begin
   
 end;
 
-function Save_RunData(FileName: string; RunData: Array of TReplay): Boolean;
+function Save_ReplayData(FileName: string; ReplayData: Array of TReplay): Boolean;
 var
   I: Integer;
-  RunData_File: TStringList;
+  ReplayData_File: TStringList;
 begin
   Result := True;
 
@@ -140,10 +140,10 @@ begin
 
     try
       WriteLn('[DB] Creating new replay file (' + Script.Dir + PATH_REPLAYS + FileName + FILE_EXTENSION_DB + ')...');
-      RunData_File := File.CreateStringList();
-      RunData_File.SaveToFile(Script.Dir + PATH_REPLAYS + FileName + FILE_EXTENSION_DB);
+      ReplayData_File := File.CreateStringList();
+      ReplayData_File.SaveToFile(Script.Dir + PATH_REPLAYS + FileName + FILE_EXTENSION_DB);
     finally
-      RunData_File.Free;
+      ReplayData_File.Free;
     end;
 
   except
@@ -155,10 +155,10 @@ begin
   if DB_Open(DB_ID_SQLLITE, Script.Dir + PATH_REPLAYS + FileName + FILE_EXTENSION_DB, '', '', DB_Plugin_SQLite) <> 0 then
   begin
     WriteLn('[DB] Creating replay table...');
-    DB_PerformQuery(DB_ID_SQLLITE, 'Save_RunData', SQLL_REPLAY_TABLE);
+    DB_PerformQuery(DB_ID_SQLLITE, 'Save_ReplayData', SQLL_REPLAY_TABLE);
     WriteLn('[DB] Inserting replay data...');
     DB_Update(DB_ID_SQLLITE, 'BEGIN;');
-    for I := 0 to GetArrayLength(RunData) - 1 do
+    for I := 0 to GetArrayLength(ReplayData) - 1 do
     begin
       DB_Update(DB_ID_SQLLITE, 'INSERT INTO `replay` (`KeyUp`,' +
                                                      '`KeyLeft`,' +
@@ -174,19 +174,19 @@ begin
                                                      '`PosX`,' +
                                                      '`PosY`) ' +
                                                      'VALUES (' +
-                                                     iif(RunData[I].KeyUp, '1', '0') + ', ' +
-                                                     iif(RunData[I].KeyLeft, '1', '0') + ', ' +
-                                                     iif(RunData[I].KeyRight, '1', '0') + ', ' +
-                                                     iif(RunData[I].KeyJetpack, '1', '0') + ', ' +
-                                                     iif(RunData[I].KeyGrenade, '1', '0') + ', ' +
-                                                     iif(RunData[I].KeyChangeWeap, '1', '0') + ', ' +
-                                                     iif(RunData[I].KeyThrow, '1', '0') + ', ' +
-                                                     iif(RunData[I].KeyCrouch, '1', '0') + ', ' +
-                                                     iif(RunData[I].KeyProne, '1', '0') + ', ' +
-                                                     IntToStr(RunData[I].AimX) + ', ' + 
-                                                     IntToStr(RunData[I].AimY) + ', ' + 
-                                                     FloatToStr(RunData[I].PosX) + ', ' + 
-                                                     FloatToStr(RunData[I].PosY) + ')');
+                                                     iif(ReplayData[I].KeyUp, '1', '0') + ', ' +
+                                                     iif(ReplayData[I].KeyLeft, '1', '0') + ', ' +
+                                                     iif(ReplayData[I].KeyRight, '1', '0') + ', ' +
+                                                     iif(ReplayData[I].KeyJetpack, '1', '0') + ', ' +
+                                                     iif(ReplayData[I].KeyGrenade, '1', '0') + ', ' +
+                                                     iif(ReplayData[I].KeyChangeWeap, '1', '0') + ', ' +
+                                                     iif(ReplayData[I].KeyThrow, '1', '0') + ', ' +
+                                                     iif(ReplayData[I].KeyCrouch, '1', '0') + ', ' +
+                                                     iif(ReplayData[I].KeyProne, '1', '0') + ', ' +
+                                                     IntToStr(ReplayData[I].AimX) + ', ' + 
+                                                     IntToStr(ReplayData[I].AimY) + ', ' + 
+                                                     FloatToStr(ReplayData[I].PosX) + ', ' + 
+                                                     FloatToStr(ReplayData[I].PosY) + ')');
     end;
     DB_Update(DB_ID_SQLLITE, 'COMMIT;');
     DB_Close(DB_ID_SQLLITE);
@@ -372,7 +372,7 @@ begin
       CurrentLoop := 0;
       BotActive := False;
     end else
-      if Save_RunData('TEST', ReplayValues) then
+      if Save_ReplayData('TEST', ReplayValues) then
         WriteLn('Saved run test.')
       else
         WriteLn('Failed run test.');
@@ -502,10 +502,10 @@ begin
         if not RM.Active then
           p.Team := TEAM_RUNNER;
       end;
-      '!load': ReplayValues := Explode_RunData(Script.Dir + PATH_REPLAYS + 'TEST' + FILE_EXTENSION_DB);
+      '!load': ReplayValues := Explode_ReplayData(Script.Dir + PATH_REPLAYS + 'TEST' + FILE_EXTENSION_DB);
       '!replay':
       begin
-        //ReplayValues := Explode_RunData(Script.Dir + PATH_REPLAYS + 'TEST' + FILE_EXTENSION_DB);
+        //ReplayValues := Explode_ReplayData(Script.Dir + PATH_REPLAYS + 'TEST' + FILE_EXTENSION_DB);
         if GetArrayLength(ReplayValues) > 0 then
         begin
           BotActive := True;
@@ -654,7 +654,7 @@ begin
   WriteLn('[ERROR-POS ] ' + IntToStr(Col) + ' - ' + IntToStr(Row));
   WriteLn('[ERROR-MSG ] ' + Message);
   WriteLn('-------------------------');
-  result := true;
+  result := True;
 end;
 
 procedure SetupRM();
