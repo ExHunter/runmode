@@ -142,18 +142,18 @@ begin
     end;
     Delete(Source, 1, Position + DelLength_ROW - 1);
     // PosY
-    Position := Pos(FILE_ROW, Source);
+    Position := Pos(FILE_NEWLINE, Source);
     try
       Result[ResLength].PosY := StrToFloat(Copy(Source, 1, Position - 1));
     except
       SetArrayLength(Result, 0);
       Exit;
     end;
-    Delete(Source, 1, Position + DelLength_ROW - 1);
     ResLength := ResLength + 1;
     Delete(Source, 1, Position + DelLength_NEWLINE - 1);
+    Position := Pos(FILE_NEWLINE, Source);
   until (Position = 0);
-  SetArrayLength(Result, ResLength - 1);
+  // SetArrayLength(Result, ResLength - 1);
 end;
 
 function Save_RunData(FileName: string; RunData: Array of TReplay): Boolean;
@@ -162,7 +162,7 @@ var
   RunData_File: TStringList;
 begin
   Result := True;
-  try
+  //try
     RunData_File := File.CreateStringList();
     for I := 0 to GetArrayLength(RunData) - 1 do
       RunData_File.Append(iif(RunData[I].KeyUp, '1', '0') + FILE_ROW +
@@ -173,16 +173,19 @@ begin
                           iif(RunData[I].KeyChangeWeap, '1', '0') + FILE_ROW +
                           iif(RunData[I].KeyThrow, '1', '0') + FILE_ROW +
                           iif(RunData[I].KeyCrouch, '1', '0') + FILE_ROW +
+                          iif(RunData[I].KeyProne, '1', '0') + FILE_ROW +
                           IntToStr(RunData[I].AimX) + FILE_ROW +
                           IntToStr(RunData[I].AimY) + FILE_ROW +
-                          IntToStr(RunData[I].PosX) + FILE_ROW +
-                          IntToStr(RunData[I].PosY) + FILE_ROW);
-    RunData_File.SaveToFile(PATH_REPLAYS + FileName + FILE_EXTENSION_RPLY);
-  except
-    Result := False;
-  finally
+                          FloatToStr(RunData[I].PosX) + FILE_ROW +
+                          FloatToStr(RunData[I].PosY));
+    WriteLn(Script.Dir + PATH_REPLAYS + FileName + FILE_EXTENSION_RPLY);
+    
+    RunData_File.SaveToFile(Script.Dir + PATH_REPLAYS + FileName + FILE_EXTENSION_RPLY);
+  //except
+  //  Result := False;
+  //finally
     RunData_File.Free;
-  end;
+  //end;
 end;
 
 procedure LoadMapSettings(MapToLoad: string);
@@ -354,6 +357,10 @@ begin
     WriteLn('[RM] ' + RM.Runner.PPlayer.Name + ' has finished a run.');
     WriteLn('[RM] Time: ' + FormatDateTime('nn:ss.zzz', RunTime));
     Players.WriteConsole('[RM] ' + RM.Runner.PPlayer.Name + ' has finished a run in ' + FormatDateTime('nn:ss.zzz', RunTime), MESSAGE_COLOR_GAME);
+    if Save_RunData('TEST', ReplayValues) then
+      WriteLn('Saved run test.')
+    else
+      WriteLn('Failed run test');
     if DB_CONNECTED then
     begin
     
@@ -464,6 +471,12 @@ begin
   CurrentLoop := 0;
 end;
 
+function ReadFromFile(Filename: string): string;
+begin
+  result := ReadFile(Filename);
+  result := Copy(result, 1, Length(result) - 2);
+end;
+
 procedure OnSpeak(p: TActivePlayer; Text: string);
 begin
   if Text = '!play' then
@@ -471,9 +484,14 @@ begin
       p.Team := TEAM_RUNNER;
   if Text = '!replay' then
   begin
-    BotActive := True;
-    CurrentLoop := 0;
-    ReplayBot.Team := TEAM_RUNNER;
+    ReplayValues := Explode_RunData(ReadFromFile(Script.Dir + PATH_REPLAYS + 'TEST' + FILE_EXTENSION_RPLY));
+    if GetArrayLength(ReplayValues) > 0 then
+    begin
+      BotActive := True;
+      CurrentLoop := 0;
+      ReplayBot.Team := TEAM_RUNNER;
+    end else
+      WriteLn('No replay data found.');
   end;
 end;
 
@@ -553,9 +571,6 @@ begin
       EndSingleGame(False);
   if not RM.Active then
   begin
-    if ReplayBot <> NIL then
-      if p.ID <> ReplayBot.ID then
-        SetArrayLength(ReplayValues, 0);
     RM.Runner.StartTime := Now();
     RM.Runner.PPlayer := p;
     RM.Runner.Laps := 0;
@@ -597,6 +612,17 @@ begin
     p.WriteConsole('[GAME] You are now spectating. Type !play or !freerun to play.', MESSAGE_COLOR_GAME);
 end;
 
+function ErrorHandler(ErrorCode: TErrorType; Message, UnitName, FunctionName: string; Row, Col: Cardinal): Boolean;
+begin
+  WriteLn('-------------------------');
+  WriteLn('[ERROR-UNIT] ' + UnitName);
+  WriteLn('[ERROR-FUNC] ' + FunctionName);
+  WriteLn('[ERROR-POS ] ' + IntToStr(Col) + ' - ' + IntToStr(Row));
+  WriteLn('[ERROR-MSG ] ' + Message);
+  WriteLn('-------------------------');
+  result := true;
+end;
+
 procedure SetupRM();
 var
   i: Byte;
@@ -615,6 +641,7 @@ begin
   Game.Teams[TEAM_FREERUNNER].OnJoin := @OnJoinTeamFreeRunner;
   Game.Teams[TEAM_SPECTATOR].OnJoin  := @OnJoinTeamSpectator;
   Map.OnAfterMapChange               := @AfterMapChange;
+  Script.OnException                 := @ErrorHandler;
   HighID := 1;
   for i := 1 to 32 do
   begin
