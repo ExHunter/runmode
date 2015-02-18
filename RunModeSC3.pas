@@ -398,17 +398,18 @@ begin
     EndSingleGame(False);
     Exit;
   end;
-  ReplayBot.KeyUp := ReplayValues[CurrentLoop].KeyUp;
-  ReplayBot.KeyLeft := ReplayValues[CurrentLoop].KeyLeft;
-  ReplayBot.KeyRight := ReplayValues[CurrentLoop].KeyRight;
-  ReplayBot.KeyJetpack := ReplayValues[CurrentLoop].KeyJetpack;
-  ReplayBot.KeyGrenade := ReplayValues[CurrentLoop].KeyGrenade;
+  ReplayBot.KeyUp         := ReplayValues[CurrentLoop].KeyUp;
+  ReplayBot.KeyLeft       := ReplayValues[CurrentLoop].KeyLeft;
+  ReplayBot.KeyRight      := ReplayValues[CurrentLoop].KeyRight;
+  ReplayBot.KeyJetpack    := ReplayValues[CurrentLoop].KeyJetpack;
+  ReplayBot.KeyGrenade    := ReplayValues[CurrentLoop].KeyGrenade;
   ReplayBot.KeyChangeWeap := ReplayValues[CurrentLoop].KeyChangeWeap;
-  ReplayBot.KeyThrow := ReplayValues[CurrentLoop].KeyThrow;
-  ReplayBot.KeyCrouch := ReplayValues[CurrentLoop].KeyCrouch;
-  ReplayBot.KeyProne := ReplayValues[CurrentLoop].KeyProne;
-  ReplayBot.MouseAimX := ReplayValues[CurrentLoop].AimX;
-  ReplayBot.MouseAimY := ReplayValues[CurrentLoop].AimY;
+  ReplayBot.KeyThrow      := ReplayValues[CurrentLoop].KeyThrow;
+  ReplayBot.KeyCrouch     := ReplayValues[CurrentLoop].KeyCrouch;
+  ReplayBot.KeyProne      := ReplayValues[CurrentLoop].KeyProne;
+  ReplayBot.MouseAimX     := ReplayValues[CurrentLoop].AimX;
+  ReplayBot.MouseAimY     := ReplayValues[CurrentLoop].AimY;
+
   ReplayBot.Move(ReplayValues[CurrentLoop].PosX, ReplayValues[CurrentLoop].PosY);
 end;
 
@@ -418,19 +419,19 @@ var
 begin
   Len := GetArrayLength(ReplayValues);
   SetArrayLength(ReplayValues, Len + 1);
-  ReplayValues[Len].KeyUp := RM.Runner.PPlayer.KeyUp;
-  ReplayValues[Len].KeyLeft := RM.Runner.PPlayer.KeyLeft;
-  ReplayValues[Len].KeyRight := RM.Runner.PPlayer.KeyRight;
-  ReplayValues[Len].KeyJetpack := RM.Runner.PPlayer.KeyJetpack;
-  ReplayValues[Len].KeyGrenade := RM.Runner.PPlayer.KeyGrenade;
+  ReplayValues[Len].KeyUp         := RM.Runner.PPlayer.KeyUp;
+  ReplayValues[Len].KeyLeft       := RM.Runner.PPlayer.KeyLeft;
+  ReplayValues[Len].KeyRight      := RM.Runner.PPlayer.KeyRight;
+  ReplayValues[Len].KeyJetpack    := RM.Runner.PPlayer.KeyJetpack;
+  ReplayValues[Len].KeyGrenade    := RM.Runner.PPlayer.KeyGrenade;
   ReplayValues[Len].KeyChangeWeap := RM.Runner.PPlayer.KeyChangeWeap;
-  ReplayValues[Len].KeyThrow := RM.Runner.PPlayer.KeyThrow;
-  ReplayValues[Len].KeyCrouch := RM.Runner.PPlayer.KeyCrouch;
-  ReplayValues[Len].KeyProne := RM.Runner.PPlayer.KeyProne;
-  ReplayValues[Len].PosX := RM.Runner.PPlayer.X;
-  ReplayValues[Len].PosY := RM.Runner.PPlayer.Y;
-  ReplayValues[Len].AimX := RM.Runner.PPlayer.MouseAimX;
-  ReplayValues[Len].AimY := RM.Runner.PPlayer.MouseAimY;
+  ReplayValues[Len].KeyThrow      := RM.Runner.PPlayer.KeyThrow;
+  ReplayValues[Len].KeyCrouch     := RM.Runner.PPlayer.KeyCrouch;
+  ReplayValues[Len].KeyProne      := RM.Runner.PPlayer.KeyProne;
+  ReplayValues[Len].PosX          := RM.Runner.PPlayer.X;
+  ReplayValues[Len].PosY          := RM.Runner.PPlayer.Y;
+  ReplayValues[Len].AimX          := RM.Runner.PPlayer.MouseAimX;
+  ReplayValues[Len].AimY          := RM.Runner.PPlayer.MouseAimY;
 end;
 
 procedure PassingCheckPoints();
