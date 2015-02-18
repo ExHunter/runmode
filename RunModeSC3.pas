@@ -84,19 +84,19 @@ begin
           while DB_NextRow(DB_ID_SQLLITE) <> 0 do
           begin
             SetArrayLength(Result, Length + 1);
-            Result[Length].KeyUp         := iif(DB_GetLong(DB_ID_SQLLITE, 0) = 1, True, False); // `KeyUp`
-            Result[Length].KeyLeft       := iif(DB_GetLong(DB_ID_SQLLITE, 1) = 1, True, False); // `KeyLeft`
-            Result[Length].KeyRight      := iif(DB_GetLong(DB_ID_SQLLITE, 2) = 1, True, False); // `KeyRight`
-            Result[Length].KeyJetpack    := iif(DB_GetLong(DB_ID_SQLLITE, 3) = 1, True, False); // `KeyJetpack`
-            Result[Length].KeyGrenade    := iif(DB_GetLong(DB_ID_SQLLITE, 4) = 1, True, False); // `KeyGrenade`
-            Result[Length].KeyChangeWeap := iif(DB_GetLong(DB_ID_SQLLITE, 5) = 1, True, False); // `KeyChangeWeap`
-            Result[Length].KeyThrow      := iif(DB_GetLong(DB_ID_SQLLITE, 6) = 1, True, False); // `KeyThrow`
-            Result[Length].KeyCrouch     := iif(DB_GetLong(DB_ID_SQLLITE, 7) = 1, True, False); // `KeyCrouch`
-            Result[Length].KeyProne      := iif(DB_GetLong(DB_ID_SQLLITE, 8) = 1, True, False); // `KeyProne`
-            Result[Length].AimX          := DB_GetLong(DB_ID_SQLLITE, 9);                       // `AimX`
-            Result[Length].AimY          := DB_GetLong(DB_ID_SQLLITE, 10);                      // `AimY`
-            Result[Length].PosX          := DB_GetFloat(DB_ID_SQLLITE, 11);                     // `PosX`
-            Result[Length].PosY          := DB_GetFloat(DB_ID_SQLLITE, 12);                     // `PosY`
+            Result[Length].KeyUp         := DB_GetLong(DB_ID_SQLLITE, 0) = 1; // `KeyUp`
+            Result[Length].KeyLeft       := DB_GetLong(DB_ID_SQLLITE, 1) = 1; // `KeyLeft`
+            Result[Length].KeyRight      := DB_GetLong(DB_ID_SQLLITE, 2) = 1; // `KeyRight`
+            Result[Length].KeyJetpack    := DB_GetLong(DB_ID_SQLLITE, 3) = 1; // `KeyJetpack`
+            Result[Length].KeyGrenade    := DB_GetLong(DB_ID_SQLLITE, 4) = 1; // `KeyGrenade`
+            Result[Length].KeyChangeWeap := DB_GetLong(DB_ID_SQLLITE, 5) = 1; // `KeyChangeWeap`
+            Result[Length].KeyThrow      := DB_GetLong(DB_ID_SQLLITE, 6) = 1; // `KeyThrow`
+            Result[Length].KeyCrouch     := DB_GetLong(DB_ID_SQLLITE, 7) = 1; // `KeyCrouch`
+            Result[Length].KeyProne      := DB_GetLong(DB_ID_SQLLITE, 8) = 1; // `KeyProne`
+            Result[Length].AimX          := DB_GetLong(DB_ID_SQLLITE, 9);     // `AimX`
+            Result[Length].AimY          := DB_GetLong(DB_ID_SQLLITE, 10);    // `AimY`
+            Result[Length].PosX          := DB_GetFloat(DB_ID_SQLLITE, 11);   // `PosX`
+            Result[Length].PosY          := DB_GetFloat(DB_ID_SQLLITE, 12);   // `PosY`
             Length := Length + 1;
           end;
           DB_FinishQuery(DB_ID_SQLLITE);
@@ -495,20 +495,28 @@ end;
 
 procedure OnSpeak(p: TActivePlayer; Text: string);
 begin
-  if Text = '!play' then
-    if not RM.Active then
-      p.Team := TEAM_RUNNER;
-  if Text = '!replay' then
-  begin
-    ReplayValues := Explode_RunData(Script.Dir + PATH_REPLAYS + 'TEST' + FILE_EXTENSION_DB);
-    if GetArrayLength(ReplayValues) > 0 then
-    begin
-      BotActive := True;
-      CurrentLoop := 0;
-      ReplayBot.Team := TEAM_RUNNER;
-    end else
-      WriteLn('No replay data found.');
-  end;
+  if Text[1] = '!' then
+    case LowerCase(ReplaceRegExpr('\s\s*[^\s]*', Text, '', false)) of
+      '!play':
+      begin
+        if not RM.Active then
+          p.Team := TEAM_RUNNER;
+      end;
+      '!load': ReplayValues := Explode_RunData(Script.Dir + PATH_REPLAYS + 'TEST' + FILE_EXTENSION_DB);
+      '!replay':
+      begin
+        //ReplayValues := Explode_RunData(Script.Dir + PATH_REPLAYS + 'TEST' + FILE_EXTENSION_DB);
+        if GetArrayLength(ReplayValues) > 0 then
+        begin
+          BotActive := True;
+          CurrentLoop := 0;
+          ReplayBot.Team := TEAM_RUNNER;
+        end else
+          WriteLn('No replay data found.');
+      end;
+      else
+        p.WriteConsole('[GAME] The command you have typed was invalid!', MESSAGE_COLOR_RED);
+    end;
 end;
 
 procedure OnIdleTick(t: integer);
@@ -588,9 +596,16 @@ begin
   if not RM.Active then
   begin
     if ReplayBot <> NIL then
+    begin
       if ReplayBot.ID <> p.ID then
+      begin
        SetArrayLength(ReplayValues, 0);
-    RM.Runner.StartTime := Now();
+       RM.Runner.StartTime := Now();
+      end else
+        // Workaround since bots have always 1 tick more in counter
+        RM.Runner.StartTime := Now() - StrToDateTime('00:00:00.016');
+    end else
+      RM.Runner.StartTime := Now();
     RM.Runner.PPlayer := p;
     RM.Runner.Laps := 0;
     RM.Active := True;
