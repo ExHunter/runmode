@@ -410,7 +410,8 @@ begin
   ReplayBot.MouseAimX     := ReplayValues[CurrentLoop].AimX;
   ReplayBot.MouseAimY     := ReplayValues[CurrentLoop].AimY;
 
-  ReplayBot.Move(ReplayValues[CurrentLoop].PosX, ReplayValues[CurrentLoop].PosY);
+  ReplayBot.X := ReplayValues[CurrentLoop].PosX;
+  ReplayBot.Y := ReplayValues[CurrentLoop].PosY;
 end;
 
 procedure RecordKeys();
