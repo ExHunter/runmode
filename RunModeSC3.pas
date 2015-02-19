@@ -71,6 +71,7 @@ var
   BotActive: Boolean;
   CurrentLoop: Integer;
   Pointers: TPointers;
+  WHITESPACES: Array of string;
 
 implementation
 
@@ -559,15 +560,88 @@ begin
   result := Copy(result, 1, Length(result) - 2);
 end;
 
+function Medal_Color_by_Rank(Rank: Integer): Cardinal;
+begin
+  case Rank of
+    1: Result := MESSAGE_COLOR_GOLD;
+    2: Result := MESSAGE_COLOR_SILVER;
+    3: Result := MESSAGE_COLOR_BRONZE;
+    else
+      Result := MESSAGE_COLOR_GAME;
+  end;
+end;
+
+procedure ShowTop(TypedCommand: String);
+var
+  Text_Piece: TStringList;
+  Top_X, SearchedMapID, RankID: Integer;
+  PlayerName: String;
+begin
+  Text_Piece := File.CreateStringList();
+  try
+    SplitRegExpr(' ', TypedCommand, Text_Piece);
+    if Length(Text_Piece.Strings[0]) = 4 then
+      Top_X := 3
+    else
+      if Length(Text_Piece.Strings[0]) = 5 then
+        Top_X := StrToInt(Text_Piece.Strings[0][5])
+      else
+        Top_X := 10;
+    if Text_Piece.Count = 1 then
+      SearchedMapID := RM.Map.MapID
+    else
+    begin
+      // TODO: SEARCH FOR OTHER MAPS BY NAME
+      SearchedMapID := RM.Map.MapID;
+    end;
+
+    if DB_CONNECTED then
+    begin
+      if (DB_Query(DB_ID, DB_Query_Replace_Val2(SQL_GET_TOP_X, IntToStr(SearchedMapID), IntToStr(Top_X))) <> 0) then
+      begin
+        RankID := 1;
+        while DB_NextRow(DB_ID) <> 0 do
+        begin
+          // `rm_mapstats`.`ID` = 0 `rm_mapstats`.`playerID` = 1 `playerstats`.`name` = 2
+          // `rm_mapstats`.`runtime` = 3 `rm_mapstats`.`rundate` = 4
+          PlayerName := DB_GetString(DB_ID, 2);
+          Players.WriteConsole('[#' + IntToStr(RankID) + '] ' + PlayerName + WHITESPACES[Length(PlayerName)] + '   ' +
+            DB_GetString(DB_ID, 3) + 's [' + DB_GetString(DB_ID, 4) + '] [' + DB_GetString(DB_ID, 0) + ']', Medal_Color_by_Rank(RankID));
+          RankID := RankID + 1;
+        end;
+
+        DB_FinishQuery(DB_ID);
+
+      end else
+      begin
+        WriteLn('[RM] The Map with the ID ' + IntToStr(SearchedMapID) + ' was not found in the Database!');
+        WriteLn('[DB] Error in ShowTop: ' + DB_Error());
+        DB_FinishQuery(DB_ID);
+        Exit;
+      end;
+    end else
+    begin
+      WriteLn('[RM] Could not load the top! Database is not connected!');
+      Exit;
+    end;
+  except
+  
+  finally
+    Text_Piece.Free;
+  end;
+end;
+
 procedure OnSpeak(p: TActivePlayer; Text: string);
 begin
   if Text[1] = '!' then
-    case LowerCase(ReplaceRegExpr('\s\s*[^\s]*', Text, '', false)) of
+    case LowerCase(ReplaceRegExpr('\s\s*[^\s]*', Text, '', False)) of
       '!play':
       begin
         if not RM.Active then
           p.Team := TEAM_RUNNER;
       end;
+      '!top': ShowTop(Text);
+      '!top10': ShowTop(Text);
       '!replay':
       begin
         ReplayValues := Explode_ReplayData(Script.Dir + PATH_REPLAYS + '4' + FILE_EXTENSION_DB);
@@ -780,6 +854,30 @@ begin
     if Players[i].Active then
       HighID := i;
   end;
+  WHITESPACES := ['                       ',
+                  '                      ',
+                  '                     ',
+                  '                    ',
+                  '                   ',
+                  '                  ',
+                  '                 ',
+                  '                ',
+                  '               ',
+                  '              ',
+                  '             ',
+                  '            ',
+                  '           ',
+                  '          ',
+                  '         ',
+                  '        ',
+                  '       ',
+                  '      ',
+                  '     ',
+                  '    ',
+                  '   ',
+                  '  ',
+                  ' ',
+                  ''];
   CheckForReplayBot;
   WriteLn('[RM] RunMode3 setup finished. Script runs now...');
   // on server startup this is empty, because map is not loaded yet.
