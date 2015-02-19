@@ -605,7 +605,7 @@ begin
           // `rm_mapstats`.`ID` = 0 `rm_mapstats`.`playerID` = 1 `playerstats`.`name` = 2
           // `rm_mapstats`.`runtime` = 3 `rm_mapstats`.`rundate` = 4
           PlayerName := DB_GetString(DB_ID, 2);
-          Players.WriteConsole('[#' + IntToStr(RankID) + '] ' + PlayerName + WHITESPACES[Length(PlayerName)] + '   ' +
+          Players.WriteConsole('[#' + IntToStr(RankID) + '] ' + PlayerName + WHITESPACES[Length(PlayerName) - 1] + '   ' +
             DB_GetString(DB_ID, 3) + 's [' + DB_GetString(DB_ID, 4) + '] [' + DB_GetString(DB_ID, 0) + ']', Medal_Color_by_Rank(RankID));
           RankID := RankID + 1;
         end;
@@ -617,13 +617,9 @@ begin
         WriteLn('[RM] The Map with the ID ' + IntToStr(SearchedMapID) + ' was not found in the Database!');
         WriteLn('[DB] Error in ShowTop: ' + DB_Error());
         DB_FinishQuery(DB_ID);
-        Exit;
       end;
     end else
-    begin
       WriteLn('[RM] Could not load the top! Database is not connected!');
-      Exit;
-    end;
   except
   
   finally
