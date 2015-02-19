@@ -39,13 +39,17 @@ const
   SQL_GET_RND_MAP      = 'SELECT `mapname` FROM `rm_maps` ORDER BY RAND() LIMIT 0,1;';
   SQL_GET_MAP_ID_BY_N  = 'SELECT `ID`, `checknum`, `roundnum` FROM `rm_maps` WHERE `mapname` = ''VAL1'' LIMIT 1;';
   SQL_GET_MAP_CPS      = 'SELECT `checkpointID`, `posX`, `posY`, `distance` FROM `rm_checkpoints` WHERE `mapID` = VAL1 AND `courseID` = 1 ORDER BY `checkpointID` ASC;';
-  SQL_ADD_MAP          = 'INSERT INTO `rm_maps` (`mapname`, `capnum`, `checknum`, `roundnum`, `coursesnum`, `datecreated`)' +
+  SQL_ADD_MAP          = 'INSERT INTO `rm_maps` (`mapname`, `capnum`, `checknum`, `roundnum`, `coursesnum`, `datecreated`) ' +
                                         'VALUES (''VAL1'', VAL2, VAL3, VAL4, VAL5, ''VAL6'');';
   SQL_GET_RUN          = 'SELECT `ID`, `runtime` FROM rm_mapstats WHERE `playerID` = VAL1 AND `mapID` = VAL2 LIMIT 1;';
-  SQL_ADD_RUN          = 'INSERT INTO `rm_mapstats` (`mapID`, `playerID`, `courseID`, `runtime`)' + 
+  SQL_ADD_RUN          = 'INSERT INTO `rm_mapstats` (`mapID`, `playerID`, `courseID`, `runtime`) ' + 
                                             'VALUES (VAL1, VAL2, 1, ''VAL3'');';
   SQL_UPDATE_RUN       = 'UPDATE `rm_mapstats` SET `runtime` = ''VAL1'', `rundate` = NOW() WHERE `ID` = VAL2;';
-  SQL_GET_TOP          = 'VAL1';
+  SQL_GET_TOP_X        = 'SELECT `rm_mapstats`.`ID`, `rm_mapstats`.`playerID`, `playerstats`.`name`, `rm_mapstats`.`runtime`, `rm_mapstats`.`rundate` ' +
+                         'FROM `rm_mapstats`, `playerstats` ' +
+                         'WHERE `playerstats`.`ID` = `rm_mapstats`.`playerID` ' +
+                         'AND `rm_mapstats`.`mapID` = VAL1 ' +
+                         'ORDER BY `rm_mapstats`.`runtime` ASC LIMIT VAL2;';
   SQL_GET_PLAYER_ID    = 'SELECT `ID` FROM `playerstats` WHERE `HWID` = ''VAL1'' LIMIT 1;';
 
   // SQLL = SQL LITE
@@ -100,6 +104,9 @@ const
   MESSAGE_COLOR_SYSTEM = $F63817;
   MESSAGE_COLOR_RED    = $FF0000;
   MESSAGE_COLOR_GREEN  = $00FF00;
+  MESSAGE_COLOR_GOLD   = $FFD700;
+  MESSAGE_COLOR_SILVER = $ACACAC;
+  MESSAGE_COLOR_BRONZE = $CD7F32;
 
 implementation
 
