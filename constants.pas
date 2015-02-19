@@ -41,10 +41,12 @@ const
   SQL_GET_MAP_CPS      = 'SELECT `checkpointID`, `posX`, `posY`, `distance` FROM `rm_checkpoints` WHERE `mapID` = VAL1 AND `courseID` = 1 ORDER BY `checkpointID` ASC;';
   SQL_ADD_MAP          = 'INSERT INTO `rm_maps` (`mapname`, `capnum`, `checknum`, `roundnum`, `coursesnum`, `datecreated`)' +
                                         'VALUES (''VAL1'', VAL2, VAL3, VAL4, VAL5, ''VAL6'');';
-  SQL_GET_RUN          = 'VAL1';
-  SQL_ADD_RUN          = 'VAL1';
+  SQL_GET_RUN          = 'SELECT `ID`, `runtime` FROM rm_mapstats WHERE `playerID` = VAL1 AND `mapID` = VAL2 LIMIT 1;';
+  SQL_ADD_RUN          = 'INSERT INTO `rm_mapstats` (`mapID`, `playerID`, `courseID`, `runtime`)' + 
+                                            'VALUES (VAL1, VAL2, 1, ''VAL3'');';
+  SQL_UPDATE_RUN       = 'UPDATE `rm_mapstats` SET `runtime` = ''VAL1'', `rundate` = NOW() WHERE `ID` = VAL2;';
   SQL_GET_TOP          = 'VAL1';
-  SQL_GET_PLAYER       = 'VAL1';
+  SQL_GET_PLAYER_ID    = 'SELECT `ID` FROM `playerstats` WHERE `HWID` = ''VAL1'' LIMIT 1;';
 
   // SQLL = SQL LITE
   SQLL_REPLAY_TABLE    = 'CREATE TABLE IF NOT EXISTS replay (' +
