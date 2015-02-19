@@ -58,6 +58,10 @@ type
     PosX, PosY: Single;
     end;
 
+  TPointers = record
+    Clock_Normal, Clock_Load_Replay: TOnClockTickEvent;
+    end;
+
 var
   RM: TGameVariables;
   //ActivePlayer: Array[1..32] of TPlayerProperties;
@@ -66,6 +70,7 @@ var
   ReplayBot: TActivePlayer;
   BotActive: Boolean;
   CurrentLoop: Integer;
+  Pointers: TPointers;
 
 implementation
 
@@ -417,6 +422,11 @@ var
 begin
   RunTime := Now - RM.Runner.StartTime; // if this is done multiple times later on, the results will be different.
   RM.Active := False;
+  if BotActive then
+  begin
+    CurrentLoop := 0;
+    BotActive := False;
+  end;
   for j := 0 to RM.Map.AmountOfCheckpoints-1 do
     RM.Map.CheckPoints[j].Checked := False;
   RM.Runner.PPlayer.Team := TEAM_SPECTATOR;
@@ -425,26 +435,18 @@ begin
     WriteLn('[RM] ' + RM.Runner.PPlayer.Name + ' has finished a run.');
     WriteLn('[RM] Time: ' + FormatDateTime('nn:ss.zzz', RunTime));
     Players.WriteConsole('[RM] ' + RM.Runner.PPlayer.Name + ' has finished a run in ' + FormatDateTime('nn:ss.zzz', RunTime), MESSAGE_COLOR_GAME);
-    if BotActive then
-    begin
-      CurrentLoop := 0;
-      BotActive := False;
-    end else
-    begin
-      Result_Run_ID := Save_RunData(RM.Runner.PPlayer.HWID, RunTime);
-      if Result_Run_ID > 0 then
+    if ReplayBot <> NIL then
+      if RM.Runner.PPlayer.ID <> ReplayBot.ID then
       begin
-        if Save_ReplayData(IntToStr(Result_Run_ID), ReplayValues) then
-          WriteLn('[DB] Saved the replay!')
-        else
-          WriteLn('[DB] Failed to save the replay!');
+        Result_Run_ID := Save_RunData(RM.Runner.PPlayer.HWID, RunTime);
+        if Result_Run_ID > 0 then
+        begin
+          if Save_ReplayData(IntToStr(Result_Run_ID), ReplayValues) then
+            WriteLn('[DB] Saved the replay!')
+          else
+            WriteLn('[DB] Failed to save the replay!');
+        end;
       end;
-    end;
-    if DB_CONNECTED then
-    begin
-    
-    end else
-      WriteLn('[RM] Could not save ' + RM.Runner.PPlayer.Name + '''s run! Not connected to the Database!');
   end else
   begin
     WriteLn('[RM] ' + RM.Runner.PPlayer.Name + ' stopped his run.');
@@ -566,15 +568,14 @@ begin
         if not RM.Active then
           p.Team := TEAM_RUNNER;
       end;
-      '!load': ReplayValues := Explode_ReplayData(Script.Dir + PATH_REPLAYS + 'TEST' + FILE_EXTENSION_DB);
       '!replay':
       begin
-        //ReplayValues := Explode_ReplayData(Script.Dir + PATH_REPLAYS + 'TEST' + FILE_EXTENSION_DB);
+        ReplayValues := Explode_ReplayData(Script.Dir + PATH_REPLAYS + '4' + FILE_EXTENSION_DB);
+        RM.Countdown := MATH_SECOND_IN_TICKS * 3;
         if GetArrayLength(ReplayValues) > 0 then
         begin
-          BotActive := True;
-          CurrentLoop := 0;
-          ReplayBot.Team := TEAM_RUNNER;
+          RM.Active := True;
+          Game.OnClockTick := Pointers.Clock_Load_Replay;
         end else
           WriteLn('No replay data found.');
       end;
@@ -583,7 +584,7 @@ begin
     end;
 end;
 
-procedure OnIdleTick(t: integer);
+procedure UniversalClockCalls(t: integer);
 begin
   if t mod 300 = 0 then
   begin
@@ -591,13 +592,38 @@ begin
     if t mod 18000 = 0 then
       DB_Ping_Server;
   end;
+end;
+
+procedure OnIdleTick(t: integer);
+begin
+  UniversalClockCalls(t);
   if RM.Active then
   begin
-    if BotActive then
-      PlayBot()
-    else
-      RecordKeys();
     PassingCheckPoints();
+    if RM.Active then
+      if BotActive then
+        PlayBot()
+      else
+        RecordKeys();
+  end;
+end;
+
+procedure WaitingForReplayLoad(t: integer);
+begin
+  UniversalClockCalls(t);
+  if RM.Countdown > 0 then
+  begin
+    if RM.Countdown mod MATH_SECOND_IN_TICKS = 0 then
+      Players.WriteConsole('[RM] Replay starts in ' + IntToStr(RM.Countdown div MATH_SECOND_IN_TICKS) + ' second(s)...', MESSAGE_COLOR_GAME);
+    RM.Countdown := RM.Countdown - 1;
+  end else
+  begin
+    Game.OnClockTick := Pointers.Clock_Normal;
+    RM.Active := False;
+    BotActive := True;
+    CurrentLoop := 0;
+    ReplayBot.Team := TEAM_RUNNER;
+    Players.WriteConsole('[RM] Replay has started...', MESSAGE_COLOR_GAME);
   end;
 end;
 
@@ -726,6 +752,8 @@ var
   i: Byte;
 begin
   WriteLn('[RM] Setting up RunMode3...');
+  Pointers.Clock_Normal := @OnIdleTick;
+  Pointers.Clock_Load_Replay := @WaitingForReplayLoad;
   DB_Establish_Connection;
   if Game.TickThreshold <> 1 then
     Game.TickThreshold := 1;
