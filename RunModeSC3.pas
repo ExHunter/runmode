@@ -25,6 +25,7 @@ type
   TMapVariables = record
     Loaded: Boolean;
     TimeRunningLeft: Integer;
+    MapID: Integer;
     RunnerStartSpawn: TVector;
     CheckPoints: Array of TVectorAdvanced;
     AmountOfCheckpoints: Byte;
@@ -123,6 +124,63 @@ begin
   
 end;
 
+function Save_RunData(HWID: string; RunnerTime: TDateTime): Integer;
+var
+  ExistingRunID: Integer;
+  PlayerID: Integer;
+  DataBaseTime: TDateTime;
+begin
+  Result := 0;
+  if DB_CONNECTED then
+  begin
+    if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_GET_PLAYER_ID, HWID)) <> 0) and
+       (DB_NextRow(DB_ID) <> 0) then
+    begin
+      PlayerID := DB_GetLong(DB_ID, 0); // `ID`
+      DB_FinishQuery(DB_ID);
+
+      if (DB_Query(DB_ID, DB_Query_Replace_Val2(SQL_GET_RUN, IntToStr(PlayerID),
+          IntToStr(RM.Map.MapID))) <> 0) and
+         (DB_NextRow(DB_ID) <> 0) then
+      begin
+        // result here 0 too, if new run is worse than old
+        // run, so that replay does not get overwritten
+        WriteLn('[DB] The runner has a saved run here... Checking if new run is better...');
+        ExistingRunID := DB_GetLong(DB_ID, 0);                  // `ID`
+        DataBaseTime  := StrToDateTime(DB_GetString(DB_ID, 1)); // `runtime`
+        DB_FinishQuery(DB_ID);
+        if RunnerTime < DataBaseTime then
+        begin
+          WriteLn('[DB] The new run is better.. Updating his run...');
+          DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val2(SQL_UPDATE_RUN,
+            FormatDateTime('hh:nn:ss.zzz', RunnerTime), IntToStr(ExistingRunID)));
+          Result := ExistingRunID;
+        end else
+          WriteLn('[DB] The new run is worse.. Doing nothing.');
+      end else
+      begin
+        WriteLn('[DB] The runner did not have a time yet! Adding a new one...');
+        DB_FinishQuery(DB_ID);
+        DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val3(SQL_ADD_RUN,
+          IntToStr(RM.Map.MapID), IntToStr(PlayerID),
+          FormatDateTime('hh:nn:ss.zzz', RunnerTime)));
+      end;
+    end else
+    begin
+      Result := 0;
+      WriteLn('[DB] Player with HWID ' + HWID + ' was not found in Database!');
+      WriteLn('[DB] Error in Save_RunData: ' + DB_Error());
+      DB_FinishQuery(DB_ID);
+      Exit;
+    end;
+  end else
+  begin
+    Result := 0;
+    WriteLn('[DB] Could not save RunData! Database is not connected!');
+    Exit;
+  end;
+end;
+
 function Save_ReplayData(FileName: string; ReplayData: Array of TReplay): Boolean;
 var
   I: Integer;
@@ -201,7 +259,6 @@ end;
 procedure LoadMapSettings(MapToLoad: string);
 var
   I: Byte;
-  MapID: Integer;
 begin
   WriteLn('[RM] Starting to load map ' + MapToLoad + '...');
   RM.Map.Loaded := True;
@@ -210,21 +267,21 @@ begin
     if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_GET_MAP_ID_BY_N, MapToLoad)) <> 0) and
        (DB_NextRow(DB_ID) <> 0) then
     begin
-      MapID                      := DB_GetLong(DB_ID, 0); // `ID`
+      RM.Map.MapID               := DB_GetLong(DB_ID, 0); // `ID`
       RM.Map.AmountOfCheckpoints := DB_GetLong(DB_ID, 1); // `checknum`
       RM.Map.AmountOfLaps        := DB_GetLong(DB_ID, 2); // `roundnum`
       SetArrayLength(RM.Map.CheckPoints, RM.Map.AmountOfCheckpoints);
 
       DB_FinishQuery(DB_ID);
 
-      if MapID < 0 then
+      if RM.Map.MapID < 0 then
       begin
         RM.Map.Loaded := False;
         WriteLn('[RM] Could not find settings for the map ' + MapToLoad + '!');
         Exit;
       end;
 
-      if DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_GET_MAP_CPS, IntToStr(MapID))) <> 0 then
+      if DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_GET_MAP_CPS, IntToStr(RM.Map.MapID))) <> 0 then
       begin
         if DB_NextRow(DB_ID) = 0 then
         begin
@@ -356,6 +413,7 @@ procedure EndSingleGame(Successfull: Boolean);
 var
   j: Byte;
   RunTime: TDateTime;
+  Result_Run_ID: Integer;
 begin
   RunTime := Now - RM.Runner.StartTime; // if this is done multiple times later on, the results will be different.
   RM.Active := False;
@@ -372,10 +430,16 @@ begin
       CurrentLoop := 0;
       BotActive := False;
     end else
-      if Save_ReplayData('TEST', ReplayValues) then
-        WriteLn('Saved run test.')
-      else
-        WriteLn('Failed run test.');
+    begin
+      Result_Run_ID := Save_RunData(RM.Runner.PPlayer.HWID, RunTime);
+      if Result_Run_ID > 0 then
+      begin
+        if Save_ReplayData(IntToStr(Result_Run_ID), ReplayValues) then
+          WriteLn('[DB] Saved the replay!')
+        else
+          WriteLn('[DB] Failed to save the replay!');
+      end;
+    end;
     if DB_CONNECTED then
     begin
     
