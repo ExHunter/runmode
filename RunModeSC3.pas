@@ -621,7 +621,7 @@ begin
     end else
       WriteLn('[RM] Could not load the top! Database is not connected!');
   except
-  
+    WriteLn('[RM] Some error happened in ShowTop! Cannot figure out what...');
   finally
     Text_Piece.Free;
   end;
