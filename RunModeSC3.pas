@@ -270,7 +270,7 @@ begin
   RM.Map.Loaded := True;
   if DB_CONNECTED then
   begin
-    if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_GET_MAP_ID_BY_N, MapToLoad)) <> 0) and
+    if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_GET_MAP_ID_BY_N, DB_Escape_String(MapToLoad))) <> 0) and
        (DB_NextRow(DB_ID) <> 0) then
     begin
       RM.Map.MapID               := DB_GetLong(DB_ID, 0); // `ID`
@@ -759,7 +759,7 @@ begin
       DB_FinishQuery(DB_ID);
 
       WriteLn('[DB] Adding ' + p.Name + ' to the Database...');
-      DB_Update(DB_ID, DB_Query_Replace_Val2(SQL_ADD_PLAYER, p.HWID, p.Name));
+      DB_Update(DB_ID, DB_Query_Replace_Val2(SQL_ADD_PLAYER, p.HWID, DB_Escape_String(p.Name)));
     end;
   end else
     WriteLn('[DB] Could not check for the player! Database is not connected!');
