@@ -643,6 +643,7 @@ begin
         if not RM.Active then
           p.Team := TEAM_RUNNER;
       end;
+      '!freerun': p.Team := TEAM_FREERUNNER;
       '!top': ShowTop(Text);
       '!top10': ShowTop(Text);
       '!replay':
