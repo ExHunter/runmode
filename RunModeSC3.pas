@@ -750,7 +750,10 @@ procedure OnJoinTeamInvalid(p: TActivePlayer; Team: TTeam);
 begin
   if RM.Active then
     if p.ID = RM.Runner.PPlayer.ID then
+    begin
       EndSingleGame(False);
+      Exit;
+    end;
   p.WriteConsole('[GAME] You cannot join this Team.', MESSAGE_COLOR_GAME);
   p.Team := TEAM_SPECTATOR;
 end;
@@ -759,7 +762,10 @@ procedure OnJoinTeamRunner(p: TActivePlayer; Team: TTeam);
 begin
   if RM.Active then
     if p.ID = RM.Runner.PPlayer.ID then
+    begin
       EndSingleGame(False);
+      Exit;
+    end;
   if not RM.Active then
   begin
     if ReplayBot <> NIL then
@@ -791,7 +797,10 @@ procedure OnJoinTeamEditor(p: TActivePlayer; Team: TTeam);
 begin
   if RM.Active then
     if p.ID = RM.Runner.PPlayer.ID then
+    begin
       EndSingleGame(False);
+      Exit;
+    end;
   if not p.IsAdmin then
     OnJoinTeamInvalid(p, Team);
 end;
