@@ -323,13 +323,20 @@ begin
 
         while (DB_NextRow(DB_ID) <> 0) do
         begin
-          I := DB_GetLong(DB_ID, 0) - 1; // `checkpointID` - array is zero based
+          try
+            I := DB_GetLong(DB_ID, 0) - 1; // `checkpointID` - array is zero based
 
-          RM.Map.CheckPoints[I].X        := DB_GetFloat(DB_ID, 1); // `posX`
-          RM.Map.CheckPoints[I].Y        := DB_GetFloat(DB_ID, 2); // `posY`
-          RM.Map.CheckPoints[I].Distance := DB_GetFloat(DB_ID, 3); // `distance`
+            RM.Map.CheckPoints[I].X        := DB_GetFloat(DB_ID, 1); // `posX`
+            RM.Map.CheckPoints[I].Y        := DB_GetFloat(DB_ID, 2); // `posY`
+            RM.Map.CheckPoints[I].Distance := DB_GetFloat(DB_ID, 3); // `distance`
 
-          RM.Map.CheckPoints[I].Checked  := False;
+            RM.Map.CheckPoints[I].Checked  := False;
+          except
+            WriteLn('[DB] Error: Database has more checkpoints saved');
+            WriteLn('[DB] as in the map was defined! Please fix this.');
+            WriteLn('[DB] CheckpointsNum: ' + IntToStr(RM.Map.AmountOfCheckpoints));
+            WriteLn('[DB] Database returns checkpointID: ' + IntToStr(I + 1));
+          end;
         end;
 
         DB_FinishQuery(DB_ID);
