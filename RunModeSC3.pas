@@ -598,8 +598,21 @@ begin
       SearchedMapID := RM.Map.MapID
     else
     begin
-      // TODO: SEARCH FOR OTHER MAPS BY NAME
-      SearchedMapID := RM.Map.MapID;
+      if DB_CONNECTED then
+      begin
+        if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_GET_MAP_ID_BY_N, DB_Escape_String(Text_Piece.Strings[1]))) <> 0) and
+         (DB_NextRow(DB_ID) <> 0) then
+          SearchedMapID  := DB_GetLong(DB_ID, 0) // `ID`
+        else
+        begin
+          Players.WriteConsole('[RM] Could not find the map ''' + Text_Piece.Strings[1] + '''!', MESSAGE_COLOR_RED);
+          Exit;
+        end;
+      end else
+      begin
+        WriteLn('[RM] Could not find the map for ShowTop! Database is not connected!');
+        Exit;
+      end;
     end;
 
     if DB_CONNECTED then
