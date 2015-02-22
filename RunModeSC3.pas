@@ -643,6 +643,12 @@ begin
         if not RM.Active then
           p.Team := TEAM_RUNNER;
       end;
+      '!fail':
+      begin
+        if RM.Active then
+          if p.ID = RM.Runner.PPlayer.ID then
+            EndSingleGame(False);
+      end;
       '!freerun': p.Team := TEAM_FREERUNNER;
       '!top': ShowTop(Text);
       '!top10': ShowTop(Text);
