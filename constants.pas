@@ -51,6 +51,7 @@ const
                          'AND `rm_mapstats`.`mapID` = VAL1 ' +
                          'ORDER BY `rm_mapstats`.`runtime` ASC LIMIT VAL2;';
   SQL_GET_PLAYER_ID    = 'SELECT `ID` FROM `playerstats` WHERE `HWID` = ''VAL1'' LIMIT 1;';
+  SQL_ADD_PLAYER       = 'INSERT INTO `playerstats` (`HWID`, `name`, `firstjoin`, `lastseen`) VALUES (''VAL1'', ''VAL2'', Now(), Now());';
 
   // SQLL = SQL LITE
   SQLL_REPLAY_TABLE    = 'CREATE TABLE IF NOT EXISTS replay (' +

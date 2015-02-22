@@ -719,6 +719,32 @@ begin
 
 end;
 
+procedure UpdatePlayerDatabase(p: TActivePlayer);
+var
+  PlayerID: Integer;
+begin
+  if DB_CONNECTED then
+  begin
+    if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_GET_PLAYER_ID, p.HWID)) <> 0) and
+       (DB_NextRow(DB_ID) <> 0) then
+    begin
+      PlayerID := DB_GetLong(DB_ID, 0); // `ID`
+      DB_FinishQuery(DB_ID);
+
+      // IMPLEMENT: NAME CHANGE
+      // IMPLEMENT: UPDATE LAST SEEN
+    end else
+    begin
+      WriteLn('[DB] Player with HWID ' + p.HWID + ' was not found in Database...');
+      DB_FinishQuery(DB_ID);
+
+      WriteLn('[DB] Adding ' + p.Name + ' to the Database...');
+      DB_Update(DB_ID, DB_Query_Replace_Val2(SQL_ADD_PLAYER, p.HWID, p.Name));
+    end;
+  end else
+    WriteLn('[DB] Could not check for the player! Database is not connected!');
+end;
+
 procedure GameOnJoin(p: TActivePlayer; Team: TTeam);
 begin
   if p.ID > HighID then
@@ -728,7 +754,11 @@ begin
       if p.ID = RM.Runner.PPlayer.ID then
         RM.Active := False;
   if p.Human then
+  begin
+    DrawCheckPoints;
+    UpdatePlayerDatabase(p); // Adds the player if not in Database
     p.WriteConsole('[HELP] Welcome to !RunMode. Type !help if you are new.', MESSAGE_COLOR_SYSTEM);
+  end;
   if p.Team <> TEAM_SPECTATOR then
     p.Team := TEAM_SPECTATOR;
 end;
