@@ -57,6 +57,7 @@ const
   SQL_ADD_PLAYER       = 'INSERT INTO `playerstats` (`HWID`, `name`, `firstjoin`, `lastseen`) VALUES (''VAL1'', ''VAL2'', NOW(), NOW());';
   SQL_UPDATE_PLR_NAME  = 'UPDATE `playerstats` SET `name` = ''VAL1'' WHERE `HWID` = ''VAL2'';';
   SQL_UPDATE_PLR_SEEN  = 'UPDATE `playerstats` SET `lastseen` = NOW() WHERE `HWID` = ''VAL1'';';
+  SQL_LOG_NAMECHANGE   = 'INSERT INTO `privateactivity` (`HWID`, `log_time`, `kind`, `info`) VALUES (''VAL1'', NOW(), 1, ''VAL2'');';
 
   // SQLL = SQL LITE
   SQLL_REPLAY_TABLE    = 'CREATE TABLE IF NOT EXISTS replay (' +
