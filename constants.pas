@@ -40,7 +40,10 @@ const
   SQL_GET_MAP_ID_BY_N  = 'SELECT `ID`, `checknum`, `roundnum` FROM `rm_maps` WHERE `mapname` = ''VAL1'' LIMIT 1;';
   SQL_GET_MAP_CPS      = 'SELECT `checkpointID`, `posX`, `posY`, `distance` FROM `rm_checkpoints` WHERE `mapID` = VAL1 AND `courseID` = 1 ORDER BY `checkpointID` ASC;';
   SQL_ADD_MAP          = 'INSERT INTO `rm_maps` (`mapname`, `capnum`, `checknum`, `roundnum`, `coursesnum`, `datecreated`) ' +
-                                        'VALUES (''VAL1'', VAL2, VAL3, VAL4, VAL5, Now());';
+                                        'VALUES (''VAL1'', VAL2, VAL3, VAL4, VAL5, NOW());';
+  SQL_DEL_MAP          = 'DELETE FROM `rm_maps` WHERE `ID` = VAL1';
+  SQL_ADD_CP           = 'INSERT INTO `rm_checkpoints` (`mapID`, `courseID`, `checkpointID`, `posX`, `posY`, `distance`) VALUES (VAL1, 1, VAL2, VAL3, VAL4, VAL5)';
+  SQL_DEL_CP           = 'DELETE FROM `rm_checkpoints` WHERE `mapID` = VAL1 AND `checkpointID` = VAL2 AND `courseID` = 1';
   SQL_GET_RUN          = 'SELECT `ID`, `runtime` FROM rm_mapstats WHERE `playerID` = VAL1 AND `mapID` = VAL2 LIMIT 1;';
   SQL_ADD_RUN          = 'INSERT INTO `rm_mapstats` (`mapID`, `playerID`, `courseID`, `runtime`) ' + 
                                             'VALUES (VAL1, VAL2, 1, ''VAL3'');';
@@ -51,7 +54,9 @@ const
                          'AND `rm_mapstats`.`mapID` = VAL1 ' +
                          'ORDER BY `rm_mapstats`.`runtime` ASC LIMIT VAL2;';
   SQL_GET_PLAYER_ID    = 'SELECT `ID` FROM `playerstats` WHERE `HWID` = ''VAL1'' LIMIT 1;';
-  SQL_ADD_PLAYER       = 'INSERT INTO `playerstats` (`HWID`, `name`, `firstjoin`, `lastseen`) VALUES (''VAL1'', ''VAL2'', Now(), Now());';
+  SQL_ADD_PLAYER       = 'INSERT INTO `playerstats` (`HWID`, `name`, `firstjoin`, `lastseen`) VALUES (''VAL1'', ''VAL2'', NOW(), NOW());';
+  SQL_UPDATE_PLR_NAME  = 'UPDATE `playerstats` SET `name` = ''VAL1'' WHERE `HWID` = ''VAL2'';';
+  SQL_UPDATE_PLR_SEEN  = 'UPDATE `playerstats` SET `lastseen` = NOW() WHERE `HWID` = ''VAL1'';';
 
   // SQLL = SQL LITE
   SQLL_REPLAY_TABLE    = 'CREATE TABLE IF NOT EXISTS replay (' +
