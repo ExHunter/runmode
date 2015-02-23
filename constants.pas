@@ -54,6 +54,7 @@ const
                          'AND `rm_mapstats`.`mapID` = VAL1 ' +
                          'ORDER BY `rm_mapstats`.`runtime` ASC LIMIT VAL2;';
   SQL_GET_PLAYER_ID    = 'SELECT `ID` FROM `playerstats` WHERE `HWID` = ''VAL1'' LIMIT 1;';
+  SQL_GET_PLAYER_NAME  = 'SELECT `name` FROM `playerstats` WHERE `HWID` = ''VAL1'' LIMIT 1;';
   SQL_ADD_PLAYER       = 'INSERT INTO `playerstats` (`HWID`, `name`, `firstjoin`, `lastseen`) VALUES (''VAL1'', ''VAL2'', NOW(), NOW());';
   SQL_UPDATE_PLR_NAME  = 'UPDATE `playerstats` SET `name` = ''VAL1'' WHERE `HWID` = ''VAL2'';';
   SQL_UPDATE_PLR_SEEN  = 'UPDATE `playerstats` SET `lastseen` = NOW() WHERE `HWID` = ''VAL1'';';

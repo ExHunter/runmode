@@ -741,18 +741,23 @@ end;
 
 procedure UpdatePlayerDatabase(p: TActivePlayer);
 var
-  PlayerID: Integer;
+  PlayerName: string;
 begin
   if DB_CONNECTED then
   begin
-    if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_GET_PLAYER_ID, p.HWID)) <> 0) and
+    if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_GET_PLAYER_NAME, p.HWID)) <> 0) and
        (DB_NextRow(DB_ID) <> 0) then
     begin
-      PlayerID := DB_GetLong(DB_ID, 0); // `ID`
+      PlayerName := DB_GetString(DB_ID, 0); // `name`
       DB_FinishQuery(DB_ID);
 
-      // IMPLEMENT: NAME CHANGE
-      // IMPLEMENT: UPDATE LAST SEEN
+      if PlayerName <> p.Name then
+      begin
+        DB_Update(DB_ID, DB_Query_Replace_Val2(SQL_UPDATE_PLR_NAME, DB_Escape_String(p.Name), p.HWID));
+        DB_Update(DB_ID, DB_Query_Replace_Val2(SQL_LOG_NAMECHANGE, p.HWID, DB_Escape_String(p.Name)));
+      end;
+
+      DB_Update(DB_ID, DB_Query_Replace_Val1(SQL_UPDATE_PLR_SEEN, p.HWID));
     end else
     begin
       WriteLn('[DB] Player with HWID ' + p.HWID + ' was not found in Database...');
@@ -760,6 +765,7 @@ begin
 
       WriteLn('[DB] Adding ' + p.Name + ' to the Database...');
       DB_Update(DB_ID, DB_Query_Replace_Val2(SQL_ADD_PLAYER, p.HWID, DB_Escape_String(p.Name)));
+      DB_Update(DB_ID, DB_Query_Replace_Val2(SQL_LOG_NAMECHANGE, p.HWID, DB_Escape_String(p.Name)));
     end;
   end else
     WriteLn('[DB] Could not check for the player! Database is not connected!');
