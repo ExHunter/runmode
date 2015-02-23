@@ -561,12 +561,6 @@ begin
   CurrentLoop := 0;
 end;
 
-function ReadFromFile(Filename: string): string;
-begin
-  result := ReadFile(Filename);
-  result := Copy(result, 1, Length(result) - 2);
-end;
-
 function Medal_Color_by_Rank(Rank: Integer): Cardinal;
 begin
   case Rank of
