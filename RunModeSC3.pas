@@ -747,19 +747,19 @@ begin
 
       if PlayerName <> p.Name then
       begin
-        DB_Update(DB_ID, DB_Query_Replace_Val2(SQL_UPDATE_PLR_NAME, DB_Escape_String(p.Name), p.HWID));
-        DB_Update(DB_ID, DB_Query_Replace_Val2(SQL_LOG_NAMECHANGE, p.HWID, DB_Escape_String(p.Name)));
+        DB_PerformQuery(DB_ID, 'UpdatePlayerDatabase', DB_Query_Replace_Val2(SQL_UPDATE_PLR_NAME, DB_Escape_String(p.Name), p.HWID));
+        DB_PerformQuery(DB_ID, 'UpdatePlayerDatabase', DB_Query_Replace_Val2(SQL_LOG_NAMECHANGE, p.HWID, DB_Escape_String(p.Name)));
       end;
 
-      DB_Update(DB_ID, DB_Query_Replace_Val1(SQL_UPDATE_PLR_SEEN, p.HWID));
+      DB_PerformQuery(DB_ID, 'UpdatePlayerDatabase', DB_Query_Replace_Val1(SQL_UPDATE_PLR_SEEN, p.HWID));
     end else
     begin
       WriteLn('[DB] Player with HWID ' + p.HWID + ' was not found in Database...');
       DB_FinishQuery(DB_ID);
 
       WriteLn('[DB] Adding ' + p.Name + ' to the Database...');
-      DB_Update(DB_ID, DB_Query_Replace_Val2(SQL_ADD_PLAYER, p.HWID, DB_Escape_String(p.Name)));
-      DB_Update(DB_ID, DB_Query_Replace_Val2(SQL_LOG_NAMECHANGE, p.HWID, DB_Escape_String(p.Name)));
+      DB_PerformQuery(DB_ID, 'UpdatePlayerDatabase', DB_Query_Replace_Val2(SQL_ADD_PLAYER, p.HWID, DB_Escape_String(p.Name)));
+      DB_PerformQuery(DB_ID, 'UpdatePlayerDatabase', DB_Query_Replace_Val2(SQL_LOG_NAMECHANGE, p.HWID, DB_Escape_String(p.Name)));
     end;
   end else
     WriteLn('[DB] Could not check for the player! Database is not connected!');
