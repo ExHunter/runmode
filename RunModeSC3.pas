@@ -641,6 +641,18 @@ begin
   end;
 end;
 
+procedure LoadReplay(ReplayTextID: string);
+begin
+  ReplayValues := Explode_ReplayData(Script.Dir + PATH_REPLAYS + ReplayTextID + FILE_EXTENSION_DB);
+  RM.Countdown := MATH_SECOND_IN_TICKS * 3;
+  if GetArrayLength(ReplayValues) > 0 then
+  begin
+    RM.Active := True;
+    Game.OnClockTick := Pointers.Clock_Load_Replay;
+  end else
+    WriteLn('No replay data found!');
+  end;
+
 procedure OnSpeak(p: TActivePlayer; Text: string);
 begin
   if Text[1] = '!' then
@@ -659,17 +671,7 @@ begin
       '!freerun': p.Team := TEAM_FREERUNNER;
       '!top': ShowTop(Text);
       '!top10': ShowTop(Text);
-      '!replay':
-      begin
-        ReplayValues := Explode_ReplayData(Script.Dir + PATH_REPLAYS + '4' + FILE_EXTENSION_DB);
-        RM.Countdown := MATH_SECOND_IN_TICKS * 3;
-        if GetArrayLength(ReplayValues) > 0 then
-        begin
-          RM.Active := True;
-          Game.OnClockTick := Pointers.Clock_Load_Replay;
-        end else
-          WriteLn('No replay data found.');
-      end;
+      '!replay': LoadReplay(Copy(Text, 9, Length(Text)));
       else
         p.WriteConsole('[GAME] The command you have typed was invalid!', MESSAGE_COLOR_RED);
     end;
