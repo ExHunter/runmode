@@ -170,6 +170,13 @@ begin
         DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val3(SQL_ADD_RUN,
           IntToStr(RM.Map.MapID), IntToStr(PlayerID),
           FormatDateTime('hh:nn:ss.zzz', RunnerTime)));
+        if (DB_Query(DB_ID, DB_Query_Replace_Val2(SQL_GET_RUN, IntToStr(PlayerID),
+            IntToStr(RM.Map.MapID))) <> 0) and
+           (DB_NextRow(DB_ID) <> 0) then
+        begin
+          Result := DB_GetLong(DB_ID, 0); // `ID`
+          DB_FinishQuery(DB_ID);
+        end;
       end;
     end else
     begin
