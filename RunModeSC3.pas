@@ -576,7 +576,7 @@ procedure ShowTop(TypedCommand: String);
 var
   Text_Piece: TStringList;
   Top_X, SearchedMapID, RankID: Integer;
-  PlayerName: String;
+  PlayerName, SearchedMap, TotalRuns: String;
 begin
   Text_Piece := File.CreateStringList();
   try
@@ -589,15 +589,19 @@ begin
       else
         Top_X := 10;
     if Text_Piece.Count = 1 then
-      SearchedMapID := RM.Map.MapID
-    else
+    begin
+      SearchedMapID := RM.Map.MapID;
+      SearchedMap   := Game.CurrentMap;
+    end else
     begin
       if DB_CONNECTED then
       begin
         if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_GET_MAP_ID_BY_N, DB_Escape_String(Text_Piece.Strings[1]))) <> 0) and
          (DB_NextRow(DB_ID) <> 0) then
-          SearchedMapID  := DB_GetLong(DB_ID, 0) // `ID`
-        else
+        begin
+          SearchedMapID := DB_GetLong(DB_ID, 0); // `ID`
+          SearchedMap   := Text_Piece.Strings[1];
+        end else
         begin
           Players.WriteConsole('[RM] Could not find the map ''' + Text_Piece.Strings[1] + '''!', MESSAGE_COLOR_RED);
           Exit;
@@ -614,13 +618,24 @@ begin
       if (DB_Query(DB_ID, DB_Query_Replace_Val2(SQL_GET_TOP_X, IntToStr(SearchedMapID), IntToStr(Top_X))) <> 0) then
       begin
         RankID := 1;
-        Players.WriteConsole('+------+--------------------------+-----------------+---------------------+', MESSAGE_COLOR_GAME);
-        Players.WriteConsole('| Rank | Name                     | Time (H:M:S.ms) | Date (Y-M-D H:M:S)  |', MESSAGE_COLOR_GAME);
-        Players.WriteConsole('+------+--------------------------+-----------------+---------------------+', MESSAGE_COLOR_GAME);
         while DB_NextRow(DB_ID) <> 0 do
         begin
           // `rm_mapstats`.`ID` = 0 `rm_mapstats`.`playerID` = 1 `playerstats`.`name` = 2
-          // `rm_mapstats`.`runtime` = 3 `rm_mapstats`.`rundate` = 4
+          // `rm_mapstats`.`runtime` = 3 `rm_mapstats`.`rundate` = 4 `rm_maps`.`recordnum` = 5
+          // `rm_maps`.`runsnum` = 6 `rm_maps`.`failsnum` = 7
+          if RankID = 1 then
+          begin
+            TotalRuns := DB_GetString(DB_ID, 5);
+            if StrToInt(TotalRuns) < Top_X then
+              Top_X := StrToInt(TotalRuns);
+            Players.WriteConsole('+-------------------------------------------------------------------------+', MESSAGE_COLOR_GAME);
+            Players.WriteConsole('| Showing ' + IntToStr(Top_X) +' of ' + TotalRuns + ' recorded runs on map ''' +
+              SearchedMap + '''! ' + WHITESPACES[23 - Length(SearchedMap)] + WHITESPACES[23 - Length(IntToStr(Top_X))] +
+              WHITESPACES[23 - Length(TotalRuns)] +'                |', MESSAGE_COLOR_GOLD);
+            Players.WriteConsole('+------+--------------------------+-----------------+---------------------+', MESSAGE_COLOR_GAME);
+            Players.WriteConsole('| Rank | Name                     | Time (H:M:S.ms) | Date (Y-M-D H:M:S)  |', MESSAGE_COLOR_GAME);
+            Players.WriteConsole('+------+--------------------------+-----------------+---------------------+', MESSAGE_COLOR_GAME);
+          end;
           PlayerName := DB_GetString(DB_ID, 2);
           Players.WriteConsole('| #' + IntToStr(RankID) + WHITESPACES[22 - Length(IntToStr(RankID))] + ' | ' + PlayerName + WHITESPACES[Length(PlayerName) - 1] + ' | ' +
             DB_GetString(DB_ID, 3) + 's   | ' + DB_GetString(DB_ID, 4) + ' | [' + DB_GetString(DB_ID, 0) + ']', Medal_Color_by_Rank(RankID));
