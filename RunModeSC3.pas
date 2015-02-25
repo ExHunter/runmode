@@ -614,15 +614,19 @@ begin
       if (DB_Query(DB_ID, DB_Query_Replace_Val2(SQL_GET_TOP_X, IntToStr(SearchedMapID), IntToStr(Top_X))) <> 0) then
       begin
         RankID := 1;
+        Players.WriteConsole('+------+--------------------------+-----------------+---------------------+', MESSAGE_COLOR_GAME);
+        Players.WriteConsole('| Rank | Name                     | Time (H:M:S.ms) | Date (Y-M-D H:M:S)  |', MESSAGE_COLOR_GAME);
+        Players.WriteConsole('+------+--------------------------+-----------------+---------------------+', MESSAGE_COLOR_GAME);
         while DB_NextRow(DB_ID) <> 0 do
         begin
           // `rm_mapstats`.`ID` = 0 `rm_mapstats`.`playerID` = 1 `playerstats`.`name` = 2
           // `rm_mapstats`.`runtime` = 3 `rm_mapstats`.`rundate` = 4
           PlayerName := DB_GetString(DB_ID, 2);
-          Players.WriteConsole('[#' + IntToStr(RankID) + '] ' + PlayerName + WHITESPACES[Length(PlayerName) - 1] + '   ' +
-            DB_GetString(DB_ID, 3) + 's [' + DB_GetString(DB_ID, 4) + '] [' + DB_GetString(DB_ID, 0) + ']', Medal_Color_by_Rank(RankID));
+          Players.WriteConsole('| #' + IntToStr(RankID) + WHITESPACES[22 - Length(IntToStr(RankID))] + ' | ' + PlayerName + WHITESPACES[Length(PlayerName) - 1] + ' | ' +
+            DB_GetString(DB_ID, 3) + 's   | ' + DB_GetString(DB_ID, 4) + ' | [' + DB_GetString(DB_ID, 0) + ']', Medal_Color_by_Rank(RankID));
           RankID := RankID + 1;
         end;
+        Players.WriteConsole('+------+--------------------------+-----------------+---------------------+', MESSAGE_COLOR_GAME);
 
         DB_FinishQuery(DB_ID);
 
