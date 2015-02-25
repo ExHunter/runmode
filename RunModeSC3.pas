@@ -670,7 +670,86 @@ begin
     Game.OnClockTick := Pointers.Clock_Load_Replay;
   end else
     WriteLn('No replay data found!');
+end;
+
+// TODO: VISUALS... Put the search in a fancy box
+procedure PerformSearch(p: TActivePlayer; Text: string);
+var
+  Text_Piece: TStringList;
+begin
+  Text_Piece := File.CreateStringList();
+  try
+    // Text_Piece.Strings[1] can be a map or player
+    // Text_Piece.Strings[2] is the string you are searching for
+    SplitRegExpr(' ', Text, Text_Piece);
+
+    if Text_Piece.Count < 3 then
+    begin
+      p.WriteConsole('[RM] The command you have typed was incomplete (!search ''map''/''player'' <name>)!', MESSAGE_COLOR_RED);
+      Exit;
+    end;
+
+    if DB_CONNECTED then
+    begin
+      case LowerCase(Text_Piece.Strings[1]) of
+        'map':
+        begin
+          if Length(Text_Piece.Strings[2]) > 17 then
+          begin
+            p.WriteConsole('[RM] The map name you was searching for is too long!', MESSAGE_COLOR_RED);
+            Exit;
+          end;
+
+          p.WriteConsole('[RM] These are the results of your map search:', MESSAGE_COLOR_GAME);
+          if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_SEARCH_MAP_BY_N, DB_Escape_String(Text_Piece.Strings[2]))) <> 0) AND
+             (DB_NextRow(DB_ID) <> 0) then
+          begin
+            p.WriteConsole('[->] ' + DB_GetString(DB_ID, 0), MESSAGE_COLOR_GAME); // `mapname`
+            while DB_NextRow(DB_ID) <> 0 do
+              p.WriteConsole('[->] ' + DB_GetString(DB_ID, 0), MESSAGE_COLOR_GAME); // `mapname`
+            DB_FinishQuery(DB_ID);
+          end else
+          begin
+            p.WriteConsole('[->] No map was found.', MESSAGE_COLOR_GAME);
+            DB_FinishQuery(DB_ID);
+          end;
+        end;
+        'player':
+        begin
+          if Length(Text_Piece.Strings[2]) > 24 then
+          begin
+            p.WriteConsole('[RM] The player name you was searching for is too long!', MESSAGE_COLOR_RED);
+            Exit;
+          end;
+
+          p.WriteConsole('[RM] These are the results of your player search:', MESSAGE_COLOR_GAME);
+          if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_SEARCH_PLR_BY_N, DB_Escape_String(Text_Piece.Strings[2]))) <> 0) AND
+             (DB_NextRow(DB_ID) <> 0) then
+          begin
+            // `ID` = 0 `name` = 1 `gold` = 2 `silver` = 3 `bronze` = 4
+            p.WriteConsole('[->] ' + DB_GetString(DB_ID, 0) + ' - ' + DB_GetString(DB_ID, 1) + ' | Golds: ' + DB_GetString(DB_ID, 2) +
+              ' | Silvers: ' + DB_GetString(DB_ID, 3) + ' | Bronzes: ' + DB_GetString(DB_ID, 4), MESSAGE_COLOR_GAME);
+            while DB_NextRow(DB_ID) <> 0 do
+              p.WriteConsole('[->] ' + DB_GetString(DB_ID, 0) + ' - ' + DB_GetString(DB_ID, 1) + ' | Golds: ' + DB_GetString(DB_ID, 2) +
+                ' | Silvers: ' + DB_GetString(DB_ID, 3) + ' | Bronzes: ' + DB_GetString(DB_ID, 4), MESSAGE_COLOR_GAME);
+            DB_FinishQuery(DB_ID);
+          end else
+          begin
+            p.WriteConsole('[->] No map was found.', MESSAGE_COLOR_GAME);
+            DB_FinishQuery(DB_ID);
+          end;
+        end;
+        else
+          p.WriteConsole('[RM] Please specify if you search a map or player! (!search ''map''/''player'' <name>)', MESSAGE_COLOR_RED);
+      end;
+    end else
+      WriteLn('[RM] Could not perform a search! Database is not connected!');
+  except
+    WriteLn('[RM] Some error happened in PerformSearch! Cannot figure out what...');
+  finally
+    Text_Piece.Free;
   end;
+end;
 
 procedure OnSpeak(p: TActivePlayer; Text: string);
 begin
@@ -691,6 +770,7 @@ begin
       '!top': ShowTop(Text);
       '!top10': ShowTop(Text);
       '!replay': LoadReplay(Copy(Text, 9, Length(Text)));
+      '!search': PerformSearch(p, Text);
       else
         p.WriteConsole('[GAME] The command you have typed was invalid!', MESSAGE_COLOR_RED);
     end;
