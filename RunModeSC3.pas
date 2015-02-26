@@ -75,6 +75,15 @@ var
 
 implementation
 
+procedure WriteLnAndConsole(p: TActivePlayer; Text: string; Color: Cardinal);
+begin
+  WriteLn(Text);
+  if p = NIL then
+    Players.WriteConsole(Text, Color)
+  else
+    p.WriteConsole(Text, Color);
+end; 
+
 function Explode_ReplayData(runID: Integer): Array of TReplay;
 var
   Length: Integer;
@@ -269,7 +278,7 @@ begin
       if RM.Map.MapID < 0 then
       begin
         RM.Map.Loaded := False;
-        WriteLn('[RM] Could not find settings for the map ' + MapToLoad + '!');
+        WriteLnAndConsole(NIL, '[RM] Could not find settings for the map ' + MapToLoad + '!', MESSAGE_COLOR_GAME);
         Exit;
       end;
 
@@ -449,9 +458,7 @@ begin
   RM.Runner.PPlayer.Team := TEAM_SPECTATOR;
   if Successfull then
   begin
-    WriteLn('[RM] ' + RM.Runner.PPlayer.Name + ' has finished a run.');
-    WriteLn('[RM] Time: ' + FormatDateTime('nn:ss.zzz', RunTime));
-    Players.WriteConsole('[RM] ' + RM.Runner.PPlayer.Name + ' has finished a run in ' + FormatDateTime('nn:ss.zzz', RunTime), MESSAGE_COLOR_GAME);
+    WriteLnAndConsole(NIL, '[RM] ' + RM.Runner.PPlayer.Name + ' has finished a run in ' + FormatDateTime('hh:nn:ss.zzz', RunTime), MESSAGE_COLOR_GAME);
     if ReplayBot <> NIL then
       if RM.Runner.PPlayer.ID <> ReplayBot.ID then
       begin
@@ -669,12 +676,12 @@ begin
   end;
 end;
 
-procedure LoadReplay(ReplayTextID: string);
+procedure LoadReplay(p: TActivePlayer; ReplayTextID: string);
 begin
   try
     ReplayValues := Explode_ReplayData(StrToInt(ReplayTextID));
   except
-    WriteLn('[RM] ''' + ReplayTextID + ''' is not a valid number!');
+    WriteLnAndConsole(p, '[RM] ''' + ReplayTextID + ''' is not a valid number!', MESSAGE_COLOR_GAME);
     Exit;
   end;
   RM.Countdown := MATH_SECOND_IN_TICKS * 3;
@@ -683,7 +690,7 @@ begin
     RM.Active := True;
     Game.OnClockTick := Pointers.Clock_Load_Replay;
   end else
-    WriteLn('No replay data found!');
+    WriteLnAndConsole(p, '[RM] No replay data was found for run ID ''' + ReplayTextID + '''!', MESSAGE_COLOR_GAME);
 end;
 
 // TODO: VISUALS... Put the search in a fancy box
@@ -757,7 +764,7 @@ begin
           p.WriteConsole('[RM] Please specify if you search a map or player! (!search ''map''/''player'' <name>)', MESSAGE_COLOR_RED);
       end;
     end else
-      WriteLn('[RM] Could not perform a search! Database is not connected!');
+      WriteLnAndConsole(p, '[RM] Could not perform a search! Database is not connected!', MESSAGE_COLOR_SYSTEM);
   except
     WriteLn('[RM] Some error happened in PerformSearch! Cannot figure out what...');
   finally
@@ -813,7 +820,7 @@ begin
         Players.WriteConsole('Forwarding ' + p.Name + ' to #Rzal [Climb]. Type !rzal to follow', MESSAGE_COLOR_SYSTEM);
         p.ForwardTo('185.25.151.122', 23074, 'Redirecting to #Rzal [Climb] ...');
       end;
-      '!replay': LoadReplay(Copy(Text, 9, Length(Text)));
+      '!replay': LoadReplay(p, Copy(Text, 9, Length(Text)));
       '!search': PerformSearch(p, Text);
       else
         p.WriteConsole('[GAME] The command you have typed was invalid!', MESSAGE_COLOR_RED);
@@ -851,7 +858,7 @@ begin
   if RM.Countdown > 0 then
   begin
     if RM.Countdown mod MATH_SECOND_IN_TICKS = 0 then
-      Players.WriteConsole('[RM] Replay starts in ' + IntToStr(RM.Countdown div MATH_SECOND_IN_TICKS) + ' second(s)...', MESSAGE_COLOR_GAME);
+      WriteLnAndConsole(NIL, '[RM] Replay starts in ' + IntToStr(RM.Countdown div MATH_SECOND_IN_TICKS) + ' second(s)...', MESSAGE_COLOR_GAME);
     RM.Countdown := RM.Countdown - 1;
   end else
   begin
@@ -860,7 +867,7 @@ begin
     BotActive := True;
     CurrentLoop := 0;
     ReplayBot.Team := TEAM_RUNNER;
-    Players.WriteConsole('[RM] Replay has started...', MESSAGE_COLOR_GAME);
+    WriteLnAndConsole(NIL, '[RM] Replay has started...', MESSAGE_COLOR_GAME);
   end;
 end;
 
