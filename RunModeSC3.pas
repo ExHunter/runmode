@@ -1201,6 +1201,29 @@ begin
   result := True;
 end;
 
+procedure DecideIfWriteLnOrConsole(p: TActivePlayer; Text: string, Color: Cardinal);
+begin
+  if p = NIL then
+    WriteLn(Text)
+  else
+    p.WriteConsole(Text, Color);
+end;
+
+function OnSharedAdminCommand(p: TActivePlayer; Command: string): Boolean;
+begin
+  Result := False;
+end;
+
+function OnInGameAdminCommand(p: TActivePlayer; Command: string): Boolean;
+begin
+  Result := OnSharedAdminCommand(p, Command);
+end;
+
+function OnTCPAdminCommand(Ip: string; Port: Word; Command: string): Boolean;
+begin
+  Result := OnSharedAdminCommand(NIL, Command);
+end;
+
 procedure SetupRM();
 var
   i: Byte;
@@ -1222,6 +1245,8 @@ begin
   Game.Teams[TEAM_FREERUNNER].OnJoin := @OnJoinTeamFreeRunner;
   Game.Teams[TEAM_SPECTATOR].OnJoin  := @OnJoinTeamSpectator;
   Map.OnAfterMapChange               := @AfterMapChange;
+  Game.OnAdminCommand                := @OnInGameAdminCommand;
+  Game.OnTCPCommand                  := @OnTCPAdminCommand;
   Script.OnException                 := @ErrorHandler;
   HighID := 1;
   for i := 1 to 32 do
