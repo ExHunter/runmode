@@ -1201,6 +1201,31 @@ begin
   result := True;
 end;
 
+procedure AddMapToDatabase(p: TActivePlayer; Command: string);
+begin
+  // TODO: IMPLEMENT
+end;
+
+procedure AddCPToDatabase(p: TActivePlayer; Command: string);
+begin
+  // TODO: IMPLEMENT
+end;
+
+procedure SetLapsToDatabase(p: TActivePlayer; Command: string);
+begin
+  // TODO: IMPLEMENT
+end;
+
+procedure SetCPNumToDatabase(p: TActivePlayer; Command: string);
+begin
+  // TODO: IMPLEMENT
+end;
+
+procedure RemoveCPFromDatabase(p: TActivePlayer; Command: string);
+begin
+  // TODO: IMPLEMENT
+end;
+
 procedure DecideIfWriteLnOrConsole(p: TActivePlayer; Text: string; Color: Cardinal);
 begin
   if p = NIL then
@@ -1211,12 +1236,44 @@ end;
 
 function OnSharedAdminCommand(p: TActivePlayer; Command: string): Boolean;
 begin
-  Result := False;
+  case LowerCase(ReplaceRegExpr('\s\s*[^\s]*', Command, '', False)) of
+    '/say':
+    begin
+      Result := True;
+      Players.WriteConsole(Copy(Command, 6, Length(Command) - 5), MESSAGE_COLOR_GREEN);
+    end;
+    else
+      Result := False;
+  end;
+  // After setting Result := True it won't be shown anymore. This is a workaround
+  if Result then
+    if p <> NIL then
+      WriteLn('BLOCKED COMMAND: ' + Command + '(' + p.IP + '[' + p.Name + '])');
+end;
+
+function IsInEditorMode(p: TActivePlayer): Boolean;
+begin
+  Result := p.Team = TEAM_EDITOR;
 end;
 
 function OnInGameAdminCommand(p: TActivePlayer; Command: string): Boolean;
 begin
   Result := OnSharedAdminCommand(p, Command);
+  case LowerCase(ReplaceRegExpr('\s\s*[^\s]*', Command, '', False)) of
+    '/edit':     p.Team := TEAM_EDITOR;
+    '/addmap':   AddMapToDatabase(p, Command);
+    '/addcp':    AddCPToDatabase(p, Command);
+    '/setlaps':  SetLapsToDatabase(p, Command);
+    '/setcpnum': SetCPNumToDatabase(p, Command);
+    '/delcp':    RemoveCPFromDatabase(p, Command);
+    '/teleport':
+    begin
+      if IsInEditorMode(p) then
+        p.Move(p.MouseAimX, p.MouseAimY)
+      else
+        p.WriteConsole('[RM] You have to be in the Editor mode to teleport yourself!', MESSAGE_COLOR_SYSTEM);
+    end;
+  end;
 end;
 
 function OnTCPAdminCommand(Ip: string; Port: Word; Command: string): Boolean;
