@@ -235,7 +235,14 @@ begin
   if DB_CONNECTED then
   begin
     if DB_Update(DB_ID, SQL_PING_SERVER) = 0 then
+    begin
       WriteLn('[DB] Error in DB_Ping_Server: ' + DB_Error());
+      if DB_IsDatabase(DB_ID) = 0 then
+      begin
+        WriteLn('[DB] Trying to establish a new connection...');
+        DB_Establish_Connection;
+      end;
+    end;
   end else
   begin
     WriteLn('[DB] Error in DB_Ping_Server: Not connected to the Database!');
