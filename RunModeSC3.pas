@@ -82,7 +82,7 @@ begin
     Players.WriteConsole(Text, Color)
   else
     p.WriteConsole(Text, Color);
-end; 
+end;
 
 function Explode_ReplayData(runID: Integer): Array of TReplay;
 var
@@ -132,7 +132,7 @@ begin
     DB_Close(DB_ID_REPLAYS);
     WriteLn('[DB] Something failed in Explode_ReplayData! Closed replay Database!');
   end;
-  
+
 end;
 
 function GetAllMedals(PlayerID: Integer; var GoldMedals, SilverMedals, BronzeMedals: Integer): Boolean;
@@ -372,9 +372,9 @@ begin
                                                 iif(ReplayData[I].KeyThrow, '1', '0') + ', ' +
                                                 iif(ReplayData[I].KeyCrouch, '1', '0') + ', ' +
                                                 iif(ReplayData[I].KeyProne, '1', '0') + ', ' +
-                                                IntToStr(ReplayData[I].AimX) + ', ' + 
-                                                IntToStr(ReplayData[I].AimY) + ', ' + 
-                                                FloatToStr(ReplayData[I].PosX) + ', ' + 
+                                                IntToStr(ReplayData[I].AimX) + ', ' +
+                                                IntToStr(ReplayData[I].AimY) + ', ' +
+                                                FloatToStr(ReplayData[I].PosX) + ', ' +
                                                 FloatToStr(ReplayData[I].PosY) + ')';
     for I := 1 to GetArrayLength(ReplayData) - 1 do
       QueryString := QueryString + ', ' + FILE_NEWLINE + '(' + runIDString + ', ' +
@@ -387,9 +387,9 @@ begin
                                                          iif(ReplayData[I].KeyThrow, '1', '0') + ', ' +
                                                          iif(ReplayData[I].KeyCrouch, '1', '0') + ', ' +
                                                          iif(ReplayData[I].KeyProne, '1', '0') + ', ' +
-                                                         IntToStr(ReplayData[I].AimX) + ', ' + 
-                                                         IntToStr(ReplayData[I].AimY) + ', ' + 
-                                                         FloatToStr(ReplayData[I].PosX) + ', ' + 
+                                                         IntToStr(ReplayData[I].AimX) + ', ' +
+                                                         IntToStr(ReplayData[I].AimY) + ', ' +
+                                                         FloatToStr(ReplayData[I].PosX) + ', ' +
                                                          FloatToStr(ReplayData[I].PosY) + ')';
     QueryString := QueryString + ';';
     DB_PerformQuery(DB_ID_REPLAYS, 'Save_ReplayData', QueryString);
@@ -1108,7 +1108,7 @@ begin
   if HighID = p.ID then
     for I := HighID - 1 downto 1 do
       if Players[I].Active then
-      begin 
+      begin
         HighID := I;
         break;
       end;
@@ -1226,6 +1226,26 @@ begin
   // TODO: IMPLEMENT
 end;
 
+procedure AdminChat(p: TActivePlayer; Command: string);
+var
+  I: Byte;
+begin
+  if p = NIL then
+  begin
+    for I := 1 to HighID do
+      if Players[I].IsAdmin then
+        Players[I].WriteConsole(Copy(Command, 2, Length(Command) - 1), MESSAGE_COLOR_AC);
+  end else
+    if p.IsAdmin then
+      if Length(Command) > 4 then
+      begin
+        WriteLn(' <' + p.Name + '> ' + copy(Command, 5, Length(Command)));
+        for I := 1 to HighID do
+          if Players[I].IsAdmin then
+            Players[I].WriteConsole('[' + p.Name + '] ' + Copy(Command, 5, Length(Command) - 4), MESSAGE_COLOR_AC);
+      end;
+end;
+
 procedure DecideIfWriteLnOrConsole(p: TActivePlayer; Text: string; Color: Cardinal);
 begin
   if p = NIL then
@@ -1243,7 +1263,7 @@ begin
       Players.WriteConsole(Copy(Command, 6, Length(Command) - 5), MESSAGE_COLOR_GREEN);
     end;
     '/as':
-    begin 
+    begin
       if p = NIL then
         Players.WriteConsole('[ADMIN] ' + Copy(Command, 5, Length(Command) - 4),
           MESSAGE_COLOR_GREEN)
@@ -1269,6 +1289,11 @@ function OnInGameAdminCommand(p: TActivePlayer; Command: string): Boolean;
 begin
   Result := OnSharedAdminCommand(p, Command);
   case LowerCase(ReplaceRegExpr('\s\s*[^\s]*', Command, '', False)) of
+    '/ac':
+    begin
+      Result := True;
+      AdminChat(p, Command);
+    end;
     '/edit':     p.Team := TEAM_EDITOR;
     '/addmap':   AddMapToDatabase(p, Command);
     '/addcp':    AddCPToDatabase(p, Command);
@@ -1288,6 +1313,12 @@ end;
 function OnTCPAdminCommand(Ip: string; Port: Word; Command: string): Boolean;
 begin
   Result := OnSharedAdminCommand(NIL, Command);
+end;
+
+procedure OnTCPAdminMessage(Ip: string; Port: Word; Msg: string);
+begin
+  if Msg[1] = ' ' then
+    AdminChat(NIL, Msg);
 end;
 
 procedure SetupRM();
@@ -1313,6 +1344,7 @@ begin
   Map.OnAfterMapChange               := @AfterMapChange;
   Game.OnAdminCommand                := @OnInGameAdminCommand;
   Game.OnTCPCommand                  := @OnTCPAdminCommand;
+  Game.OnTCPMessage                  := @OnTCPAdminMessage;
   Script.OnException                 := @ErrorHandler;
   HighID := 1;
   for i := 1 to 32 do
