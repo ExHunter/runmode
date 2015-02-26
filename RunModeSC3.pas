@@ -207,8 +207,8 @@ begin
     WriteLn('[DB] Inserting new replay data...');
     QueryString := 'INSERT INTO `' + Game.CurrentMap +
     '` (`runID`, `KeyUp`, `KeyLeft`, `KeyRight`, `KeyJetpack`, `KeyGrenade`,' +
-    ' `KeyChangeWeap`, `KeyThrow`, `KeyCrouch`, `KeyProne`, `AimX`, `AimY`, `PosX`, `PosY`) VALUES' + #13#10;
-    QueryString := QueryString + #13#10 + '(' + runIDString + ', ' +
+    ' `KeyChangeWeap`, `KeyThrow`, `KeyCrouch`, `KeyProne`, `AimX`, `AimY`, `PosX`, `PosY`) VALUES' + FILE_NEWLINE;
+    QueryString := QueryString + FILE_NEWLINE + '(' + runIDString + ', ' +
                                                 iif(ReplayData[I].KeyUp, '1', '0') + ', ' +
                                                 iif(ReplayData[I].KeyLeft, '1', '0') + ', ' +
                                                 iif(ReplayData[I].KeyRight, '1', '0') + ', ' +
@@ -223,7 +223,7 @@ begin
                                                 FloatToStr(ReplayData[I].PosX) + ', ' + 
                                                 FloatToStr(ReplayData[I].PosY) + ')';
     for I := 1 to GetArrayLength(ReplayData) - 1 do
-      QueryString := QueryString + ', ' + #13#10 + '(' + runIDString + ', ' +
+      QueryString := QueryString + ', ' + FILE_NEWLINE + '(' + runIDString + ', ' +
                                                          iif(ReplayData[I].KeyUp, '1', '0') + ', ' +
                                                          iif(ReplayData[I].KeyLeft, '1', '0') + ', ' +
                                                          iif(ReplayData[I].KeyRight, '1', '0') + ', ' +
@@ -769,10 +769,10 @@ end;
 
 procedure UniversalClockCalls(t: integer);
 begin
-  if t mod 300 = 0 then
+  if t mod MATH_SECOND_IN_TICKS * 5 = 0 then
   begin
     DrawCheckPoints;
-    if t mod 54000 = 0 then
+    if t mod MATH_MINUTE_IN_TICKS * 15 = 0 then
       DB_Ping_Server;
   end;
 end;
