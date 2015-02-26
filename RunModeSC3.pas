@@ -799,10 +799,10 @@ end;
 
 procedure UniversalClockCalls(t: integer);
 begin
-  if t mod MATH_SECOND_IN_TICKS * 5 = 0 then
+  if t mod (MATH_SECOND_IN_TICKS * 5) = 0 then
   begin
     DrawCheckPoints;
-    if t mod MATH_MINUTE_IN_TICKS * 15 = 0 then
+    if t mod (MATH_MINUTE_IN_TICKS * 15) = 0 then
       DB_Ping_Server;
   end;
 end;
