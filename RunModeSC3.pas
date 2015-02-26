@@ -774,9 +774,9 @@ begin
       end;
       '!rmeu':
       begin
-        WriteLn('Forwarding ' + p.Name + ' to !RunMode NA');
-        Players.WriteConsole('Forwarding ' + p.Name + ' to !RunMode NA. Type !rmNA to follow', MESSAGE_COLOR_SYSTEM);
-        p.ForwardTo('62.75.221.26', 23074, 'Redirecting to !RunMode NA ...');
+        WriteLn('Forwarding ' + p.Name + ' to !RunMode EU');
+        Players.WriteConsole('Forwarding ' + p.Name + ' to !RunMode EU. Type !rmEU to follow', MESSAGE_COLOR_SYSTEM);
+        p.ForwardTo('62.75.221.26', 23074, 'Redirecting to !RunMode EU ...');
       end;
       '!rmna':
       begin
