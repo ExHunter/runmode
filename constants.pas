@@ -118,7 +118,15 @@ const
   QUEUE_COLOR_YELLOW   = MATH_SECOND * 5;
   QUEUE_COLOR_RED      = MATH_SECOND * 3;
 
-  REPLAY_BOT_NAME      = 'ReplayBot v0.1';
+  REPLAY_BOT_NAME      = 'ReplayBot v0.2';
+  REPLAY_BOT_COL_PANTS = $000000;           // Black
+  REPLAY_BOT_COL_SHIRT = $000000;           // Black
+  REPLAY_BOT_COL_JETS  = $000000;           // Black
+  REPLAY_BOT_COL_SKIN  = $000000;           // Black
+  REPLAY_BOT_COL_HAIR  = $000000;           // Black
+  REPLAY_BOT_STY_HAIR  = 1;                 // Dreadlocks
+  REPLAY_BOT_STY_HEAD  = 0;                 // Nothing
+  REPLAY_BOT_STY_CHAIN = 0;                 // Nothing
 
   LAYER_OFFSET_CPS     = 1;
   LAYER_OFFSET_TRACKER = 10;

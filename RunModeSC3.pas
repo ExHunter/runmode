@@ -379,6 +379,21 @@ begin
           Result := I;
 end;
 
+function ReturnHandsWeapon(): TWeapon;
+var
+  NewHands: TNewWeapon;
+begin
+  NewHands := TNewWeapon.Create();
+  try
+    NewHands.WType := 255;
+    NewHands.Ammo := 1;
+    Result := NewHands;
+  except
+    Result := NIL;
+    NewHands.Free;
+  end;
+end;
+
 function AddReplayBot(): TActivePlayer;
 var
   NewPlayer: TNewPlayer;
@@ -386,12 +401,20 @@ begin
   Result := NIL;
   NewPlayer := TNewPlayer.Create;
   try
-    NewPlayer.Name := REPLAY_BOT_NAME;
-    NewPlayer.Team := TEAM_SPECTATOR;
-    NewPlayer.Dummy := True;
-    NewPlayer.PantsColor := $FFFFFFFF;
-    NewPlayer.SkinColor := $FFFFFFFF;
-    Result := Players.Add(NewPlayer);
+    NewPlayer.Name                  := REPLAY_BOT_NAME;
+    NewPlayer.Team                  := TEAM_SPECTATOR;
+    NewPlayer.Dummy                 := True;
+    NewPlayer.PantsColor            := REPLAY_BOT_COL_PANTS;
+    NewPlayer.ShirtColor            := REPLAY_BOT_COL_SHIRT;
+    NewPlayer.SkinColor             := REPLAY_BOT_COL_SKIN;
+    NewPlayer.HairColor             := REPLAY_BOT_COL_HAIR;
+    NewPlayer.HairStyle             := REPLAY_BOT_STY_HAIR;
+    NewPlayer.Headgear              := REPLAY_BOT_STY_HEAD;
+    NewPlayer.Chain                 := REPLAY_BOT_STY_CHAIN;
+    NewPlayer.Primary               := ReturnHandsWeapon;
+    NewPlayer.Secondary             := ReturnHandsWeapon;
+    if (NewPlayer.Primary <> NIL) and (NewPlayer.Secondary <> NIL) then
+      Result                          := Players.Add(NewPlayer);
   finally
     NewPlayer.Free;
   end;
