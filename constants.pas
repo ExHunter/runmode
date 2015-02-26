@@ -32,7 +32,6 @@ const
   FILE_EXTENSION_SQL   = '.sql';
   FILE_EXTENSION_DB    = '.db';
   FILE_EXTENSION_INI   = '.ini';
-  FILE_EXTENSION_RPLY  = '.rply'; // replay data - will be removed soon
 
   // SQL STUFF - USING LATER ON STRREPLACE TO REPLACE VAL<num>
   SQL_PING_SERVER      = '/* ping */ SELECT 1;';
@@ -40,6 +39,8 @@ const
   SQL_GET_MAP_ID_BY_N  = 'SELECT `ID`, `checknum`, `roundnum` FROM `rm_maps` WHERE `mapname` = ''VAL1'' LIMIT 1;';
   SQL_GET_MAP_CPS      = 'SELECT `checkpointID`, `posX`, `posY`, `distance` FROM `rm_checkpoints` WHERE `mapID` = VAL1 AND `courseID` = 1 ORDER BY `checkpointID` ASC;';
   SQL_ADD_MAP          = 'INSERT INTO `rm_maps` (`mapname`, `capnum`, `checknum`, `roundnum`, `coursesnum`, `datecreated`) ' +
+                                        'VALUES (''VAL1'', VAL2, VAL3, VAL4, VAL5, NOW());';
+  SQL_ADD_REPLAY_TABLE = 'INSERT INTO `rm_maps` (`mapname`, `capnum`, `checknum`, `roundnum`, `coursesnum`, `datecreated`) ' +
                                         'VALUES (''VAL1'', VAL2, VAL3, VAL4, VAL5, NOW());';
   SQL_DEL_MAP          = 'DELETE FROM `rm_maps` WHERE `ID` = VAL1';
   SQL_ADD_CP           = 'INSERT INTO `rm_checkpoints` (`mapID`, `courseID`, `checkpointID`, `posX`, `posY`, `distance`) VALUES (VAL1, 1, VAL2, VAL3, VAL4, VAL5)';
@@ -54,6 +55,12 @@ const
                          'AND `rm_maps`.`ID` = VAL1 ' +
                          'AND `rm_mapstats`.`mapID` = VAL1 ' +
                          'ORDER BY `rm_mapstats`.`runtime` ASC LIMIT VAL2;';
+  SQL_GET_RANK         = 'SELECT `rm_mapstats`.`ID`, `rm_mapstats`.`playerID`, `playerstats`.`name`, `rm_mapstats`.`runtime`, `rm_mapstats`.`rundate`, `rm_maps`.`recordnum`, `rm_maps`.`runsnum`, `rm_maps`.`failsnum` ' +
+                         'FROM `rm_mapstats`, `playerstats`, `rm_maps` ' +
+                         'WHERE `playerstats`.`ID` = `rm_mapstats`.`playerID` ' +
+                         'AND `rm_maps`.`ID` = VAL1 ' +
+                         'AND `rm_mapstats`.`mapID` = VAL1 ' +
+                         'ORDER BY `rm_mapstats`.`runtime` ASC LIMIT VAL2;';
   SQL_GET_PLAYER_ID    = 'SELECT `ID` FROM `playerstats` WHERE `HWID` = ''VAL1'' LIMIT 1;';
   SQL_GET_PLAYER_NAME  = 'SELECT `name` FROM `playerstats` WHERE `HWID` = ''VAL1'' LIMIT 1;';
   SQL_ADD_PLAYER       = 'INSERT INTO `playerstats` (`HWID`, `name`, `firstjoin`, `lastseen`) VALUES (''VAL1'', ''VAL2'', NOW(), NOW());';
@@ -63,32 +70,38 @@ const
   SQL_SEARCH_PLR_BY_N  = 'SELECT `ID`, `name`, `gold`, `silver`, `bronze` FROM `playerstats` WHERE `name` LIKE ''%VAL1%'' LIMIT 15;';
   SQL_LOG_NAMECHANGE   = 'INSERT INTO `privateactivity` (`HWID`, `log_time`, `kind`, `info`) VALUES (''VAL1'', NOW(), 1, ''VAL2'');';
 
-  // SQLL = SQL LITE
-  SQLL_REPLAY_TABLE    = 'CREATE TABLE IF NOT EXISTS replay (' +
-                            'ID INTEGER NOT NULL PRIMARY KEY, ' +
-                            'KeyUp INTEGER NOT NULL DEFAULT ''0'', ' +
-                            'KeyLeft INTEGER NOT NULL DEFAULT ''0'', ' +
-                            'KeyRight INTEGER NOT NULL DEFAULT ''0'', ' +
-                            'KeyJetpack INTEGER NOT NULL DEFAULT ''0'', ' +
-                            'KeyGrenade INTEGER NOT NULL DEFAULT ''0'', ' +
-                            'KeyChangeWeap INTEGER NOT NULL DEFAULT ''0'', ' +
-                            'KeyThrow INTEGER NOT NULL DEFAULT ''0'', ' +
-                            'KeyCrouch INTEGER NOT NULL DEFAULT ''0'', ' +
-                            'KeyProne INTEGER NOT NULL DEFAULT ''0'', ' +
-                            'AimX INTEGER NOT NULL DEFAULT ''0'', ' +
-                            'AimY INTEGER NOT NULL DEFAULT ''0'', ' +
-                            'PosX REAL NOT NULL DEFAULT ''0'', ' +
-                            'PosY REAL NOT NULL DEFAULT ''0''' +
-                         ')';
-  SQLL_GET_REPLAY      = 'SELECT KeyUp, KeyLeft, KeyRight, KeyJetpack, KeyGrenade, KeyChangeWeap, KeyThrow, KeyCrouch, KeyProne, AimX, AimY, PosX, PosY FROM replay;';
+  // SQL queries for replays
+ SQL_CREATE_REPLAY_TBL = 'CREATE TABLE IF NOT EXISTS `VAL1` ( ' +
+                         '    `replayOrder` INT(11) NOT NULL AUTO_INCREMENT, ' +
+                         '    `runID` INT(11) NOT NULL DEFAULT ''0'', ' +
+                         '    `KeyUp` TINYINT(1) NOT NULL DEFAULT ''0'', ' +
+                         '    `KeyLeft` TINYINT(1) NOT NULL DEFAULT ''0'', ' +
+                         '    `KeyRight` TINYINT(1) NOT NULL DEFAULT ''0'', ' +
+                         '    `KeyJetpack` TINYINT(1) NOT NULL DEFAULT ''0'', ' +
+                         '    `KeyGrenade` TINYINT(1) NOT NULL DEFAULT ''0'', ' +
+                         '    `KeyChangeWeap` TINYINT(1) NOT NULL DEFAULT ''0'', ' +
+                         '    `KeyThrow` TINYINT(1) NOT NULL DEFAULT ''0'', ' +
+                         '    `KeyCrouch` TINYINT(1) NOT NULL DEFAULT ''0'', ' +
+                         '    `KeyProne` TINYINT(1) NOT NULL DEFAULT ''0'', ' +
+                         '    `AimX` SMALLINT(6) NOT NULL DEFAULT ''0'', ' +
+                         '    `AimY` SMALLINT(6) NOT NULL DEFAULT ''0'', ' +
+                         '    `PosX` FLOAT NOT NULL DEFAULT ''0'', ' +
+                         '    `PosY` FLOAT NOT NULL DEFAULT ''0'', ' +
+                         '    PRIMARY KEY (`replayOrder`) ' +
+                         ') ' +
+                         'ENGINE=InnoDB;';
+  SQL_DELETE_REPLAY    = 'DELETE FROM `VAL1` WHERE `runID` = VAL2;';
+  SQL_GET_REPLAY       = 'SELECT `KeyUp`, `KeyLeft`, `KeyRight`, `KeyJetpack`, `KeyGrenade`, `KeyChangeWeap`, `KeyThrow`, `KeyCrouch`, `KeyProne`, `AimX`, `AimY`, `PosX`, `PosY` ' +
+                         'FROM `VAL1` WHERE `runID` = VAL2 ORDER BY `replayOrder` ASC;';
 
   PATH_REPLAYS         = 'data\REPLAYS\';
   
-  DB_CONNECTION_STRING = 'DB_HNS';  // insert ODBC connection string to databasse
+  DB_CONNECTION_STRING = 'DB_HNS';  // insert ODBC connection string to database
   DB_USER = '';                     // keep blank
   DB_PASS = '';                     // keep blank
+  DB_CON_STRING_REPLAY = 'DB_RM';   // insert ODBC connection string to replay database
   DB_ID = 0;                        // keep it for all files 0
-  DB_ID_SQLLITE = 1;                // used for SQLLite replays loading
+  DB_ID_REPLAYS = 1;                // used for replays loading (different database)
   DB_SERVER_ID = 1;                 // used in database, hns eu has 2... rm na 3.. etc..
 
   TEAM_EDITOR          = 1;
