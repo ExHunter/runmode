@@ -772,7 +772,7 @@ begin
   if t mod 300 = 0 then
   begin
     DrawCheckPoints;
-    if t mod 18000 = 0 then
+    if t mod 54000 = 0 then
       DB_Ping_Server;
   end;
 end;
