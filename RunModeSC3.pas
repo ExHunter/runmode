@@ -1242,6 +1242,15 @@ begin
       Result := True;
       Players.WriteConsole(Copy(Command, 6, Length(Command) - 5), MESSAGE_COLOR_GREEN);
     end;
+    '/as':
+    begin 
+      if p = NIL then
+        Players.WriteConsole('[ADMIN] ' + Copy(Command, 5, Length(Command) - 4),
+          MESSAGE_COLOR_GREEN)
+      else
+        Players.WriteConsole('[' + p.Name + '] ' + Copy(Command, 5, Length(Command) - 4),
+          MESSAGE_COLOR_GREEN);
+    end;
     else
       Result := False;
   end;
