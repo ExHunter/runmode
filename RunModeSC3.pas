@@ -135,11 +135,112 @@ begin
   
 end;
 
+function GetAllMedals(PlayerID: Integer; var GoldMedals, SilverMedals, BronzeMedals: Integer): Boolean;
+begin
+  GoldMedals := 0;
+  SilverMedals := 0;
+  BronzeMedals := 0;
+  Result := False;
+  if DB_CONNECTED then
+  begin
+    // PlayerID can be 0, for rankings who yet have no medals
+    if PlayerID = 0 then
+      Exit;
+    if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_GET_PLR_MEDALS, IntToStr(PlayerID))) <> 0) and
+       (DB_NextRow(DB_ID) <> 0) then
+    begin
+      GoldMedals   := DB_GetLong(DB_ID, 0); // `gold`
+      SilverMedals := DB_GetLong(DB_ID, 1); // `silver`
+      BronzeMedals := DB_GetLong(DB_ID, 2); // `bronze`
+      Result       := True;
+    end;
+  end else
+    WriteLn('[DB] Error in ExchangeMedal: Database is not connected!');
+end;
+
+procedure ExchangeMedal(MedalType: Byte; PlayerWhoGets, PlayerWhoLoses: Integer);
+var
+  MedalCountGoldWinner, MedalCountSilverWinner, MedalCountBronzeWinner: Integer;
+  MedalCountGoldLoser, MedalCountSilverLoser, MedalCountBronzeLoser: Integer;
+begin
+  if DB_CONNECTED then
+  begin
+    if GetAllMedals(PlayerWhoGets, MedalCountGoldWinner, MedalCountSilverWinner, MedalCountBronzeWinner) then
+      if GetAllMedals(PlayerWhoLoses, MedalCountGoldLoser, MedalCountSilverLoser, MedalCountBronzeLoser) then
+      begin
+        case MedalType of
+          MEDAL_GOLD:
+          begin
+            DB_PerformQuery(DB_ID, 'ExchangeMedal', DB_Query_Replace_Val2(SQL_UPDATE_GOLDS, IntToStr(MedalCountGoldWinner + 1), IntToStr(PlayerWhoGets)));
+            if (PlayerWhoLoses > 0) and (MedalCountGoldLoser > 0) then
+              DB_PerformQuery(DB_ID, 'ExchangeMedal', DB_Query_Replace_Val2(SQL_UPDATE_GOLDS, IntToStr(MedalCountGoldLoser - 1), IntToStr(PlayerWhoLoses)));
+          end;
+          MEDAL_SILVER:
+          begin
+            DB_PerformQuery(DB_ID, 'ExchangeMedal', DB_Query_Replace_Val2(SQL_UPDATE_SILVERS, IntToStr(MedalCountSilverWinner + 1), IntToStr(PlayerWhoGets)));
+            if (PlayerWhoLoses > 0) and (MedalCountSilverLoser > 0) then
+            DB_PerformQuery(DB_ID,'ExchangeMedal',  DB_Query_Replace_Val2(SQL_UPDATE_SILVERS, IntToStr(MedalCountSilverLoser - 1), IntToStr(PlayerWhoLoses)));
+          end;
+          MEDAL_BRONZE:
+          begin
+            DB_PerformQuery(DB_ID, 'ExchangeMedal', DB_Query_Replace_Val2(SQL_UPDATE_BRONZES, IntToStr(MedalCountBronzeWinner + 1), IntToStr(PlayerWhoGets)));
+            if (PlayerWhoLoses > 0) and (MedalCountBronzeLoser > 0) then
+              DB_PerformQuery(DB_ID, 'ExchangeMedal', DB_Query_Replace_Val2(SQL_UPDATE_BRONZES, IntToStr(MedalCountBronzeLoser - 1), IntToStr(PlayerWhoLoses)));
+          end;
+        end;
+      end;
+  end else
+    WriteLn('[DB] Error in ExchangeMedal: Database is not connected!');
+end;
+
+procedure NewBronzeMedal(NewPlayer, OldBronze: Integer);
+begin
+  ExchangeMedal(MEDAL_BRONZE, NewPlayer, OldBronze);
+end;
+
+procedure NewSilverMedal(NewPlayer, OldSilver, OldBronze: Integer);
+begin
+  ExchangeMedal(MEDAL_SILVER, NewPlayer, OldSilver);
+  NewBronzeMedal(OldSilver, OldBronze);
+end;
+
+procedure NewGoldMedal(NewPlayer, OldGold, OldSilver, OldBronze: Integer);
+begin
+  ExchangeMedal(MEDAL_GOLD, NewPlayer, OldGold);
+  NewSilverMedal(OldGold, OldSilver, OldBronze);
+end;
+
+function GetPlayerRank(PlayerID, mapID: Integer): Integer;
+begin
+  if DB_CONNECTED then
+  begin
+    if (DB_Query(DB_ID, SQL_GET_RANK_1_OF_2) <> 0) and
+       (DB_Query(DB_ID, DB_Query_Replace_Val2(SQL_GET_RANK_2_OF_2, IntToStr(mapID),
+        IntToStr(PlayerID))) <> 0) and
+       (DB_NextRow(DB_ID) <> 0) then
+    begin
+      Result := DB_GetLong(DB_ID, 0); // `rank`
+      DB_FinishQuery(DB_ID);
+    end else
+    begin
+      Result := 0;
+      WriteLn('[DB] Error in GetPlayerRank: ' + DB_Error());
+      DB_FinishQuery(DB_ID);
+    end;
+  end else
+  begin
+    Result := 0;
+    WriteLn('[DB] Error in GetPlayerRank: Database is not connected!');
+  end;
+end;
+
 function Save_RunData(HWID: string; RunnerTime: TDateTime): Integer;
 var
   ExistingRunID: Integer;
   PlayerID: Integer;
   DataBaseTime: TDateTime;
+  GoldPlayer, SilverPlayer, BronzePlayer: Integer;
+  PlayerNewRank: Integer;
 begin
   Result := 0;
   if DB_CONNECTED then
@@ -150,6 +251,39 @@ begin
       PlayerID := DB_GetLong(DB_ID, 0); // `ID`
       DB_FinishQuery(DB_ID);
 
+      // Search for other players medals before they get overwritten
+      if (DB_Query(DB_ID, DB_Query_Replace_Val2(SQL_GET_TOP_X, IntToStr(RM.Map.MapID), '3')) <> 0) then
+      begin
+        if DB_NextRow(DB_ID) <> 0 then
+        begin
+          GoldPlayer := DB_GetLong(DB_ID, 1); // `rm_mapstats`.`playerID`
+          if DB_NextRow(DB_ID) <> 0 then
+          begin
+            SilverPlayer := DB_GetLong(DB_ID, 1); // `rm_mapstats`.`playerID`
+            if DB_NextRow(DB_ID) <> 0 then
+              BronzePlayer := DB_GetLong(DB_ID, 1) // `rm_mapstats`.`playerID`
+            else
+              BronzePlayer := 0;
+          end else
+          begin
+            SilverPlayer := 0;
+            BronzePlayer := 0;
+          end;
+        end else
+        begin
+          GoldPlayer   := 0;
+          SilverPlayer := 0;
+          BronzePlayer := 0;
+        end;
+      end else
+      begin
+        GoldPlayer   := 0;
+        SilverPlayer := 0;
+        BronzePlayer := 0;
+      end;
+      DB_FinishQuery(DB_ID);
+
+      // Insert running data now
       if (DB_Query(DB_ID, DB_Query_Replace_Val2(SQL_GET_RUN, IntToStr(PlayerID),
           IntToStr(RM.Map.MapID))) <> 0) and
          (DB_NextRow(DB_ID) <> 0) then
@@ -181,6 +315,17 @@ begin
         begin
           Result := DB_GetLong(DB_ID, 0); // `ID`
           DB_FinishQuery(DB_ID);
+        end;
+      end;
+
+      // Now check for any difference in medals rankings
+      if Result > 0 then // Result is over 0 if something changed
+      begin
+        PlayerNewRank := GetPlayerRank(PlayerID, RM.Map.MapID);
+        case PlayerNewRank of
+          1: NewGoldMedal(PlayerID, GoldPlayer, SilverPlayer, BronzePlayer);
+          2: NewSilverMedal(PlayerID, SilverPlayer, BronzePlayer);
+          3: NewBronzeMedal(PlayerID, BronzePlayer);
         end;
       end;
     end else

@@ -55,17 +55,20 @@ const
                          'AND `rm_maps`.`ID` = VAL1 ' +
                          'AND `rm_mapstats`.`mapID` = VAL1 ' +
                          'ORDER BY `rm_mapstats`.`runtime` ASC LIMIT VAL2;';
-  SQL_GET_RANK         = 'SELECT `rm_mapstats`.`ID`, `rm_mapstats`.`playerID`, `playerstats`.`name`, `rm_mapstats`.`runtime`, `rm_mapstats`.`rundate`, `rm_maps`.`recordnum`, `rm_maps`.`runsnum`, `rm_maps`.`failsnum` ' +
-                         'FROM `rm_mapstats`, `playerstats`, `rm_maps` ' +
-                         'WHERE `playerstats`.`ID` = `rm_mapstats`.`playerID` ' +
-                         'AND `rm_maps`.`ID` = VAL1 ' +
-                         'AND `rm_mapstats`.`mapID` = VAL1 ' +
-                         'ORDER BY `rm_mapstats`.`runtime` ASC LIMIT VAL2;';
+  SQL_GET_RANK_1_OF_2  = 'SET @rownum := 0;';
+  SQL_GET_RANK_2_OF_2  = 'SELECT `rank`, `playerID` ' +
+                         'FROM (SELECT @rownum := @rownum + 1 AS rank, `runtime`, `playerID` ' +
+                               'FROM `rm_mapstats` WHERE `mapID` = VAL1 ORDER BY `runtime` ASC' +
+                               ') as result WHERE `playerID` = VAL2;';
   SQL_GET_PLAYER_ID    = 'SELECT `ID` FROM `playerstats` WHERE `HWID` = ''VAL1'' LIMIT 1;';
   SQL_GET_PLAYER_NAME  = 'SELECT `name` FROM `playerstats` WHERE `HWID` = ''VAL1'' LIMIT 1;';
+  SQL_GET_PLR_MEDALS   = 'SELECT `gold`, `silver`, `bronze` FROM `playerstats` WHERE `ID` = VAL1 LIMIT 1;';
   SQL_ADD_PLAYER       = 'INSERT INTO `playerstats` (`HWID`, `name`, `firstjoin`, `lastseen`) VALUES (''VAL1'', ''VAL2'', NOW(), NOW());';
   SQL_UPDATE_PLR_NAME  = 'UPDATE `playerstats` SET `name` = ''VAL1'' WHERE `HWID` = ''VAL2'';';
   SQL_UPDATE_PLR_SEEN  = 'UPDATE `playerstats` SET `lastseen` = NOW() WHERE `HWID` = ''VAL1'';';
+  SQL_UPDATE_GOLDS     = 'UPDATE `playerstats` SET `gold` = VAL1 WHERE `ID` = VAL2;';
+  SQL_UPDATE_SILVERS   = 'UPDATE `playerstats` SET `silver` = VAL1 WHERE `ID` = VAL2;';
+  SQL_UPDATE_BRONZES   = 'UPDATE `playerstats` SET `bronze` = VAL1 WHERE `ID` = VAL2;';
   SQL_SEARCH_MAP_BY_N  = 'SELECT `mapname` FROM `rm_maps` WHERE `mapname` LIKE ''%VAL1%'' LIMIT 15;';
   SQL_SEARCH_PLR_BY_N  = 'SELECT `ID`, `name`, `gold`, `silver`, `bronze` FROM `playerstats` WHERE `name` LIKE ''%VAL1%'' LIMIT 15;';
   SQL_LOG_NAMECHANGE   = 'INSERT INTO `privateactivity` (`HWID`, `log_time`, `kind`, `info`) VALUES (''VAL1'', NOW(), 1, ''VAL2'');';
@@ -117,6 +120,10 @@ const
   QUEUE_TIMER          = MATH_SECOND * 10;
   QUEUE_COLOR_YELLOW   = MATH_SECOND * 5;
   QUEUE_COLOR_RED      = MATH_SECOND * 3;
+
+  MEDAL_GOLD           = 1;
+  MEDAL_SILVER         = 2;
+  MEDAL_BRONZE         = 3;
 
   REPLAY_BOT_NAME      = 'ReplayBot v0.2';
   REPLAY_BOT_COL_PANTS = $000000;           // Black
