@@ -1201,7 +1201,7 @@ begin
   result := True;
 end;
 
-procedure DecideIfWriteLnOrConsole(p: TActivePlayer; Text: string, Color: Cardinal);
+procedure DecideIfWriteLnOrConsole(p: TActivePlayer; Text: string; Color: Cardinal);
 begin
   if p = NIL then
     WriteLn(Text)
