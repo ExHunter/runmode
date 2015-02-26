@@ -59,7 +59,7 @@ type
     end;
 
   TPointers = record
-    Clock_Normal, Clock_Load_Replay: TOnClockTickEvent;
+    Clock_Normal, Clock_Load_Replay, Clock_Wait_Time: TOnClockTickEvent;
     end;
 
 var
@@ -604,6 +604,10 @@ begin
   if Successfull then
   begin
     WriteLnAndConsole(NIL, '[RM] ' + RM.Runner.PPlayer.Name + ' has finished a run in ' + FormatDateTime('hh:nn:ss.zzz', RunTime), MESSAGE_COLOR_GAME);
+    WriteLnAndConsole(NIL, '[RM] Saving ' + RM.Runner.PPlayer.Name + '''s data.. This may take up to 3 seconds...', MESSAGE_COLOR_GAME);
+    Game.OnClockTick := Pointers.Clock_Wait_Time;
+    RM.Countdown := MATH_SECOND_IN_TICKS * 3;
+    RM.Active := True;
     if ReplayBot <> NIL then
       if RM.Runner.PPlayer.ID <> ReplayBot.ID then
       begin
@@ -972,7 +976,7 @@ begin
     end;
 end;
 
-procedure UniversalClockCalls(t: integer);
+procedure UniversalClockCalls(t: Integer);
 begin
   if t mod (MATH_SECOND_IN_TICKS * 5) = 0 then
   begin
@@ -982,7 +986,7 @@ begin
   end;
 end;
 
-procedure OnIdleTick(t: integer);
+procedure OnIdleTick(t: Integer);
 begin
   UniversalClockCalls(t);
   if RM.Active then
@@ -997,7 +1001,7 @@ begin
     end;
 end;
 
-procedure WaitingForReplayLoad(t: integer);
+procedure WaitingForReplayLoad(t: Integer);
 begin
   UniversalClockCalls(t);
   if RM.Countdown > 0 then
@@ -1013,6 +1017,22 @@ begin
     CurrentLoop := 0;
     ReplayBot.Team := TEAM_RUNNER;
     WriteLnAndConsole(NIL, '[RM] Replay has started...', MESSAGE_COLOR_GAME);
+  end;
+end;
+
+procedure WaitForNextRun(t: Integer);
+begin
+  UniversalClockCalls(t);
+  if RM.Countdown > 0 then
+  begin
+    if RM.Countdown mod MATH_SECOND_IN_TICKS = 0 then
+      Players.WriteConsole('[RM] ' + IntToStr(RM.Countdown div MATH_SECOND_IN_TICKS) + '...',
+        Medal_Color_by_Rank(RM.Countdown div MATH_SECOND_IN_TICKS));
+    RM.Countdown := RM.Countdown - 1;
+  end else
+  begin
+    Game.OnClockTick := Pointers.Clock_Normal;
+    RM.Active := False;
   end;
 end;
 
@@ -1188,6 +1208,7 @@ begin
   WriteLn('[RM] Setting up RunMode3...');
   Pointers.Clock_Normal := @OnIdleTick;
   Pointers.Clock_Load_Replay := @WaitingForReplayLoad;
+  Pointers.Clock_Wait_Time := @WaitForNextRun;
   DB_Establish_Connection;
   if Game.TickThreshold <> 1 then
     Game.TickThreshold := 1;
