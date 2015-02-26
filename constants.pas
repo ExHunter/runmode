@@ -148,6 +148,8 @@ const
   MESSAGE_COLOR_BRONZE = $CD7F32;
   MESSAGE_COLOR_AC     = $FF8000;
 
+  REGEXP_FIRST_WORD    = '\s\s*[^\s]*';
+
 implementation
 
 end.

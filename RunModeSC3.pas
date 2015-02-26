@@ -924,7 +924,7 @@ end;
 procedure OnSpeak(p: TActivePlayer; Text: string);
 begin
   if Text[1] = '!' then
-    case LowerCase(ReplaceRegExpr('\s\s*[^\s]*', Text, '', False)) of
+    case LowerCase(ReplaceRegExpr(REGEXP_FIRST_WORD, Text, '', False)) of
       '!play':
       begin
         if not RM.Active then
@@ -1256,7 +1256,7 @@ end;
 
 function OnSharedAdminCommand(p: TActivePlayer; Command: string): Boolean;
 begin
-  case LowerCase(ReplaceRegExpr('\s\s*[^\s]*', Command, '', False)) of
+  case LowerCase(ReplaceRegExpr(REGEXP_FIRST_WORD, Command, '', False)) of
     '/say':
     begin
       Result := True;
@@ -1288,7 +1288,7 @@ end;
 function OnInGameAdminCommand(p: TActivePlayer; Command: string): Boolean;
 begin
   Result := False;
-  case LowerCase(ReplaceRegExpr('\s\s*[^\s]*', Command, '', False)) of
+  case LowerCase(ReplaceRegExpr(REGEXP_FIRST_WORD, Command, '', False)) of
     '/ac':
     begin
       Result := True;
