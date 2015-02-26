@@ -1287,7 +1287,7 @@ end;
 
 function OnInGameAdminCommand(p: TActivePlayer; Command: string): Boolean;
 begin
-  Result := OnSharedAdminCommand(p, Command);
+  Result := False;
   case LowerCase(ReplaceRegExpr('\s\s*[^\s]*', Command, '', False)) of
     '/ac':
     begin
@@ -1307,6 +1307,8 @@ begin
       else
         p.WriteConsole('[RM] You have to be in the Editor mode to teleport yourself!', MESSAGE_COLOR_SYSTEM);
     end;
+    else
+      Result := OnSharedAdminCommand(p, Command);
   end;
 end;
 
