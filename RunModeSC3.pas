@@ -760,6 +760,36 @@ begin
       '!freerun': p.Team := TEAM_FREERUNNER;
       '!top': ShowTop(Text);
       '!top10': ShowTop(Text);
+      '!hnseu':
+      begin
+        WriteLn('Forwarding ' + p.Name + ' to !Hide and Seek EU');
+        Players.WriteConsole('Forwarding ' + p.Name + ' to !Hide and Seek EU. Type !hnsEU to follow', MESSAGE_COLOR_SYSTEM);
+        p.ForwardTo('62.75.221.26', 23072, 'Redirecting to !Hide and Seek EU ...');
+      end;
+      '!hnsna':
+      begin
+        WriteLn('Forwarding ' + p.Name + ' to !Hide and Seek NA');
+        Players.WriteConsole('Forwarding ' + p.Name + ' to !Hide and Seek NA. Type !hnsNA to follow', MESSAGE_COLOR_SYSTEM);
+        p.ForwardTo('198.7.57.226', 23073, 'Redirecting to !Hide and Seek NA ...');
+      end;
+      '!rmeu':
+      begin
+        WriteLn('Forwarding ' + p.Name + ' to !RunMode NA');
+        Players.WriteConsole('Forwarding ' + p.Name + ' to !RunMode NA. Type !rmNA to follow', MESSAGE_COLOR_SYSTEM);
+        p.ForwardTo('62.75.221.26', 23074, 'Redirecting to !RunMode NA ...');
+      end;
+      '!rmna':
+      begin
+        WriteLn('Forwarding ' + p.Name + ' to !RunMode NA');
+        Players.WriteConsole('Forwarding ' + p.Name + ' to !RunMode NA. Type !rmNA to follow', MESSAGE_COLOR_SYSTEM);
+        p.ForwardTo('198.7.57.226', 23074, 'Redirecting to !RunMode NA ...');
+      end;
+      '!rzal':
+      begin
+        WriteLn('Forwarding ' + p.Name + ' to #Rzal [Climb]');
+        Players.WriteConsole('Forwarding ' + p.Name + ' to #Rzal [Climb]. Type !rzal to follow', MESSAGE_COLOR_SYSTEM);
+        p.ForwardTo('185.25.151.122', 23074, 'Redirecting to #Rzal [Climb] ...');
+      end;
       '!replay': LoadReplay(Copy(Text, 9, Length(Text)));
       '!search': PerformSearch(p, Text);
       else
