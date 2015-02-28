@@ -84,6 +84,14 @@ begin
     p.WriteConsole(Text, Color);
 end;
 
+procedure DecideIfWriteLnOrConsole(p: TActivePlayer; Text: string; Color: Cardinal);
+begin
+  if p = NIL then
+    WriteLn(Text)
+  else
+    p.WriteConsole(Text, Color);
+end;
+
 function Explode_ReplayData(runID: Integer): Array of TReplay;
 var
   Length: Integer;
@@ -1246,16 +1254,86 @@ begin
       end;
 end;
 
-procedure DecideIfWriteLnOrConsole(p: TActivePlayer; Text: string; Color: Cardinal);
+procedure LookUpPlayerOrHWID(p: TActivePlayer; Command: string);
+var
+  Text_Piece: TStringList;
+  LookUpString: string;
+  ResultNameRow: string;
+  ResultCountRow: string;
 begin
-  if p = NIL then
-    WriteLn(Text)
+  Text_Piece := File.CreateStringList();
+  try
+    SplitRegExpr(' ', Command, Text_Piece);
+
+    if Text_Piece.Count < 3 then
+    begin
+      DecideIfWriteLnOrConsole(p, '[RM] The command you have typed was incomplete (/lookup ''hwid''/''id'' <value>)!', MESSAGE_COLOR_RED);
+      Exit;
+    end;
+
+  if LowerCase(Text_Piece[1]) = 'hwid' then
+  begin
+    LookUpString := DB_Escape_String(Text_Piece[2]);
+    if Length(LookUpString) <> 11 then
+    begin
+      DecideIfWriteLnOrConsole(p, '[RM] The HWID you''ve typed in was too long or short! It has to be 11 chars long!', MESSAGE_COLOR_RED);
+      Exit;
+    end;
+  end
   else
-    p.WriteConsole(Text, Color);
+    if LowerCase(Text_Piece[1]) = 'id' then
+    begin
+      if Players[StrToInt(Text_Piece[2])].Active then
+        LookUpString := Players[StrToInt(Text_Piece[2])].HWID
+      else
+      begin
+        DecideIfWriteLnOrConsole(p, '[RM] The command you have typed was incorrect (/lookup id <ACTIVE PLAYER ID>)!', MESSAGE_COLOR_RED);
+        Exit;
+      end;
+    end else
+    begin
+      DecideIfWriteLnOrConsole(p, '[RM] The command you have typed was incorrect (/lookup ''hwid''/''id'' <value>)!', MESSAGE_COLOR_RED);
+      Exit;
+    end;
+
+  if DB_CONNECTED then
+  begin
+    if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_SEARCH_ALT_NAME, LookUpString)) <> 0) then
+    begin
+      ResultNameRow  := DB_GetString(DB_ID, 0); // `info`
+      ResultCountRow := DB_GetString(DB_ID, 1); //  cnt
+      DecideIfWriteLnOrConsole(p, '+-----------------------------------------+', MESSAGE_COLOR_SYSTEM);
+      DecideIfWriteLnOrConsole(p, '| Showing the results of ' + LookUpString + ':     |', MESSAGE_COLOR_SYSTEM);
+      DecideIfWriteLnOrConsole(p, '+--------------------------+--------------+', MESSAGE_COLOR_SYSTEM);
+      DecideIfWriteLnOrConsole(p, '| Name                     | Joined times |', MESSAGE_COLOR_SYSTEM);
+      DecideIfWriteLnOrConsole(p, '+--------------------------+--------------+', MESSAGE_COLOR_SYSTEM);
+      while DB_NextRow(DB_ID) <> 0 do
+      begin
+        ResultNameRow  := DB_GetString(DB_ID, 0); // `info`
+        ResultCountRow := DB_GetString(DB_ID, 1); //  cnt
+        DecideIfWriteLnOrConsole(p, '| ' + ResultNameRow + WHITESPACES[Length(ResultNameRow) - 1] + ' | ' +
+          ResultCountRow + WHITESPACES[13 - Length(ResultCountRow)] + ' |', MESSAGE_COLOR_SYSTEM);
+      end;
+      DecideIfWriteLnOrConsole(p, '+--------------------------+--------------+', MESSAGE_COLOR_SYSTEM);
+      DB_FinishQuery(DB_ID);
+    end else
+    begin
+      DecideIfWriteLnOrConsole(p, '[DB] Did not find anything in logs for the specific player!', MESSAGE_COLOR_RED);
+      DecideIfWriteLnOrConsole(p, '[DB] Error in LookUpPlayerOrHWID: ' + DB_Error(), MESSAGE_COLOR_RED);
+    end;
+  end else
+    DecideIfWriteLnOrConsole(p, '[DB] Could not lookup the player! Database is not connected!', MESSAGE_COLOR_RED);
+
+  except
+    DecideIfWriteLnOrConsole(p, '[RM] Some error happened in LookUpPlayerOrHWID! Cannot figure out what...', MESSAGE_COLOR_RED);
+  finally
+    Text_Piece.Free;
+  end;
 end;
 
 function OnSharedAdminCommand(p: TActivePlayer; Command: string): Boolean;
 begin
+  Result := False;
   case LowerCase(ReplaceRegExpr(REGEXP_FIRST_WORD, Command, '', False)) of
     '/say':
     begin
@@ -1271,6 +1349,7 @@ begin
         Players.WriteConsole('[' + p.Name + '] ' + Copy(Command, 5, Length(Command) - 4),
           MESSAGE_COLOR_GREEN);
     end;
+    '/lookup': LookUpPlayerOrHWID(p, Command);
     else
       Result := False;
   end;

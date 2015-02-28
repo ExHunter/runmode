@@ -71,6 +71,10 @@ const
   SQL_UPDATE_BRONZES   = 'UPDATE `playerstats` SET `bronze` = VAL1 WHERE `ID` = VAL2;';
   SQL_SEARCH_MAP_BY_N  = 'SELECT `mapname` FROM `rm_maps` WHERE `mapname` LIKE ''%VAL1%'' LIMIT 15;';
   SQL_SEARCH_PLR_BY_N  = 'SELECT `ID`, `name`, `gold`, `silver`, `bronze` FROM `playerstats` WHERE `name` LIKE ''%VAL1%'' LIMIT 15;';
+  // `kind` = 1 is log type name change
+  SQL_SEARCH_ALT_NAME  = 'SELECT `info`, cnt FROM (SELECT `info`, SUM(CASE WHEN `HWID` = ''VAL1'' THEN 1 ELSE 0 END) as cnt, `kind` ' +
+                         'FROM `privateactivity` GROUP BY `info` HAVING `kind` = 1) AS lookuptable ' +
+                         'WHERE cnt > 0 ORDER BY cnt DESC LIMIT 15;';
   SQL_LOG_NAMECHANGE   = 'INSERT INTO `privateactivity` (`HWID`, `log_time`, `kind`, `info`) VALUES (''VAL1'', NOW(), 1, ''VAL2'');';
 
   // SQL queries for replays
