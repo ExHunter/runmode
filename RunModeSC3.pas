@@ -1406,8 +1406,45 @@ begin
 end;
 
 procedure SetLapsToDatabase(p: TActivePlayer; Command: string);
+var
+  Text_Piece: TStringList;
+  MapID: Integer;
 begin
-  // TODO: IMPLEMENT
+  if IsInEditorMode(p) then
+  begin
+    if DB_CONNECTED then
+    begin
+      if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_GET_MAP_ID_BY_N, Game.CurrentMap)) <> 0) and
+         (DB_NextRow(DB_ID) <> 0) then
+      begin
+        MapID := DB_GetLong(DB_ID, 0); // `ID`
+        DB_FinishQuery(DB_ID);
+        Text_Piece := File.CreateStringList();
+        try
+          SplitRegExpr(' ', Command, Text_Piece);
+          if Text_Piece.Count > 1 then
+          begin
+            // Text_Piece[1] = LapsNum
+            // IntToStr(StrToInt(Text_Piece[x])) to check if it's a number
+            DB_PerformQuery(DB_ID, 'SetLapsToDatabase', DB_Query_Replace_Val2(SQL_SET_LAPS,
+              IntToStr(StrToInt(Text_Piece[1])), IntToStr(MapID)));
+            WriteLnAndConsole(p, '[DB] Successfully updated Laps num to ' + Text_Piece[1] + '!', MESSAGE_COLOR_SYSTEM);
+          end else
+            p.WriteConsole('[RM] Please specify an amount of laps! /setlaps <laps>', MESSAGE_COLOR_RED);
+        except
+          WriteLnAndConsole(p, '[RM] Some error happened in SetLapsToDatabase! Cannot figure out what...', MESSAGE_COLOR_RED);
+        finally
+          Text_Piece.Free;
+        end;
+      end else
+      begin
+        WriteLnAndConsole(p, '[DB] The map ' + Game.CurrentMap + ' was not found in the Database! Please add it before modifying laps.', MESSAGE_COLOR_RED);
+        DB_FinishQuery(DB_ID);
+      end;
+    end else
+      WriteLnAndConsole(p, '[DB] Could not load the map ' + Game.CurrentMap + '! Database is not connected!', MESSAGE_COLOR_RED);
+  end else
+    p.WriteConsole('[RM] You have to be in the Editor mode to modify laps!', MESSAGE_COLOR_RED);
 end;
 
 procedure SetCPNumToDatabase(p: TActivePlayer; Command: string);
