@@ -42,6 +42,8 @@ const
                                         'VALUES (''VAL1'', NOW());';
   SQL_DEL_MAP          = 'DELETE FROM `rm_maps` WHERE `ID` = VAL1';
   SQL_ADD_CP           = 'INSERT INTO `rm_checkpoints` (`mapID`, `courseID`, `checkpointID`, `posX`, `posY`, `distance`) VALUES (VAL1, 1, VAL2, VAL3, VAL4, VAL5)';
+  SQL_GET_CP_ID        = 'SELECT `checkpointID` FROM `rm_checkpoints` WHERE `mapID` = VAL1 AND `courseID` = 1 AND `checkpointID` = VAL2 LIMIT 1;';
+  SQL_UPDATE_CP        = 'UPDATE `rm_checkpoints` SET `posX` = VAL1, `posY` = VAL2, `distance` = VAL3, WHERE `mapID` = VAL4 AND `checkpointID` = VAL5;';
   SQL_DEL_CP           = 'DELETE FROM `rm_checkpoints` WHERE `mapID` = VAL1 AND `checkpointID` = VAL2 AND `courseID` = 1';
   SQL_GET_RUN          = 'SELECT `ID`, `runtime` FROM rm_mapstats WHERE `playerID` = VAL1 AND `mapID` = VAL2 LIMIT 1;';
   SQL_ADD_RUN          = 'INSERT INTO `rm_mapstats` (`mapID`, `playerID`, `courseID`, `runtime`) ' + 
