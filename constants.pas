@@ -97,9 +97,22 @@ const
                          '    PRIMARY KEY (`replayOrder`) ' +
                          ') ' +
                          'ENGINE=InnoDB;';
+  SQL_CREATE_BESTRUN   = 'CREATE TABLE `VAL1_bestrun` ( ' +
+                         '     `runID` INT(11) NOT NULL, ' +
+                         '     `Lap` TINYINT(4) NOT NULL, ' +
+                         '     `CheckPoint` TINYINT(4) NOT NULL, ' +
+                         '     `Time` CHAR(12) NULL DEFAULT ''00:00:00.000'', ' +
+                         '     UNIQUE INDEX `combination` (`runID`, `Lap`, `CheckPoint`), ' +
+                         '     INDEX `ID` (`runID`) ' +
+                         ') ' +
+                         'COLLATE=''utf8_general_ci'' ' +
+                         'ENGINE=InnoDB;';
   SQL_DELETE_REPLAY    = 'DELETE FROM `VAL1` WHERE `runID` = VAL2;';
   SQL_GET_REPLAY       = 'SELECT `KeyUp`, `KeyLeft`, `KeyRight`, `KeyJetpack`, `KeyGrenade`, `KeyChangeWeap`, `KeyThrow`, `KeyCrouch`, `KeyProne`, `AimX`, `AimY`, `PosX`, `PosY` ' +
                          'FROM `VAL1` WHERE `runID` = VAL2 ORDER BY `replayOrder` ASC;';
+  SQL_DELETE_BESTRUN   = 'DELETE FROM `VAL1_bestrun` WHERE `runID` = VAL2;';
+  SQL_GET_BESTRUN      = 'SELECT `runID`, `Lap`, `CheckPoint`, `Time` FROM `VAL1_bestrun` WHERE `runID` = VAL2';
+  SQL_ADD_BESTRUN      = 'INSERT INTO `VAL1_bestrun` (`RunID`, `Lap`, `CheckPoint`, `Time`) VALUES (VAL2, VAL3, VAL4, ''VAL5'');';
 
   PATH_REPLAYS         = 'data\REPLAYS\';
   
@@ -139,8 +152,7 @@ const
   REPLAY_BOT_STY_HEAD  = 0;                 // Nothing
   REPLAY_BOT_STY_CHAIN = 0;                 // Nothing
 
-  LAYER_OFFSET_CPS     = 1;
-  LAYER_OFFSET_TRACKER = 10;
+  LAYER_OFFSET_CPS     = 5;
 
   MESSAGE_COLOR_GAME   = $F5DEB3;
   MESSAGE_COLOR_ADMIN  = $66CCFF;

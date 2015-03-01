@@ -34,8 +34,8 @@ type
     NextMap: string;
     end;
 
-  TPlayerProperties = record
-    Spec, Alive, InGame, OffMap: boolean;
+  TBestRun = record
+    CheckPoint: Array of Single;
     end;
 
   TRunnerProperties = record
@@ -49,6 +49,9 @@ type
     Countdown, Seconds: Integer;
     Active: Boolean;
     Map: TMapVariables;
+    BestRunLap: Array of TBestRun;
+    BestRunLoaded: Boolean;
+    CurrentRunLap: Array of TBestRun;
     Runner: TRunnerProperties;
     end;
 
@@ -64,7 +67,6 @@ type
 
 var
   RM: TGameVariables;
-  //ActivePlayer: Array[1..32] of TPlayerProperties;
   HighID: Byte;
   ReplayValues: Array of TReplay;
   ReplayBot: TActivePlayer;
@@ -242,6 +244,62 @@ begin
   end;
 end;
 
+function GetBestRunIDOnMap(MapID: Integer): Integer;
+begin
+  Result := 0;
+  if DB_CONNECTED then
+  begin
+    if (DB_Query(DB_ID, DB_Query_Replace_Val2(SQL_GET_TOP_X, IntToStr(MapID), '1')) <> 0) and
+       (DB_NextRow(DB_ID) <> 0) then
+    begin
+      Result := DB_GetLong(DB_ID, 0); // `rm_mapstats`.`mapID`
+      DB_FinishQuery(DB_ID);
+    end else
+    begin
+      WriteLn('[RM] The Map with the ID ' + IntToStr(MapID) + ' was not found in the Database!');
+      WriteLn('[DB] Error in GetBestRunIDOnMap: ' + DB_Error());
+      DB_FinishQuery(DB_ID);
+    end;
+  end else
+    WriteLn('[RM] Could not load the GetBestRunIDOnMap! Database is not connected!');
+end;
+
+procedure LoadBestRun(RunID: Integer);
+var
+  I: Byte;
+begin
+  if DB_Open(DB_ID_REPLAYS, DB_CON_STRING_REPLAY, '', '', DB_Plugin_ODBC) <> 0 then
+  begin
+    if DB_Query(DB_ID_REPLAYS, DB_Query_Replace_Val2(SQL_GET_BESTRUN, Game.CurrentMap, IntToStr(RunID))) <> 0 then
+    begin
+      SetArrayLength(RM.BestRunLap, RM.Map.AmountOfLaps);
+      for I := 0 to RM.Map.AmountOfLaps - 1 do
+        SetArrayLength(RM.BestRunLap[I].CheckPoint, RM.Map.AmountOfCheckpoints);
+      try
+        I := 0;
+        while (DB_NextRow(DB_ID_REPLAYS) <> 0) do
+        begin
+          // `runID` = 0, `Lap` = 1, `CheckPoint` = 2, `Time` = 3
+          RM.BestRunLap[DB_GetLong(DB_ID_REPLAYS, 1) - 1].CheckPoint[DB_GetLong(DB_ID_REPLAYS, 2) - 1] := StrToDateTime(DB_GetString(DB_ID_REPLAYS, 3));
+          I := I + 1;
+        end;
+        if I = RM.Map.AmountOfLaps * RM.Map.AmountOfCheckpoints then
+        begin
+          RM.BestRunLoaded := True;
+          WriteLn('[DB] Successfully loaded BestRun.');
+        end else
+          WriteLn('[DB] Amount of loaded BestRun data incorrect. Aborted.');
+      except
+        WriteLn('[DB] Some error occured while loading BestRun! Aborted.');
+      end;
+    end else
+      WriteLn('[DB] This map has no best run yet!');
+  end else
+    WriteLn('[DB] The Database for Replays could not been open!');
+  DB_FinishQuery(DB_ID_REPLAYS);
+  DB_Close(DB_ID_REPLAYS);
+end;
+
 function Save_RunData(HWID: string; RunnerTime: TDateTime): Integer;
 var
   ExistingRunID: Integer;
@@ -367,7 +425,7 @@ end;
 // Rather complex here.. Too much input to do this via CONSTANTS and replaces.
 function Save_ReplayData(runID: Integer; ReplayData: Array of TReplay): Boolean;
 var
-  I: Integer;
+  I, J: Integer;
   runIDString: string;
   QueryString: string;
 begin
@@ -413,6 +471,14 @@ begin
                                                          FloatToStr(ReplayData[I].PosY) + ')';
     QueryString := QueryString + ';';
     DB_PerformQuery(DB_ID_REPLAYS, 'Save_ReplayData', QueryString);
+
+    // Save CheckPoint data
+    DB_PerformQuery(DB_ID_REPLAYS, 'Save_ReplayData', DB_Query_Replace_Val2(SQL_DELETE_BESTRUN, Game.CurrentMap, runIDString));
+    for I := 0 to RM.Map.AmountOfLaps - 1 do
+      for J := 0 to RM.Map.AmountOfCheckPoints - 1 do
+        DB_PerformQuery(DB_ID_REPLAYS, 'Save_ReplayData', DB_Query_Replace_Val5(SQL_ADD_BESTRUN, Game.CurrentMap,
+          runIDString, IntToStr(I + 1), IntToStr(J + 1), FormatDateTime('hh:nn:ss.zzz', RM.CurrentRunLap[I].Checkpoint[J])));
+
     DB_Close(DB_ID_REPLAYS);
     WriteLn('[DB] Finished... Database closed!');
   end else
@@ -428,6 +494,7 @@ var
 begin
   WriteLn('[RM] Starting to load map ' + MapToLoad + '...');
   RM.Map.Loaded := True;
+  RM.BestRunLoaded := False;
   if DB_CONNECTED then
   begin
     if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_GET_MAP_ID_BY_N, DB_Escape_String(MapToLoad))) <> 0) and
@@ -439,6 +506,10 @@ begin
       SetArrayLength(RM.Map.CheckPoints, RM.Map.AmountOfCheckpoints);
 
       DB_FinishQuery(DB_ID);
+
+      SetArrayLength(RM.CurrentRunLap, RM.Map.AmountOfLaps);
+      for I := 0 to RM.Map.AmountOfLaps - 1 do
+        SetArrayLength(RM.CurrentRunLap[I].CheckPoint, RM.Map.AmountOfCheckpoints);
 
       if RM.Map.MapID < 0 then
       begin
@@ -498,6 +569,8 @@ begin
             WriteLn('[DB] Database returns checkpointID: ' + IntToStr(I + 1));
           end;
         end;
+
+        LoadBestRun(GetBestRunIDOnMap(RM.Map.MapID));
 
         DB_FinishQuery(DB_ID);
         WriteLn('[RM] The Map ' + MapToLoad + ' was loaded successfully!');
@@ -638,6 +711,7 @@ begin
             WriteLn('[DB] Saved the replay!')
           else
             WriteLn('[DB] Failed to save the replay!');
+          LoadBestRun(GetBestRunIDOnMap(RM.Map.MapID));
         end;
       end;
   end else
@@ -711,8 +785,16 @@ begin
     if i < RM.Map.AmountOfCheckpoints-1 then
     begin
       RM.Map.CheckPoints[i].Checked := True;
-      Players.WorldText(0, FormatDateTime('nn:ss.zzz', RunTime), MATH_SECOND_IN_TICKS * 2,
-        MESSAGE_COLOR_GREEN, 0.068, RM.Map.CheckPoints[i].X - 65, RM.Map.CheckPoints[i].Y + 50);
+      Players.WorldText(0, FormatDateTime('hh:nn:ss.zzz', RunTime), MATH_SECOND_IN_TICKS * 2,
+        MESSAGE_COLOR_GAME, 0.068, RM.Map.CheckPoints[i].X - 65, RM.Map.CheckPoints[i].Y + 50);
+      RM.CurrentRunLap[RM.Runner.Laps].CheckPoint[i] := RunTime;
+      if RM.BestRunLoaded then
+        if RunTime > RM.BestRunLap[RM.Runner.Laps].CheckPoint[i] then
+          Players.WorldText(1, '+' + FormatDateTime('hh:nn:ss.zzz', RunTime - RM.BestRunLap[RM.Runner.Laps].CheckPoint[i]), MATH_SECOND_IN_TICKS * 2,
+            MESSAGE_COLOR_RED,   0.068, RM.Map.CheckPoints[i].X - 85, RM.Map.CheckPoints[i].Y + 70)
+        else
+          Players.WorldText(1, '-' + FormatDateTime('hh:nn:ss.zzz', RM.BestRunLap[RM.Runner.Laps].CheckPoint[i] - RunTime), MATH_SECOND_IN_TICKS * 2,
+            MESSAGE_COLOR_GREEN, 0.068, RM.Map.CheckPoints[i].X - 75, RM.Map.CheckPoints[i].Y + 70);
       if i = 0 then
         RM.Map.CheckPoints[RM.Map.AmountOfCheckpoints-1].Checked := False;
       DrawCheckPoints;
@@ -724,11 +806,21 @@ begin
         RM.Map.CheckPoints[j].Checked := False;
       RM.Map.CheckPoints[RM.Map.AmountOfCheckpoints-1].Checked := True;
       DrawCheckPoints;
+      RM.CurrentRunLap[RM.Runner.Laps - 1].CheckPoint[i] := RunTime;
       if RM.Runner.Laps = RM.Map.AmountOfLaps then
         EndSingleGame(True)
       else
-        Players.WorldText(0, FormatDateTime('nn:ss.zzz', RunTime), MATH_SECOND_IN_TICKS * 2,
-          MESSAGE_COLOR_GREEN, 0.068, RM.Map.CheckPoints[i].X - 65, RM.Map.CheckPoints[i].Y + 50);
+      begin
+        Players.WorldText(0, FormatDateTime('hh:nn:ss.zzz', RunTime), MATH_SECOND_IN_TICKS * 2,
+          MESSAGE_COLOR_GAME, 0.068, RM.Map.CheckPoints[i].X - 65, RM.Map.CheckPoints[i].Y + 50);
+        if RM.BestRunLoaded then
+          if RunTime > RM.BestRunLap[RM.Runner.Laps - 1].CheckPoint[i] then
+            Players.WorldText(1, '+' + FormatDateTime('hh:nn:ss.zzz', RunTime - RM.BestRunLap[RM.Runner.Laps - 1].CheckPoint[i]), MATH_SECOND_IN_TICKS * 2,
+              MESSAGE_COLOR_RED,   0.068, RM.Map.CheckPoints[i].X - 85, RM.Map.CheckPoints[i].Y + 70)
+          else
+            Players.WorldText(1, '-' + FormatDateTime('hh:nn:ss.zzz', RM.BestRunLap[RM.Runner.Laps - 1].CheckPoint[i] - RunTime), MATH_SECOND_IN_TICKS * 2,
+              MESSAGE_COLOR_GREEN, 0.068, RM.Map.CheckPoints[i].X - 75, RM.Map.CheckPoints[i].Y + 70);
+      end;
     end;
   end;
 end;
@@ -1160,8 +1252,8 @@ begin
     begin
       if ReplayBot.ID <> p.ID then
       begin
-       SetArrayLength(ReplayValues, 0);
-       RM.Runner.StartTime := Now();
+        SetArrayLength(ReplayValues, 0);
+        RM.Runner.StartTime := Now();
       end else
         // Workaround since bots have always 1 tick more in counter
         RM.Runner.StartTime := Now() - StrToDateTime('00:00:00.016');
