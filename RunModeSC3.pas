@@ -698,13 +698,14 @@ begin
     RunTime := RM.CurrentRunLap[RM.Map.AmountOfLaps - 1].CheckPoint[RM.Map.AmountOfCheckPoints - 1];
 
     WriteLnAndConsole(NIL, '[RM] ' + RM.Runner.PPlayer.Name + ' has finished a run in ' + FormatDateTime('hh:nn:ss.zzz', RunTime), MESSAGE_COLOR_GAME);
-    WriteLnAndConsole(NIL, '[RM] Saving ' + RM.Runner.PPlayer.Name + '''s data.. This may take up to 3 seconds...', MESSAGE_COLOR_GAME);
-    Game.OnClockTick := Pointers.Clock_Wait_Time;
-    RM.Countdown := MATH_SECOND_IN_TICKS * 3;
-    RM.Active := True;
     if ReplayBot <> NIL then
       if RM.Runner.PPlayer.ID <> ReplayBot.ID then
       begin
+        WriteLnAndConsole(NIL, '[RM] Saving ' + RM.Runner.PPlayer.Name + '''s data.. This may take up to 3 seconds...', MESSAGE_COLOR_GAME);
+        Game.OnClockTick := Pointers.Clock_Wait_Time;
+        RM.Countdown := MATH_SECOND_IN_TICKS * 3;
+        RM.Active := True;
+
         Result_Run_ID := Save_RunData(RM.Runner.PPlayer.HWID, RunTime);
         if Result_Run_ID > 0 then
         begin
