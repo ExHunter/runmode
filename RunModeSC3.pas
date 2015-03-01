@@ -331,9 +331,21 @@ begin
       begin
         PlayerNewRank := GetPlayerRank(PlayerID, RM.Map.MapID);
         case PlayerNewRank of
-          1: NewGoldMedal(PlayerID, GoldPlayer, SilverPlayer, BronzePlayer);
-          2: NewSilverMedal(PlayerID, SilverPlayer, BronzePlayer);
-          3: NewBronzeMedal(PlayerID, BronzePlayer);
+          MEDAL_GOLD:
+          begin
+          if PlayerID <> GoldPlayer then
+            NewGoldMedal(PlayerID, GoldPlayer, SilverPlayer, BronzePlayer);
+          end;
+          MEDAL_SILVER:
+          begin
+            if PlayerID <> SilverPlayer then
+              NewSilverMedal(PlayerID, SilverPlayer, BronzePlayer);
+          end;
+          MEDAL_BRONZE:
+          begin
+            if PlayerID <> BronzePlayer then
+              NewBronzeMedal(PlayerID, BronzePlayer);
+          end;
         end;
       end;
     end else
