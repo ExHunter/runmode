@@ -795,7 +795,7 @@ begin
       Players.WorldText(0, FormatDateTime('hh:nn:ss.zzz', RunTime), MATH_SECOND_IN_TICKS * 2,
         MESSAGE_COLOR_GAME, 0.068, RM.Map.CheckPoints[i].X - 65, RM.Map.CheckPoints[i].Y + 50);
       RM.CurrentRunLap[RM.Runner.Laps].CheckPoint[i] := RunTime;
-      if RM.BestRunLoaded then
+      if RM.BestRunLoaded and not BotActive then
         if RunTime > RM.BestRunLap[RM.Runner.Laps].CheckPoint[i] then
           Players.WorldText(1, '+' + FormatDateTime('hh:nn:ss.zzz', RunTime - RM.BestRunLap[RM.Runner.Laps].CheckPoint[i]), MATH_SECOND_IN_TICKS * 2,
             MESSAGE_COLOR_RED,   0.068, RM.Map.CheckPoints[i].X - 85, RM.Map.CheckPoints[i].Y + 70)
@@ -820,7 +820,7 @@ begin
       begin
         Players.WorldText(0, FormatDateTime('hh:nn:ss.zzz', RunTime), MATH_SECOND_IN_TICKS * 2,
           MESSAGE_COLOR_GAME, 0.068, RM.Map.CheckPoints[i].X - 65, RM.Map.CheckPoints[i].Y + 50);
-        if RM.BestRunLoaded then
+        if RM.BestRunLoaded and not BotActive then
           if RunTime > RM.BestRunLap[RM.Runner.Laps - 1].CheckPoint[i] then
             Players.WorldText(1, '+' + FormatDateTime('hh:nn:ss.zzz', RunTime - RM.BestRunLap[RM.Runner.Laps - 1].CheckPoint[i]), MATH_SECOND_IN_TICKS * 2,
               MESSAGE_COLOR_RED,   0.068, RM.Map.CheckPoints[i].X - 85, RM.Map.CheckPoints[i].Y + 70)
@@ -1024,7 +1024,7 @@ begin
             DB_FinishQuery(DB_ID);
           end else
           begin
-            p.WriteConsole('[->] No map was found.', MESSAGE_COLOR_GAME);
+            p.WriteConsole('[->] No player was found.', MESSAGE_COLOR_GAME);
             DB_FinishQuery(DB_ID);
           end;
         end;
@@ -1046,7 +1046,7 @@ begin
     case LowerCase(ReplaceRegExpr(REGEXP_FIRST_WORD, Text, '', False)) of
       '!play':
       begin
-        if not RM.Active then
+        if not RM.Active and RM.Map.Loaded then
           p.Team := TEAM_RUNNER;
       end;
       '!fail':
@@ -1088,7 +1088,11 @@ begin
         Players.WriteConsole('Forwarding ' + p.Name + ' to #Rzal [Climb]. Type !rzal to follow', MESSAGE_COLOR_SYSTEM);
         p.ForwardTo('185.25.151.122', 23074, 'Redirecting to #Rzal [Climb] ...');
       end;
-      '!replay': LoadReplay(p, Copy(Text, 9, Length(Text)));
+      '!replay':
+      begin
+        if not RM.Active and RM.Map.Loaded then
+          LoadReplay(p, Copy(Text, 9, Length(Text)));
+      end;
       '!search': PerformSearch(p, Text);
       else
         p.WriteConsole('[GAME] The command you have typed was invalid!', MESSAGE_COLOR_RED);
@@ -1099,7 +1103,8 @@ procedure UniversalClockCalls(t: Integer);
 begin
   if t mod (MATH_SECOND_IN_TICKS * 5) = 0 then
   begin
-    DrawCheckPoints;
+    if RM.Map.Loaded then
+      DrawCheckPoints;
     if t mod (MATH_MINUTE_IN_TICKS * 15) = 0 then
       DB_Ping_Server;
   end;
@@ -1212,7 +1217,8 @@ begin
         RM.Active := False;
   if p.Human then
   begin
-    DrawCheckPoints;
+    if RM.Map.Loaded then
+      DrawCheckPoints;
     UpdatePlayerDatabase(p); // Adds the player if not in Database
     p.WriteConsole('[HELP] Welcome to !RunMode. Type !help if you are new.', MESSAGE_COLOR_SYSTEM);
   end;
@@ -1253,7 +1259,7 @@ begin
       EndSingleGame(False);
       Exit;
     end;
-  if not RM.Active then
+  if not RM.Active and RM.Map.Loaded then
   begin
     if ReplayBot <> NIL then
     begin
@@ -1296,7 +1302,10 @@ procedure OnJoinTeamFreeRunner(p: TActivePlayer; Team: TTeam);
 begin
   if RM.Active then
     if p.ID = RM.Runner.PPlayer.ID then
+    begin
       EndSingleGame(False);
+      Exit;
+    end;
   p.WriteConsole('[GAME] You are now freerunning.', MESSAGE_COLOR_GAME);
 end;
 
@@ -1304,7 +1313,10 @@ procedure OnJoinTeamSpectator(p: TActivePlayer; Team: TTeam);
 begin
   if RM.Active then
     if p.ID = RM.Runner.PPlayer.ID then
+    begin
       EndSingleGame(False);
+      Exit;
+    end;
   if p.Human then
     p.WriteConsole('[GAME] You are now spectating. Type !play or !freerun to play.', MESSAGE_COLOR_GAME);
 end;
