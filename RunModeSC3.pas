@@ -684,7 +684,6 @@ var
   RunTime: TDateTime;
   Result_Run_ID: Integer;
 begin
-  RunTime := Now - RM.Runner.StartTime; // if this is done multiple times later on, the results will be different.
   RM.Active := False;
   if BotActive then
   begin
@@ -696,6 +695,8 @@ begin
   RM.Runner.PPlayer.Team := TEAM_SPECTATOR;
   if Successfull then
   begin
+    RunTime := RM.CurrentRunLap[RM.Map.Laps - 1].CheckPoint[RM.Map.AmountOfCheckPoints - 1];
+
     WriteLnAndConsole(NIL, '[RM] ' + RM.Runner.PPlayer.Name + ' has finished a run in ' + FormatDateTime('hh:nn:ss.zzz', RunTime), MESSAGE_COLOR_GAME);
     WriteLnAndConsole(NIL, '[RM] Saving ' + RM.Runner.PPlayer.Name + '''s data.. This may take up to 3 seconds...', MESSAGE_COLOR_GAME);
     Game.OnClockTick := Pointers.Clock_Wait_Time;
@@ -716,7 +717,7 @@ begin
       end;
   end else
   begin
-    WriteLn('[RM] ' + RM.Runner.PPlayer.Name + ' stopped his run.');
+    WriteLnAndConsole(NIL, '[RM] ' + RM.Runner.PPlayer.Name + ' stopped his run.', MESSAGE_COLOR_GAME);
   end;
   RM.Runner.PPlayer := NIL;
 end;
