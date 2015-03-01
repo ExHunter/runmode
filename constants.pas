@@ -38,10 +38,8 @@ const
   SQL_GET_RND_MAP      = 'SELECT `mapname` FROM `rm_maps` ORDER BY RAND() LIMIT 0,1;';
   SQL_GET_MAP_ID_BY_N  = 'SELECT `ID`, `checknum`, `roundnum` FROM `rm_maps` WHERE `mapname` = ''VAL1'' LIMIT 1;';
   SQL_GET_MAP_CPS      = 'SELECT `checkpointID`, `posX`, `posY`, `distance` FROM `rm_checkpoints` WHERE `mapID` = VAL1 AND `courseID` = 1 ORDER BY `checkpointID` ASC;';
-  SQL_ADD_MAP          = 'INSERT INTO `rm_maps` (`mapname`, `capnum`, `checknum`, `roundnum`, `coursesnum`, `datecreated`) ' +
-                                        'VALUES (''VAL1'', VAL2, VAL3, VAL4, VAL5, NOW());';
-  SQL_ADD_REPLAY_TABLE = 'INSERT INTO `rm_maps` (`mapname`, `capnum`, `checknum`, `roundnum`, `coursesnum`, `datecreated`) ' +
-                                        'VALUES (''VAL1'', VAL2, VAL3, VAL4, VAL5, NOW());';
+  SQL_ADD_MAP          = 'INSERT INTO `rm_maps` (`mapname`, `datecreated`) ' +
+                                        'VALUES (''VAL1'', NOW());';
   SQL_DEL_MAP          = 'DELETE FROM `rm_maps` WHERE `ID` = VAL1';
   SQL_ADD_CP           = 'INSERT INTO `rm_checkpoints` (`mapID`, `courseID`, `checkpointID`, `posX`, `posY`, `distance`) VALUES (VAL1, 1, VAL2, VAL3, VAL4, VAL5)';
   SQL_DEL_CP           = 'DELETE FROM `rm_checkpoints` WHERE `mapID` = VAL1 AND `checkpointID` = VAL2 AND `courseID` = 1';
@@ -79,7 +77,7 @@ const
 
   // SQL queries for replays
  SQL_CREATE_REPLAY_TBL = 'CREATE TABLE IF NOT EXISTS `VAL1` ( ' +
-                         '    `replayOrder` INT(11) NOT NULL AUTO_INCREMENT, ' +
+                         '    `replayOrder` SMALLINT(6) NOT NULL, ' +
                          '    `runID` INT(11) NOT NULL DEFAULT ''0'', ' +
                          '    `KeyUp` TINYINT(1) NOT NULL DEFAULT ''0'', ' +
                          '    `KeyLeft` TINYINT(1) NOT NULL DEFAULT ''0'', ' +
@@ -94,10 +92,11 @@ const
                          '    `AimY` SMALLINT(6) NOT NULL DEFAULT ''0'', ' +
                          '    `PosX` FLOAT NOT NULL DEFAULT ''0'', ' +
                          '    `PosY` FLOAT NOT NULL DEFAULT ''0'', ' +
-                         '    PRIMARY KEY (`replayOrder`) ' +
+                         '    PRIMARY KEY (`replayOrder`), ' +
+                         '    INDEX `runID` (`runID`) ' +
                          ') ' +
                          'ENGINE=InnoDB;';
-  SQL_CREATE_BESTRUN   = 'CREATE TABLE `VAL1_bestrun` ( ' +
+  SQL_CREATE_BESTRUN   = 'CREATE TABLE IF NOT EXISTS `VAL1_bestrun` ( ' +
                          '     `runID` INT(11) NOT NULL, ' +
                          '     `Lap` TINYINT(4) NOT NULL, ' +
                          '     `CheckPoint` TINYINT(4) NOT NULL, ' +

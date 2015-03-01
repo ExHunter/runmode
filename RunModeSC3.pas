@@ -94,6 +94,11 @@ begin
     p.WriteConsole(Text, Color);
 end;
 
+function IsInEditorMode(p: TActivePlayer): Boolean;
+begin
+  Result := p.Team = TEAM_EDITOR;
+end;
+
 function Explode_ReplayData(runID: Integer): Array of TReplay;
 var
   Length: Integer;
@@ -1315,9 +1320,36 @@ begin
   result := True;
 end;
 
-procedure AddMapToDatabase(p: TActivePlayer; Command: string);
+procedure AddMapToDatabase(p: TActivePlayer);
 begin
-  // TODO: IMPLEMENT
+  if IsInEditorMode(p) then
+  begin
+    if DB_CONNECTED then
+    begin
+      if DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_GET_MAP_ID_BY_N, Game.CurrentMap)) <> 0 then
+      begin
+        if DB_NextRow(DB_ID) <> 0 then
+          p.WriteConsole('[DB] The current map is already in the Database!', MESSAGE_COLOR_RED)
+        else
+        begin
+          if DB_Open(DB_ID_REPLAYS, DB_CON_STRING_REPLAY, '', '', DB_Plugin_ODBC) <> 0 then
+          begin
+            DB_PerformQuery(DB_ID, 'AddMapToDatabase', DB_Query_Replace_Val1(SQL_ADD_MAP, Game.CurrentMap));
+            DB_PerformQuery(DB_ID_REPLAYS, 'AddMapToDatabase', DB_Query_Replace_Val1(SQL_CREATE_REPLAY_TBL, Game.CurrentMap));
+            DB_PerformQuery(DB_ID_REPLAYS, 'AddMapToDatabase', DB_Query_Replace_Val1(SQL_CREATE_BESTRUN, Game.CurrentMap));
+            p.WriteConsole('[DB] Added ' + Game.CurrentMap + ' to the Database!', MESSAGE_COLOR_RED);
+          end else
+            WriteLnAndConsole(p, '[DB] Error in AddMapToDatabase: ' + DB_Error(), MESSAGE_COLOR_RED);
+          DB_FinishQuery(DB_ID_REPLAYS);
+          DB_Close(DB_ID_REPLAYS);
+        end;
+      end else
+        WriteLnAndConsole(p, '[DB] Error in AddMapToDatabase: ' + DB_Error(), MESSAGE_COLOR_RED);
+      DB_FinishQuery(DB_ID);
+    end else
+      WriteLnAndConsole(p, '[DB] Error: The server is not connected to the Database!', MESSAGE_COLOR_RED);
+  end else
+    p.WriteConsole('[RM] You have to be in the Editor mode to add a map!', MESSAGE_COLOR_RED);
 end;
 
 procedure AddCPToDatabase(p: TActivePlayer; Command: string);
@@ -1465,11 +1497,6 @@ begin
       WriteLn('BLOCKED COMMAND: ' + Command + '(' + p.IP + '[' + p.Name + '])');
 end;
 
-function IsInEditorMode(p: TActivePlayer): Boolean;
-begin
-  Result := p.Team = TEAM_EDITOR;
-end;
-
 function OnInGameAdminCommand(p: TActivePlayer; Command: string): Boolean;
 begin
   Result := False;
@@ -1480,7 +1507,7 @@ begin
       AdminChat(p, Command);
     end;
     '/edit':     p.Team := TEAM_EDITOR;
-    '/addmap':   AddMapToDatabase(p, Command);
+    '/addmap':   AddMapToDatabase(p);
     '/addcp':    AddCPToDatabase(p, Command);
     '/setlaps':  SetLapsToDatabase(p, Command);
     '/setcpnum': SetCPNumToDatabase(p, Command);
