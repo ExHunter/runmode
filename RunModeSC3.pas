@@ -160,7 +160,10 @@ begin
   begin
     // PlayerID can be 0, for rankings who yet have no medals
     if PlayerID = 0 then
+    begin
+      Result := True;
       Exit;
+    end;
     if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_GET_PLR_MEDALS, IntToStr(PlayerID))) <> 0) and
        (DB_NextRow(DB_ID) <> 0) then
     begin
