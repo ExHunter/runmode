@@ -1033,7 +1033,7 @@ begin
             Players.WriteConsole('+------+--------------------------+-----------------+---------------------+', MESSAGE_COLOR_GAME);
           end;
           PlayerName := DB_GetString(DB_ID, 2);
-          Players.WriteConsole('| #' + IntToStr(RankID) + WHITESPACES[22 - Length(IntToStr(RankID))] + ' | ' + PlayerName + WHITESPACES[Length(PlayerName) - 1] + ' | ' +
+          Players.WriteConsole('| #' + IntToStr(RankID) + WHITESPACES[20 + Length(IntToStr(RankID))] + ' | ' + PlayerName + WHITESPACES[Length(PlayerName) - 1] + ' | ' +
             DB_GetString(DB_ID, 3) + 's   | ' + DB_GetString(DB_ID, 4) + ' | [' + DB_GetString(DB_ID, 0) + ']', Medal_Color_by_Rank(RankID));
           RankID := RankID + 1;
         end;
@@ -1848,7 +1848,7 @@ begin
         ResultNameRow  := DB_GetString(DB_ID, 0); // `info`
         ResultCountRow := DB_GetString(DB_ID, 1); //  cnt
         DecideIfWriteLnOrConsole(p, '| ' + ResultNameRow + WHITESPACES[Length(ResultNameRow) - 1] + ' | ' +
-          ResultCountRow + WHITESPACES[12 - Length(ResultCountRow)] + ' |', MESSAGE_COLOR_SYSTEM);
+          ResultCountRow + WHITESPACES[10 + Length(ResultCountRow)] + ' |', MESSAGE_COLOR_SYSTEM);
       end;
       DecideIfWriteLnOrConsole(p, '+--------------------------+---------------+', MESSAGE_COLOR_SYSTEM);
       DB_FinishQuery(DB_ID);
