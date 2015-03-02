@@ -654,6 +654,9 @@ begin
           if Map.Objects[I].Active then
             Map.Objects[I].Kill;
 
+        for I := 0 to RM.Map.AmountOfCheckPoints - 1 do
+          RM.Map.CheckPoints[I].Checked := True;
+
         while (DB_NextRow(DB_ID) <> 0) do
         begin
           try
@@ -675,7 +678,17 @@ begin
         LoadBestRun(GetBestRunIDOnMap(RM.Map.MapID));
 
         DB_FinishQuery(DB_ID);
-        WriteLn('[RM] The Map ' + MapToLoad + ' was loaded successfully!');
+
+        for I := 0 to RM.Map.AmountOfCheckPoints - 1 do
+          if RM.Map.CheckPoints[I].Checked then
+          begin
+            RM.Map.Loaded := False;
+            WriteLn('[RM] Could not load ' + MapToLoad + '! There are checkpoints missing (' + IntToStr(I + 1) + ')...');
+            Break;
+          end;
+
+        if RM.Map.Loaded then
+          WriteLn('[RM] The Map ' + MapToLoad + ' was loaded successfully!');
 
         WriteLn('[RM] Looking for a possible nextmap...');
         if DB_Query(DB_ID, SQL_GET_RND_MAP) <> 0 then
@@ -1309,6 +1322,8 @@ end;
 procedure AfterMapChange(NewMap: String);
 begin
   LoadMapSettings(NewMap);
+  if RM.Map.Loaded then
+    DrawCheckPoints;
 end;
 
 function OnDamage(Shooter, Victim: TActivePlayer; Damage: Integer; BulletID: Byte): Integer;
