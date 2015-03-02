@@ -63,7 +63,10 @@ const
   SQL_GET_STATISTICS   = 'SELECT (SELECT COUNT(`ID`) FROM `rm_mapstats`) AS totalruns, ' +
                                 '(SELECT COUNT(DISTINCT `playerID`) FROM `rm_mapstats`) AS differentplayers, ' +
                                 '(SELECT SUM(`Points`) FROM `rm_achievements`) AS totalachievementpoints, ' +
-                                '(SELECT COUNT(`ID`) FROM `rm_maps`) AS totalmaps ' +
+                                '(SELECT COUNT(`ID`) FROM `rm_maps`) AS totalmaps, ' +
+                                '(SELECT COUNT(`ID`) FROM `rm_achievements`) AS totaldifferentachievements, ' +
+                                '(SELECT SUM(`failsnum`) FROM `rm_maps`) AS totalfails, ' +
+                                '(SELECT SUM(`runsnum`) FROM `rm_maps`) AS totaltries ' +
                          'FROM `rm_maps`, `rm_mapstats`, `rm_achievements` ' +
                          'LIMIT 1;';
   SQL_GET_RANK_1_OF_2  = 'SET @rownum := 0;';

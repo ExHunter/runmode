@@ -1217,6 +1217,11 @@ begin
       Players.WriteConsole('  On ' + DB_GetString(DB_ID, 3) + ' different maps.'                     + #13#10 + // totalmaps
                            '  There are in total ' + DB_GetString(DB_ID, 2) + ' achievement points.',           // totalachievementpoints
                            MESSAGE_COLOR_GOLD);
+      Players.WriteConsole('|                                                                 |'     + #13#10 +
+                           '|                                                                 |', MESSAGE_COLOR_GAME);
+      Players.WriteConsole('  In ' + DB_GetString(DB_ID, 4) + ' different achievements.'             + #13#10 + // totaldifferentachievements
+                           '  There are already ' + DB_GetString(DB_ID, 6) + ' runs and ' + DB_GetString(DB_ID, 5) + ' fails made.',
+                           MESSAGE_COLOR_GOLD);  // totaltries = 6 and totalfails = 5
       Players.WriteConsole('|                                                                 |', MESSAGE_COLOR_GAME);
       Players.WriteConsole('+-----------------------------------------------------------------+', MESSAGE_COLOR_GAME);
     end else
