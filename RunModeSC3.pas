@@ -1615,19 +1615,19 @@ begin
     begin
       ResultNameRow  := DB_GetString(DB_ID, 0); // `info`
       ResultCountRow := DB_GetString(DB_ID, 1); //  cnt
-      DecideIfWriteLnOrConsole(p, '+-----------------------------------------+', MESSAGE_COLOR_SYSTEM);
-      DecideIfWriteLnOrConsole(p, '| Showing the results of ' + LookUpString + ':     |', MESSAGE_COLOR_SYSTEM);
-      DecideIfWriteLnOrConsole(p, '+--------------------------+--------------+', MESSAGE_COLOR_SYSTEM);
-      DecideIfWriteLnOrConsole(p, '| Name                     | Joined times |', MESSAGE_COLOR_SYSTEM);
-      DecideIfWriteLnOrConsole(p, '+--------------------------+--------------+', MESSAGE_COLOR_SYSTEM);
+      DecideIfWriteLnOrConsole(p, '+------------------------------------------+', MESSAGE_COLOR_SYSTEM);
+      DecideIfWriteLnOrConsole(p, '| Showing the results of ' + LookUpString + ':      |', MESSAGE_COLOR_SYSTEM);
+      DecideIfWriteLnOrConsole(p, '+--------------------------+---------------+', MESSAGE_COLOR_SYSTEM);
+      DecideIfWriteLnOrConsole(p, '| Name                     | changed times |', MESSAGE_COLOR_SYSTEM);
+      DecideIfWriteLnOrConsole(p, '+--------------------------+---------------+', MESSAGE_COLOR_SYSTEM);
       while DB_NextRow(DB_ID) <> 0 do
       begin
         ResultNameRow  := DB_GetString(DB_ID, 0); // `info`
         ResultCountRow := DB_GetString(DB_ID, 1); //  cnt
         DecideIfWriteLnOrConsole(p, '| ' + ResultNameRow + WHITESPACES[Length(ResultNameRow) - 1] + ' | ' +
-          ResultCountRow + WHITESPACES[13 - Length(ResultCountRow)] + ' |', MESSAGE_COLOR_SYSTEM);
+          ResultCountRow + WHITESPACES[12 - Length(ResultCountRow)] + ' |', MESSAGE_COLOR_SYSTEM);
       end;
-      DecideIfWriteLnOrConsole(p, '+--------------------------+--------------+', MESSAGE_COLOR_SYSTEM);
+      DecideIfWriteLnOrConsole(p, '+--------------------------+---------------+', MESSAGE_COLOR_SYSTEM);
       DB_FinishQuery(DB_ID);
     end else
     begin
