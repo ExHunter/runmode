@@ -1073,10 +1073,11 @@ begin
     WriteLnAndConsole(p, '[RM] No replay data was found for run ID ''' + ReplayTextID + '''!', MESSAGE_COLOR_GAME);
 end;
 
-// TODO: VISUALS... Put the search in a fancy box
 procedure PerformSearch(p: TActivePlayer; Text: string);
 var
   Text_Piece: TStringList;
+  ResultString: string;
+  ResID, ResGold, ResSilver, ResBronze: string;
 begin
   Text_Piece := File.CreateStringList();
   try
@@ -1095,23 +1096,31 @@ begin
       case LowerCase(Text_Piece.Strings[1]) of
         'map':
         begin
-          if Length(Text_Piece.Strings[2]) > 17 then
+          if Length(Text_Piece.Strings[2]) > 16 then
           begin
             p.WriteConsole('[RM] The map name you was searching for is too long!', MESSAGE_COLOR_RED);
             Exit;
           end;
 
-          p.WriteConsole('[RM] These are the results of your map search:', MESSAGE_COLOR_GAME);
+          p.WriteConsole('+------------------------------+', MESSAGE_COLOR_GAME);
+          p.WriteConsole('| Search map: ' + Text_Piece.Strings[2] + WHITESPACES[7 + Length(Text_Piece.Strings[2])] + ' |', MESSAGE_COLOR_GAME);
+          p.WriteConsole('+------------------------------+', MESSAGE_COLOR_GAME);
           if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_SEARCH_MAP_BY_N, DB_Escape_String(Text_Piece.Strings[2]))) <> 0) AND
              (DB_NextRow(DB_ID) <> 0) then
           begin
-            p.WriteConsole('[->] ' + DB_GetString(DB_ID, 0), MESSAGE_COLOR_GAME); // `mapname`
+            ResultString := DB_GetString(DB_ID, 0);  // `mapname`
+            p.WriteConsole('| ' + ResultString + WHITESPACES[7 + Length(ResultString)] + '             |', MESSAGE_COLOR_GAME);
             while DB_NextRow(DB_ID) <> 0 do
-              p.WriteConsole('[->] ' + DB_GetString(DB_ID, 0), MESSAGE_COLOR_GAME); // `mapname`
+            begin
+              ResultString := DB_GetString(DB_ID, 0);  // `mapname`
+              p.WriteConsole('| ' + ResultString + WHITESPACES[7 + Length(ResultString)] + '             |', MESSAGE_COLOR_GAME);
+            end;
+            p.WriteConsole('+------------------------------+', MESSAGE_COLOR_GAME);
             DB_FinishQuery(DB_ID);
           end else
           begin
-            p.WriteConsole('[->] No map was found.', MESSAGE_COLOR_GAME);
+            p.WriteConsole('| No map was found.            |', MESSAGE_COLOR_GAME);
+            p.WriteConsole('+------------------------------+', MESSAGE_COLOR_GAME);
             DB_FinishQuery(DB_ID);
           end;
         end;
@@ -1122,21 +1131,40 @@ begin
             p.WriteConsole('[RM] The player name you was searching for is too long!', MESSAGE_COLOR_RED);
             Exit;
           end;
-
-          p.WriteConsole('[RM] These are the results of your player search:', MESSAGE_COLOR_GAME);
+          p.WriteConsole('+---------------------------------------------------------------+', MESSAGE_COLOR_GAME);
+          p.WriteConsole('| Search player: ' + Text_Piece.Strings[2] + WHITESPACES[Length(Text_Piece.Strings[2]) - 1] +
+            '                       |', MESSAGE_COLOR_GAME);
+          p.WriteConsole('+---------+--------------------------+--------+--------+--------+', MESSAGE_COLOR_GAME);
+          p.WriteConsole('| ID      | Name                     | Gold   | Silver | Bronze |', MESSAGE_COLOR_GAME);
+          p.WriteConsole('+---------+--------------------------+--------+--------+--------+', MESSAGE_COLOR_GAME);
           if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_SEARCH_PLR_BY_N, DB_Escape_String(Text_Piece.Strings[2]))) <> 0) AND
              (DB_NextRow(DB_ID) <> 0) then
           begin
-            // `ID` = 0 `name` = 1 `gold` = 2 `silver` = 3 `bronze` = 4
-            p.WriteConsole('[->] ' + DB_GetString(DB_ID, 0) + ' - ' + DB_GetString(DB_ID, 1) + ' | Golds: ' + DB_GetString(DB_ID, 2) +
-              ' | Silvers: ' + DB_GetString(DB_ID, 3) + ' | Bronzes: ' + DB_GetString(DB_ID, 4), MESSAGE_COLOR_GAME);
+            ResID        := DB_GetString(DB_ID, 0); // `ID`
+            ResultString := DB_GetString(DB_ID, 1); // `name`
+            ResGold      := DB_GetString(DB_ID, 2); // `gold`
+            ResSilver    := DB_GetString(DB_ID, 3); // `silver`
+            ResBronze    := DB_GetString(DB_ID, 4); // `bronze`
+            p.WriteConsole('| ' + ResID + WHITESPACES[16 + Length(ResID)] + ' | ' + ResultString + WHITESPACES[Length(ResultString) - 1] +
+              ' | ' + ResGold + WHITESPACES[17 + Length(ResGold)] + ' | ' + ResSilver + WHITESPACES[17 + Length(ResSilver)] +
+              ' | ' + ResBronze + WHITESPACES[17 + Length(ResBronze)] + ' |', MESSAGE_COLOR_GAME);
             while DB_NextRow(DB_ID) <> 0 do
-              p.WriteConsole('[->] ' + DB_GetString(DB_ID, 0) + ' - ' + DB_GetString(DB_ID, 1) + ' | Golds: ' + DB_GetString(DB_ID, 2) +
-                ' | Silvers: ' + DB_GetString(DB_ID, 3) + ' | Bronzes: ' + DB_GetString(DB_ID, 4), MESSAGE_COLOR_GAME);
+            begin
+              ResID        := DB_GetString(DB_ID, 0); // `ID`
+              ResultString := DB_GetString(DB_ID, 1); // `name`
+              ResGold      := DB_GetString(DB_ID, 2); // `gold`
+              ResSilver    := DB_GetString(DB_ID, 3); // `silver`
+              ResBronze    := DB_GetString(DB_ID, 4); // `bronze`
+              p.WriteConsole('| ' + ResID + WHITESPACES[16 + Length(ResID)] + ' | ' + ResultString + WHITESPACES[Length(ResultString) - 1] +
+                ' | ' + ResGold + WHITESPACES[17 + Length(ResGold)] + ' | ' + ResSilver + WHITESPACES[17 + Length(ResSilver)] +
+                ' | ' + ResBronze + WHITESPACES[17 + Length(ResBronze)] + ' |', MESSAGE_COLOR_GAME);
+            end;
+            p.WriteConsole('+---------+--------------------------+--------+--------+--------+', MESSAGE_COLOR_GAME);
             DB_FinishQuery(DB_ID);
           end else
           begin
-            p.WriteConsole('[->] No player was found.', MESSAGE_COLOR_GAME);
+            p.WriteConsole('| No player was found.                                          |', MESSAGE_COLOR_GAME);
+            p.WriteConsole('+---------------------------------------------------------------+', MESSAGE_COLOR_GAME);
             DB_FinishQuery(DB_ID);
           end;
         end;
