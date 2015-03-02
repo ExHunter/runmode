@@ -133,19 +133,19 @@ begin
       end else
       begin
         SetArrayLength(Result, 0);
-        WriteLn('[DB] Error in Explode_ReplayData: ' + DB_Error());
+        WriteLn('[RM] Error in Explode_ReplayData: ' + DB_Error());
       end;
     end else
     begin
       SetArrayLength(Result, 0);
-      WriteLn('[DB] Could not open replay Database!');
-      WriteLn('[DB] Error in Explode_ReplayData: ' + DB_Error());
+      WriteLn('[RM] Could not open replay Database!');
+      WriteLn('[RM] Error in Explode_ReplayData: ' + DB_Error());
     end;
   except
     SetArrayLength(Result, 0);
     DB_FinishQuery(DB_ID_REPLAYS);
     DB_Close(DB_ID_REPLAYS);
-    WriteLn('[DB] Something failed in Explode_ReplayData! Closed replay Database!');
+    WriteLn('[RM] Something failed in Explode_ReplayData! Closed replay Database!');
   end;
 
 end;
@@ -173,7 +173,7 @@ begin
       Result       := True;
     end;
   end else
-    WriteLn('[DB] Error in ExchangeMedal: Database is not connected!');
+    WriteLn('[RM] Error in ExchangeMedal: Database is not connected!');
 end;
 
 procedure ExchangeMedal(MedalType: Byte; PlayerWhoGets, PlayerWhoLoses: Integer);
@@ -208,7 +208,7 @@ begin
         end;
       end;
   end else
-    WriteLn('[DB] Error in ExchangeMedal: Database is not connected!');
+    WriteLn('[RM] Error in ExchangeMedal: Database is not connected!');
 end;
 
 procedure NewBronzeMedal(NewPlayer, OldBronze: Integer);
@@ -242,13 +242,13 @@ begin
     end else
     begin
       Result := 0;
-      WriteLn('[DB] Error in GetPlayerRank: ' + DB_Error());
+      WriteLn('[RM] Error in GetPlayerRank: ' + DB_Error());
       DB_FinishQuery(DB_ID);
     end;
   end else
   begin
     Result := 0;
-    WriteLn('[DB] Error in GetPlayerRank: Database is not connected!');
+    WriteLn('[RM] Error in GetPlayerRank: Database is not connected!');
   end;
 end;
 
@@ -265,7 +265,7 @@ begin
     end else
     begin
       WriteLn('[RM] The Map with the ID ' + IntToStr(MapID) + ' was not found in the Database!');
-      WriteLn('[DB] Error in GetBestRunIDOnMap: ' + DB_Error());
+      WriteLn('[RM] Error in GetBestRunIDOnMap: ' + DB_Error());
       DB_FinishQuery(DB_ID);
     end;
   end else
@@ -294,16 +294,16 @@ begin
         if I = RM.Map.AmountOfLaps * RM.Map.AmountOfCheckpoints then
         begin
           RM.BestRunLoaded := True;
-          WriteLn('[DB] Successfully loaded BestRun.');
+          WriteLn('[RM] Successfully loaded BestRun.');
         end else
-          WriteLn('[DB] Amount of loaded BestRun data incorrect. Aborted.');
+          WriteLn('[RM] Amount of loaded BestRun data incorrect. Aborted.');
       except
-        WriteLn('[DB] Some error occured while loading BestRun! Aborted.');
+        WriteLn('[RM] Some error occured while loading BestRun! Aborted.');
       end;
     end else
-      WriteLn('[DB] This map has no best run yet!');
+      WriteLn('[RM] This map has no best run yet!');
   end else
-    WriteLn('[DB] The Database for Replays could not been open!');
+    WriteLn('[RM] The Database for Replays could not been open!');
   DB_FinishQuery(DB_ID_REPLAYS);
   DB_Close(DB_ID_REPLAYS);
 end;
@@ -364,22 +364,22 @@ begin
       begin
         // result here 0 too, if new run is worse than old
         // run, so that replay does not get overwritten
-        WriteLn('[DB] The runner has a saved run here... Checking if new run is better...');
+        WriteLn('[RM] The runner has a saved run here... Checking if new run is better...');
         ExistingRunID := DB_GetLong(DB_ID, 0);                  // `ID`
         DataBaseTime  := StrToDateTime(DB_GetString(DB_ID, 1)); // `runtime`
         DB_FinishQuery(DB_ID);
         if RunnerTime < DataBaseTime then
         begin
-          WriteLn('[DB] The new run is better.. Updating his run...');
+          WriteLn('[RM] The new run is better.. Updating his run...');
           DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val3(SQL_UPDATE_RUN,
             FormatDateTime('hh:nn:ss.zzz', RunnerTime), IntToStr(DB_SERVER_ID),
             IntToStr(ExistingRunID)));
           Result := ExistingRunID;
         end else
-          WriteLn('[DB] The new run is worse.. Doing nothing.');
+          WriteLn('[RM] The new run is worse.. Doing nothing.');
       end else
       begin
-        WriteLn('[DB] The runner did not have a time yet! Adding a new one...');
+        WriteLn('[RM] The runner did not have a time yet! Adding a new one...');
         DB_FinishQuery(DB_ID);
         DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val4(SQL_ADD_RUN,
           IntToStr(RM.Map.MapID), IntToStr(PlayerID), IntToStr(DB_SERVER_ID),
@@ -422,15 +422,15 @@ begin
     end else
     begin
       Result := 0;
-      WriteLn('[DB] Player with HWID ' + HWID + ' was not found in Database!');
-      WriteLn('[DB] Error in Save_RunData: ' + DB_Error());
+      WriteLn('[RM] Player with HWID ' + HWID + ' was not found in Database!');
+      WriteLn('[RM] Error in Save_RunData: ' + DB_Error());
       DB_FinishQuery(DB_ID);
       Exit;
     end;
   end else
   begin
     Result := 0;
-    WriteLn('[DB] Could not save RunData! Database is not connected!');
+    WriteLn('[RM] Could not save RunData! Database is not connected!');
     Exit;
   end;
 end;
@@ -446,10 +446,10 @@ begin
 
   if DB_Open(DB_ID_REPLAYS, DB_CON_STRING_REPLAY, '', '', DB_Plugin_ODBC) <> 0 then
   begin
-    WriteLn('[DB] Deleting replay if exists...');
+    WriteLn('[RM] Deleting replay if exists...');
     runIDString := IntToStr(runID);
     DB_PerformQuery(DB_ID_REPLAYS, 'Save_ReplayData', DB_Query_Replace_Val2(SQL_DELETE_REPLAY, Game.CurrentMap, runIDString));
-    WriteLn('[DB] Inserting new replay data...');
+    WriteLn('[RM] Inserting new replay data...');
     QueryString := 'INSERT INTO `' + Game.CurrentMap +
     '` (`runID`, `KeyUp`, `KeyLeft`, `KeyRight`, `KeyJetpack`, `KeyGrenade`,' +
     ' `KeyChangeWeap`, `KeyThrow`, `KeyCrouch`, `KeyProne`, `AimX`, `AimY`, `PosX`, `PosY`) VALUES' + FILE_NEWLINE;
@@ -493,10 +493,10 @@ begin
           runIDString, IntToStr(I + 1), IntToStr(J + 1), FormatDateTime('hh:nn:ss.zzz', RM.CurrentRunLap[I].Checkpoint[J])));
 
     DB_Close(DB_ID_REPLAYS);
-    WriteLn('[DB] Finished... Database closed!');
+    WriteLn('[RM] Finished... Database closed!');
   end else
   begin
-    WriteLn('[DB] Could not open replay database!');
+    WriteLn('[RM] Could not open replay database!');
     Result := False;
   end;
 end;
@@ -580,10 +580,10 @@ begin
 
             RM.Map.CheckPoints[I].Checked  := False;
           except
-            WriteLn('[DB] Error: Database has more checkpoints saved');
-            WriteLn('[DB] as in the map was defined! Please fix this.');
-            WriteLn('[DB] CheckpointsNum: ' + IntToStr(RM.Map.AmountOfCheckpoints));
-            WriteLn('[DB] Database returns checkpointID: ' + IntToStr(I + 1));
+            WriteLn('[RM] Error: Database has more checkpoints saved');
+            WriteLn('[RM] as in the map was defined! Please fix this.');
+            WriteLn('[RM] CheckpointsNum: ' + IntToStr(RM.Map.AmountOfCheckpoints));
+            WriteLn('[RM] Database returns checkpointID: ' + IntToStr(I + 1));
           end;
         end;
 
@@ -592,7 +592,7 @@ begin
         DB_FinishQuery(DB_ID);
         WriteLn('[RM] The Map ' + MapToLoad + ' was loaded successfully!');
 
-        WriteLn('[DB] Looking for a possible nextmap...');
+        WriteLn('[RM] Looking for a possible nextmap...');
         if DB_Query(DB_ID, SQL_GET_RND_MAP) <> 0 then
         begin
           if DB_NextRow(DB_ID) = 0 then
@@ -610,7 +610,7 @@ begin
       end else
       begin
         RM.Map.Loaded := False;
-        WriteLn('[DB] Error in LoadMapSettings: ' + DB_Error());
+        WriteLn('[RM] Error in LoadMapSettings: ' + DB_Error());
         WriteLn('[RM] Error: The map ' + MapToLoad + ' could not been loaded!');
         DB_FinishQuery(DB_ID);
         Exit;
@@ -619,7 +619,7 @@ begin
     begin
       RM.Map.Loaded := False;
       WriteLn('[RM] The map ' + MapToLoad + ' was not found in the Database! Please set it up.');
-      WriteLn('[DB] Error in LoadMapSettings: ' + DB_Error());
+      WriteLn('[RM] Error in LoadMapSettings: ' + DB_Error());
       DB_FinishQuery(DB_ID);
       Exit;
     end;
@@ -727,9 +727,9 @@ begin
         if Result_Run_ID > 0 then
         begin
           if Save_ReplayData(Result_Run_ID, ReplayValues) then
-            WriteLn('[DB] Saved the replay!')
+            WriteLn('[RM] Saved the replay!')
           else
-            WriteLn('[DB] Failed to save the replay!');
+            WriteLn('[RM] Failed to save the replay!');
           LoadBestRun(GetBestRunIDOnMap(RM.Map.MapID));
         end;
       end;
@@ -946,7 +946,7 @@ begin
       end else
       begin
         WriteLn('[RM] The Map with the ID ' + IntToStr(SearchedMapID) + ' was not found in the Database!');
-        WriteLn('[DB] Error in ShowTop: ' + DB_Error());
+        WriteLn('[RM] Error in ShowTop: ' + DB_Error());
         DB_FinishQuery(DB_ID);
       end;
     end else
@@ -1210,15 +1210,15 @@ begin
       DB_PerformQuery(DB_ID, 'UpdatePlayerDatabase', DB_Query_Replace_Val1(SQL_UPDATE_PLR_SEEN, p.HWID));
     end else
     begin
-      WriteLn('[DB] Player with HWID ' + p.HWID + ' was not found in Database...');
+      WriteLn('[RM] Player with HWID ' + p.HWID + ' was not found in Database...');
       DB_FinishQuery(DB_ID);
 
-      WriteLn('[DB] Adding ' + p.Name + ' to the Database...');
+      WriteLn('[RM] Adding ' + p.Name + ' to the Database...');
       DB_PerformQuery(DB_ID, 'UpdatePlayerDatabase', DB_Query_Replace_Val2(SQL_ADD_PLAYER, p.HWID, DB_Escape_String(p.Name)));
       DB_PerformQuery(DB_ID, 'UpdatePlayerDatabase', DB_Query_Replace_Val2(SQL_LOG_NAMECHANGE, p.HWID, DB_Escape_String(p.Name)));
     end;
   end else
-    WriteLn('[DB] Could not check for the player! Database is not connected!');
+    WriteLn('[RM] Could not check for the player! Database is not connected!');
 end;
 
 procedure GameOnJoin(p: TActivePlayer; Team: TTeam);
@@ -1355,7 +1355,7 @@ begin
       if DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_GET_MAP_ID_BY_N, Game.CurrentMap)) <> 0 then
       begin
         if DB_NextRow(DB_ID) <> 0 then
-          p.WriteConsole('[DB] The current map is already in the Database!', MESSAGE_COLOR_RED)
+          p.WriteConsole('[RM] The current map is already in the Database!', MESSAGE_COLOR_RED)
         else
         begin
           if DB_Open(DB_ID_REPLAYS, DB_CON_STRING_REPLAY, '', '', DB_Plugin_ODBC) <> 0 then
@@ -1363,17 +1363,17 @@ begin
             DB_PerformQuery(DB_ID, 'AddMapToDatabase', DB_Query_Replace_Val1(SQL_ADD_MAP, Game.CurrentMap));
             DB_PerformQuery(DB_ID_REPLAYS, 'AddMapToDatabase', DB_Query_Replace_Val1(SQL_CREATE_REPLAY_TBL, Game.CurrentMap));
             DB_PerformQuery(DB_ID_REPLAYS, 'AddMapToDatabase', DB_Query_Replace_Val1(SQL_CREATE_BESTRUN, Game.CurrentMap));
-            p.WriteConsole('[DB] Added ' + Game.CurrentMap + ' to the Database!', MESSAGE_COLOR_RED);
+            p.WriteConsole('[RM] Added ' + Game.CurrentMap + ' to the Database!', MESSAGE_COLOR_RED);
           end else
-            WriteLnAndConsole(p, '[DB] Error in AddMapToDatabase: ' + DB_Error(), MESSAGE_COLOR_RED);
+            WriteLnAndConsole(p, '[RM] Error in AddMapToDatabase: ' + DB_Error(), MESSAGE_COLOR_RED);
           DB_FinishQuery(DB_ID_REPLAYS);
           DB_Close(DB_ID_REPLAYS);
         end;
       end else
-        WriteLnAndConsole(p, '[DB] Error in AddMapToDatabase: ' + DB_Error(), MESSAGE_COLOR_RED);
+        WriteLnAndConsole(p, '[RM] Error in AddMapToDatabase: ' + DB_Error(), MESSAGE_COLOR_RED);
       DB_FinishQuery(DB_ID);
     end else
-      WriteLnAndConsole(p, '[DB] Error: The server is not connected to the Database!', MESSAGE_COLOR_RED);
+      WriteLnAndConsole(p, '[RM] Error: The server is not connected to the Database!', MESSAGE_COLOR_RED);
   end else
     p.WriteConsole('[RM] You have to be in the Editor mode to add a map!', MESSAGE_COLOR_RED);
 end;
@@ -1405,13 +1405,13 @@ begin
               DB_FinishQuery(DB_ID);
               DB_PerformQuery(DB_ID, 'AddCPToDatabase', DB_Query_Replace_Val5(SQL_UPDATE_CP, FloatToStr(p.X), FloatToStr(p.Y),
                 IntToStr(StrToInt(Text_Piece[2])), IntToStr(MapID), Text_Piece[1]));
-              WriteLnAndConsole(p, '[DB] Successfully updated CP ' + Text_Piece[1] + '!', MESSAGE_COLOR_SYSTEM);
+              WriteLnAndConsole(p, '[RM] Successfully updated CP ' + Text_Piece[1] + '!', MESSAGE_COLOR_SYSTEM);
             end else
             begin
               DB_FinishQuery(DB_ID);
               DB_PerformQuery(DB_ID, 'AddCPToDatabase', DB_Query_Replace_Val5(SQL_ADD_CP, IntToStr(MapID), Text_Piece[1],
                 FloatToStr(p.X), FloatToStr(p.Y), IntToStr(StrToInt(Text_Piece[2]))));
-              WriteLnAndConsole(p, '[DB] Successfully added CP ' + Text_Piece[1] + '!', MESSAGE_COLOR_SYSTEM);
+              WriteLnAndConsole(p, '[RM] Successfully added CP ' + Text_Piece[1] + '!', MESSAGE_COLOR_SYSTEM);
             end;
           end else
             p.WriteConsole('[RM] Please specify a checkpoint ID and distance check! /addcp <id> <distance>', MESSAGE_COLOR_RED);
@@ -1422,11 +1422,11 @@ begin
         end;
       end else
       begin
-        WriteLnAndConsole(p, '[DB] The map ' + Game.CurrentMap + ' was not found in the Database! Please add it before adding checkpoints.', MESSAGE_COLOR_RED);
+        WriteLnAndConsole(p, '[RM] The map ' + Game.CurrentMap + ' was not found in the Database! Please add it before adding checkpoints.', MESSAGE_COLOR_RED);
         DB_FinishQuery(DB_ID);
       end;
     end else
-      WriteLnAndConsole(p, '[DB] Could not load the map ' + Game.CurrentMap + '! Database is not connected!', MESSAGE_COLOR_RED);
+      WriteLnAndConsole(p, '[RM] Could not load the map ' + Game.CurrentMap + '! Database is not connected!', MESSAGE_COLOR_RED);
   end else
     p.WriteConsole('[RM] You have to be in the Editor mode to add a map!', MESSAGE_COLOR_RED);
 end;
@@ -1454,7 +1454,7 @@ begin
             // IntToStr(StrToInt(Text_Piece[x])) to check if it's a number
             DB_PerformQuery(DB_ID, 'SetLapsToDatabase', DB_Query_Replace_Val2(SQL_SET_LAPS,
               IntToStr(StrToInt(Text_Piece[1])), IntToStr(MapID)));
-            WriteLnAndConsole(p, '[DB] Successfully updated Laps num to ' + Text_Piece[1] + '!', MESSAGE_COLOR_SYSTEM);
+            WriteLnAndConsole(p, '[RM] Successfully updated Laps num to ' + Text_Piece[1] + '!', MESSAGE_COLOR_SYSTEM);
           end else
             p.WriteConsole('[RM] Please specify an amount of laps! /setlaps <laps>', MESSAGE_COLOR_RED);
         except
@@ -1464,11 +1464,11 @@ begin
         end;
       end else
       begin
-        WriteLnAndConsole(p, '[DB] The map ' + Game.CurrentMap + ' was not found in the Database! Please add it before modifying laps.', MESSAGE_COLOR_RED);
+        WriteLnAndConsole(p, '[RM] The map ' + Game.CurrentMap + ' was not found in the Database! Please add it before modifying laps.', MESSAGE_COLOR_RED);
         DB_FinishQuery(DB_ID);
       end;
     end else
-      WriteLnAndConsole(p, '[DB] Could not load the map ' + Game.CurrentMap + '! Database is not connected!', MESSAGE_COLOR_RED);
+      WriteLnAndConsole(p, '[RM] Could not load the map ' + Game.CurrentMap + '! Database is not connected!', MESSAGE_COLOR_RED);
   end else
     p.WriteConsole('[RM] You have to be in the Editor mode to modify laps!', MESSAGE_COLOR_RED);
 end;
@@ -1496,7 +1496,7 @@ begin
             // IntToStr(StrToInt(Text_Piece[x])) to check if it's a number
             DB_PerformQuery(DB_ID, 'SetCPNumToDatabase', DB_Query_Replace_Val2(SQL_SET_CPS,
               IntToStr(StrToInt(Text_Piece[1])), IntToStr(MapID)));
-            WriteLnAndConsole(p, '[DB] Successfully updated checkpoints count to ' + Text_Piece[1] + '!', MESSAGE_COLOR_SYSTEM);
+            WriteLnAndConsole(p, '[RM] Successfully updated checkpoints count to ' + Text_Piece[1] + '!', MESSAGE_COLOR_SYSTEM);
           end else
             p.WriteConsole('[RM] Please specify an amount of checkpoints! /setcpnum <count>', MESSAGE_COLOR_RED);
         except
@@ -1506,11 +1506,11 @@ begin
         end;
       end else
       begin
-        WriteLnAndConsole(p, '[DB] The map ' + Game.CurrentMap + ' was not found in the Database! Please add it before modifying checkpoints.', MESSAGE_COLOR_RED);
+        WriteLnAndConsole(p, '[RM] The map ' + Game.CurrentMap + ' was not found in the Database! Please add it before modifying checkpoints.', MESSAGE_COLOR_RED);
         DB_FinishQuery(DB_ID);
       end;
     end else
-      WriteLnAndConsole(p, '[DB] Could not load the map ' + Game.CurrentMap + '! Database is not connected!', MESSAGE_COLOR_RED);
+      WriteLnAndConsole(p, '[RM] Could not load the map ' + Game.CurrentMap + '! Database is not connected!', MESSAGE_COLOR_RED);
   end else
     p.WriteConsole('[RM] You have to be in the Editor mode to modify checkpoints!', MESSAGE_COLOR_RED);
 end;
@@ -1538,7 +1538,7 @@ begin
             // IntToStr(StrToInt(Text_Piece[x])) to check if it's a number
             DB_PerformQuery(DB_ID, 'RemoveCPFromDatabase', DB_Query_Replace_Val2(SQL_DEL_CP,
               IntToStr(MapID), IntToStr(StrToInt(Text_Piece[1]))));
-            WriteLnAndConsole(p, '[DB] Successfully deleted checkpoint ' + Text_Piece[1] + '!', MESSAGE_COLOR_SYSTEM);
+            WriteLnAndConsole(p, '[RM] Successfully deleted checkpoint ' + Text_Piece[1] + '!', MESSAGE_COLOR_SYSTEM);
           end else
             p.WriteConsole('[RM] Please specify the checkpoint ID! /delcp <id>', MESSAGE_COLOR_RED);
         except
@@ -1548,11 +1548,11 @@ begin
         end;
       end else
       begin
-        WriteLnAndConsole(p, '[DB] The map ' + Game.CurrentMap + ' was not found in the Database! Please add it before removing a checkpoint.', MESSAGE_COLOR_RED);
+        WriteLnAndConsole(p, '[RM] The map ' + Game.CurrentMap + ' was not found in the Database! Please add it before removing a checkpoint.', MESSAGE_COLOR_RED);
         DB_FinishQuery(DB_ID);
       end;
     end else
-      WriteLnAndConsole(p, '[DB] Could not load the map ' + Game.CurrentMap + '! Database is not connected!', MESSAGE_COLOR_RED);
+      WriteLnAndConsole(p, '[RM] Could not load the map ' + Game.CurrentMap + '! Database is not connected!', MESSAGE_COLOR_RED);
   end else
     p.WriteConsole('[RM] You have to be in the Editor mode to remove a checkpoint!', MESSAGE_COLOR_RED);
 end;
@@ -1641,11 +1641,11 @@ begin
       DB_FinishQuery(DB_ID);
     end else
     begin
-      DecideIfWriteLnOrConsole(p, '[DB] Did not find anything in logs for the specific player!', MESSAGE_COLOR_RED);
-      DecideIfWriteLnOrConsole(p, '[DB] Error in LookUpPlayerOrHWID: ' + DB_Error(), MESSAGE_COLOR_RED);
+      DecideIfWriteLnOrConsole(p, '[RM] Did not find anything in logs for the specific player!', MESSAGE_COLOR_RED);
+      DecideIfWriteLnOrConsole(p, '[RM] Error in LookUpPlayerOrHWID: ' + DB_Error(), MESSAGE_COLOR_RED);
     end;
   end else
-    DecideIfWriteLnOrConsole(p, '[DB] Could not lookup the player! Database is not connected!', MESSAGE_COLOR_RED);
+    DecideIfWriteLnOrConsole(p, '[RM] Could not lookup the player! Database is not connected!', MESSAGE_COLOR_RED);
 
   except
     DecideIfWriteLnOrConsole(p, '[RM] Some error happened in LookUpPlayerOrHWID! Cannot figure out what...', MESSAGE_COLOR_RED);
