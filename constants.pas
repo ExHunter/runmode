@@ -48,9 +48,9 @@ const
   SQL_UPDATE_CP        = 'UPDATE `rm_checkpoints` SET `posX` = VAL1, `posY` = VAL2, `distance` = VAL3 WHERE `mapID` = VAL4 AND `checkpointID` = VAL5;';
   SQL_DEL_CP           = 'DELETE FROM `rm_checkpoints` WHERE `mapID` = VAL1 AND `checkpointID` = VAL2 AND `courseID` = 1';
   SQL_GET_RUN          = 'SELECT `ID`, `runtime` FROM rm_mapstats WHERE `playerID` = VAL1 AND `mapID` = VAL2 LIMIT 1;';
-  SQL_ADD_RUN          = 'INSERT INTO `rm_mapstats` (`mapID`, `playerID`, `courseID`, `runtime`) ' + 
-                                            'VALUES (VAL1, VAL2, 1, ''VAL3'');';
-  SQL_UPDATE_RUN       = 'UPDATE `rm_mapstats` SET `runtime` = ''VAL1'', `rundate` = NOW() WHERE `ID` = VAL2;';
+  SQL_ADD_RUN          = 'INSERT INTO `rm_mapstats` (`mapID`, `playerID`, `serverID`, `courseID`, `runtime`) ' + 
+                                            'VALUES (VAL1, VAL2, VAL3, 1, ''VAL4'');';
+  SQL_UPDATE_RUN       = 'UPDATE `rm_mapstats` SET `runtime` = ''VAL1'', `rundate` = NOW(), `serverID` = VAL2 WHERE `ID` = VAL3;';
   SQL_GET_TOP_X        = 'SELECT `rm_mapstats`.`ID`, `rm_mapstats`.`playerID`, `playerstats`.`name`, `rm_mapstats`.`runtime`, `rm_mapstats`.`rundate`, `rm_maps`.`recordnum`, `rm_maps`.`runsnum`, `rm_maps`.`failsnum` ' +
                          'FROM `rm_mapstats`, `playerstats`, `rm_maps` ' +
                          'WHERE `playerstats`.`ID` = `rm_mapstats`.`playerID` ' +

@@ -371,8 +371,9 @@ begin
         if RunnerTime < DataBaseTime then
         begin
           WriteLn('[DB] The new run is better.. Updating his run...');
-          DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val2(SQL_UPDATE_RUN,
-            FormatDateTime('hh:nn:ss.zzz', RunnerTime), IntToStr(ExistingRunID)));
+          DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val3(SQL_UPDATE_RUN,
+            FormatDateTime('hh:nn:ss.zzz', RunnerTime), IntToStr(DB_SERVER_ID),
+            IntToStr(ExistingRunID)));
           Result := ExistingRunID;
         end else
           WriteLn('[DB] The new run is worse.. Doing nothing.');
@@ -380,8 +381,8 @@ begin
       begin
         WriteLn('[DB] The runner did not have a time yet! Adding a new one...');
         DB_FinishQuery(DB_ID);
-        DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val3(SQL_ADD_RUN,
-          IntToStr(RM.Map.MapID), IntToStr(PlayerID),
+        DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val4(SQL_ADD_RUN,
+          IntToStr(RM.Map.MapID), IntToStr(PlayerID), IntToStr(DB_SERVER_ID),
           FormatDateTime('hh:nn:ss.zzz', RunnerTime)));
         if (DB_Query(DB_ID, DB_Query_Replace_Val2(SQL_GET_RUN, IntToStr(PlayerID),
             IntToStr(RM.Map.MapID))) <> 0) and
