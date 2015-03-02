@@ -297,18 +297,26 @@ end;
 
 procedure NewBronzeMedal(NewPlayer, OldBronze: Integer);
 begin
-  ExchangeMedal(MEDAL_BRONZE, NewPlayer, OldBronze);
+  if NewPlayer > 0 then
+    ExchangeMedal(MEDAL_BRONZE, NewPlayer, OldBronze);
 end;
 
 procedure NewSilverMedal(NewPlayer, OldSilver, OldBronze: Integer);
 begin
-  ExchangeMedal(MEDAL_SILVER, NewPlayer, OldSilver);
-  NewBronzeMedal(OldSilver, OldBronze);
+  if NewPlayer > 0 then
+  begin
+    ExchangeMedal(MEDAL_SILVER, NewPlayer, OldSilver);
+    if NewPlayer = OldBronze then
+      OldBronze := 0;
+    NewBronzeMedal(OldSilver, OldBronze);
+  end;
 end;
 
 procedure NewGoldMedal(NewPlayer, OldGold, OldSilver, OldBronze: Integer);
 begin
   ExchangeMedal(MEDAL_GOLD, NewPlayer, OldGold);
+  if NewPlayer = OldSilver then
+    OldSilver := 0;
   NewSilverMedal(OldGold, OldSilver, OldBronze);
 end;
 
