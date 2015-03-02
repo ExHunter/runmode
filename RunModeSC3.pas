@@ -384,6 +384,7 @@ begin
         DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val4(SQL_ADD_RUN,
           IntToStr(RM.Map.MapID), IntToStr(PlayerID), IntToStr(DB_SERVER_ID),
           FormatDateTime('hh:nn:ss.zzz', RunnerTime)));
+        DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val1(SQL_INC_RECORDNUM, IntToStr(RM.Map.MapID)));
         if (DB_Query(DB_ID, DB_Query_Replace_Val2(SQL_GET_RUN, IntToStr(PlayerID),
             IntToStr(RM.Map.MapID))) <> 0) and
            (DB_NextRow(DB_ID) <> 0) then
@@ -392,6 +393,9 @@ begin
           DB_FinishQuery(DB_ID);
         end;
       end;
+
+      DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val1(SQL_INC_RUNSNUM, IntToStr(RM.Map.MapID)));
+      DB_FinishQuery(DB_ID);
 
       // Now check for any difference in medals rankings
       if Result > 0 then // Result is over 0 if something changed
@@ -728,6 +732,8 @@ begin
   end else
   begin
     WriteLnAndConsole(NIL, '[RM] ' + RM.Runner.PPlayer.Name + ' stopped his run.', MESSAGE_COLOR_GAME);
+    DB_PerformConnectedQuery('EndSingleGame', DB_Query_Replace_Val1(SQL_INC_FAILSNUM, IntToStr(RM.Map.MapID)));
+    DB_FinishQuery(DB_ID);
   end;
   RM.Runner.PPlayer := NIL;
 end;

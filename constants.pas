@@ -51,6 +51,9 @@ const
   SQL_ADD_RUN          = 'INSERT INTO `rm_mapstats` (`mapID`, `playerID`, `serverID`, `courseID`, `runtime`) ' + 
                                             'VALUES (VAL1, VAL2, VAL3, 1, ''VAL4'');';
   SQL_UPDATE_RUN       = 'UPDATE `rm_mapstats` SET `runtime` = ''VAL1'', `rundate` = NOW(), `serverID` = VAL2 WHERE `ID` = VAL3;';
+  SQL_INC_RUNSNUM      = 'UPDATE `rm_maps` SET `runsnum` = -1 WHERE `ID` = VAL1;';  // works with SQL trigger in Database
+  SQL_INC_FAILSNUM     = 'UPDATE `rm_maps` SET `failsnum` = -1 WHERE `ID` = VAL1;'; // works with SQL trigger in Database
+  SQL_INC_RECORDNUM    = 'UPDATE `rm_maps` SET `recordnum` = -1 WHERE `ID` = VAL1;'; // works with SQL trigger in Database
   SQL_GET_TOP_X        = 'SELECT `rm_mapstats`.`ID`, `rm_mapstats`.`playerID`, `playerstats`.`name`, `rm_mapstats`.`runtime`, `rm_mapstats`.`rundate`, `rm_maps`.`recordnum`, `rm_maps`.`runsnum`, `rm_maps`.`failsnum` ' +
                          'FROM `rm_mapstats`, `playerstats`, `rm_maps` ' +
                          'WHERE `playerstats`.`ID` = `rm_mapstats`.`playerID` ' +
