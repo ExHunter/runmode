@@ -72,21 +72,20 @@ const
                                'FROM `rm_mapstats` WHERE `mapID` = VAL1 ORDER BY `runtime` ASC' +
                                ') as result WHERE `playerID` = VAL2;';
   SQL_GET_PLAYER_ID    = 'SELECT `ID` FROM `playerstats` WHERE `HWID` = ''VAL1'' LIMIT 1;';
-  SQL_GET_PLAYER_JOIN  = 'SELECT `name`, `adm` FROM `playerstats` WHERE `HWID` = ''VAL1'' LIMIT 1;';
+  SQL_GET_PLAYER_JOIN  = 'SELECT `name`, `adm`, `lastip` FROM `playerstats` WHERE `HWID` = ''VAL1'' LIMIT 1;';
   SQL_GET_PLR_MEDALS   = 'SELECT `gold`, `silver`, `bronze` FROM `playerstats` WHERE `ID` = VAL1 LIMIT 1;';
-  SQL_ADD_PLAYER       = 'INSERT INTO `playerstats` (`HWID`, `name`, `firstjoin`, `lastseen`) VALUES (''VAL1'', ''VAL2'', NOW(), NOW());';
-  SQL_UPDATE_PLR_NAME  = 'UPDATE `playerstats` SET `name` = ''VAL1'' WHERE `HWID` = ''VAL2'';';
+  SQL_ADD_PLAYER       = 'INSERT INTO `playerstats` (`HWID`, `name`, `firstjoin`, `lastseen`, `lastip`) VALUES (''VAL1'', ''VAL2'', NOW(), NOW(), ''VAL3'');';
+  SQL_UPDATE_PLR_JOIN  = 'UPDATE `playerstats` SET `name` = ''VAL1'', `lastip` = ''VAL2'' WHERE `HWID` = ''VAL3'';';
   SQL_UPDATE_PLR_SEEN  = 'UPDATE `playerstats` SET `lastseen` = NOW() WHERE `HWID` = ''VAL1'';';
   SQL_UPDATE_GOLDS     = 'UPDATE `playerstats` SET `gold` = VAL1 WHERE `ID` = VAL2;';
   SQL_UPDATE_SILVERS   = 'UPDATE `playerstats` SET `silver` = VAL1 WHERE `ID` = VAL2;';
   SQL_UPDATE_BRONZES   = 'UPDATE `playerstats` SET `bronze` = VAL1 WHERE `ID` = VAL2;';
   SQL_SEARCH_MAP_BY_N  = 'SELECT `mapname` FROM `rm_maps` WHERE `mapname` LIKE ''%VAL1%'' LIMIT 15;';
   SQL_SEARCH_PLR_BY_N  = 'SELECT `ID`, `name`, `gold`, `silver`, `bronze` FROM `playerstats` WHERE `name` LIKE ''%VAL1%'' LIMIT 15;';
-  // `kind` = 1 is log type name change
-  SQL_SEARCH_ALT_NAME  = 'SELECT `info`, cnt FROM (SELECT `info`, SUM(CASE WHEN `HWID` = ''VAL1'' THEN 1 ELSE 0 END) as cnt, `kind` ' +
-                         'FROM `privateactivity` GROUP BY `info` HAVING `kind` = 1) AS lookuptable ' +
+  SQL_SEARCH_ALT_NAME  = 'SELECT `info`, cnt FROM (SELECT `info`, SUM(CASE WHEN `HWID` = ''VAL1'' THEN 1 ELSE 0 END) as cnt ' +
+                         'FROM `namechanges` GROUP BY `info`) AS lookuptable ' +
                          'WHERE cnt > 0 ORDER BY cnt DESC LIMIT 15;';
-  SQL_LOG_NAMECHANGE   = 'INSERT INTO `privateactivity` (`HWID`, `log_time`, `kind`, `info`) VALUES (''VAL1'', NOW(), 1, ''VAL2'');';
+  SQL_LOG_NAMECHANGE   = 'INSERT INTO `namechanges` (`HWID`, `IP`, `log_time`, `info`) VALUES (''VAL1'', ''VAL2'', NOW(), ''VAL3'');';
 
   // SQL queries for replays
  SQL_CREATE_REPLAY_TBL = 'CREATE TABLE IF NOT EXISTS `VAL1` ( ' +

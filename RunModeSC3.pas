@@ -1399,6 +1399,7 @@ end;
 procedure UpdatePlayerDatabase(p: TActivePlayer);
 var
   PlayerName: string;
+  PlayerIP: string;
 begin
   if DB_CONNECTED then
   begin
@@ -1408,12 +1409,13 @@ begin
       PlayerName := DB_GetString(DB_ID, 0); // `name`
       if DB_GetLong(DB_ID, 1) > 0 then      // `adm`
         p.IsAdmin := True;
+      PlayerName := DB_GetString(DB_ID, 2); // `lastip`
       DB_FinishQuery(DB_ID);
 
-      if PlayerName <> p.Name then
+      if (PlayerName <> p.Name) or (PlayerIP <> p.IP) then
       begin
-        DB_PerformQuery(DB_ID, 'UpdatePlayerDatabase', DB_Query_Replace_Val2(SQL_UPDATE_PLR_NAME, DB_Escape_String(p.Name), p.HWID));
-        DB_PerformQuery(DB_ID, 'UpdatePlayerDatabase', DB_Query_Replace_Val2(SQL_LOG_NAMECHANGE, p.HWID, DB_Escape_String(p.Name)));
+        DB_PerformQuery(DB_ID, 'UpdatePlayerDatabase', DB_Query_Replace_Val3(SQL_UPDATE_PLR_JOIN, DB_Escape_String(p.Name), p.IP, p.HWID));
+        DB_PerformQuery(DB_ID, 'UpdatePlayerDatabase', DB_Query_Replace_Val3(SQL_LOG_NAMECHANGE, p.HWID, p.IP, DB_Escape_String(p.Name)));
       end;
 
       DB_PerformQuery(DB_ID, 'UpdatePlayerDatabase', DB_Query_Replace_Val1(SQL_UPDATE_PLR_SEEN, p.HWID));
@@ -1423,8 +1425,8 @@ begin
       DB_FinishQuery(DB_ID);
 
       WriteLn('[RM] Adding ' + p.Name + ' to the Database...');
-      DB_PerformQuery(DB_ID, 'UpdatePlayerDatabase', DB_Query_Replace_Val2(SQL_ADD_PLAYER, p.HWID, DB_Escape_String(p.Name)));
-      DB_PerformQuery(DB_ID, 'UpdatePlayerDatabase', DB_Query_Replace_Val2(SQL_LOG_NAMECHANGE, p.HWID, DB_Escape_String(p.Name)));
+      DB_PerformQuery(DB_ID, 'UpdatePlayerDatabase', DB_Query_Replace_Val3(SQL_ADD_PLAYER, p.HWID, DB_Escape_String(p.Name), p.IP));
+      DB_PerformQuery(DB_ID, 'UpdatePlayerDatabase', DB_Query_Replace_Val3(SQL_LOG_NAMECHANGE, p.HWID, p.IP, DB_Escape_String(p.Name)));
     end;
   end else
     WriteLn('[RM] Could not check for the player! Database is not connected!');
