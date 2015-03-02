@@ -1402,10 +1402,12 @@ var
 begin
   if DB_CONNECTED then
   begin
-    if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_GET_PLAYER_NAME, p.HWID)) <> 0) and
+    if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_GET_PLAYER_JOIN, p.HWID)) <> 0) and
        (DB_NextRow(DB_ID) <> 0) then
     begin
       PlayerName := DB_GetString(DB_ID, 0); // `name`
+      if DB_GetLong(DB_ID, 1) > 0 then      // `adm`
+        p.IsAdmin := True;
       DB_FinishQuery(DB_ID);
 
       if PlayerName <> p.Name then
@@ -1451,6 +1453,8 @@ procedure GameOnLeave(p: TActivePlayer; Kicked: Boolean);
 var
   I: Byte;
 begin
+  if p.IsAdmin then
+    p.IsAdmin := False;
   if HighID = p.ID then
     for I := HighID - 1 downto 1 do
       if Players[I].Active then

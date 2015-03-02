@@ -72,7 +72,7 @@ const
                                'FROM `rm_mapstats` WHERE `mapID` = VAL1 ORDER BY `runtime` ASC' +
                                ') as result WHERE `playerID` = VAL2;';
   SQL_GET_PLAYER_ID    = 'SELECT `ID` FROM `playerstats` WHERE `HWID` = ''VAL1'' LIMIT 1;';
-  SQL_GET_PLAYER_NAME  = 'SELECT `name` FROM `playerstats` WHERE `HWID` = ''VAL1'' LIMIT 1;';
+  SQL_GET_PLAYER_JOIN  = 'SELECT `name`, `adm` FROM `playerstats` WHERE `HWID` = ''VAL1'' LIMIT 1;';
   SQL_GET_PLR_MEDALS   = 'SELECT `gold`, `silver`, `bronze` FROM `playerstats` WHERE `ID` = VAL1 LIMIT 1;';
   SQL_ADD_PLAYER       = 'INSERT INTO `playerstats` (`HWID`, `name`, `firstjoin`, `lastseen`) VALUES (''VAL1'', ''VAL2'', NOW(), NOW());';
   SQL_UPDATE_PLR_NAME  = 'UPDATE `playerstats` SET `name` = ''VAL1'' WHERE `HWID` = ''VAL2'';';
