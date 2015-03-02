@@ -534,10 +534,11 @@ begin
     runIDString := IntToStr(runID);
     DB_PerformQuery(DB_ID_REPLAYS, 'Save_ReplayData', DB_Query_Replace_Val2(SQL_DELETE_REPLAY, Game.CurrentMap, runIDString));
     WriteLn('[RM] Inserting new replay data...');
+    I := 0;
     QueryString := 'INSERT INTO `' + Game.CurrentMap +
-    '` (`runID`, `KeyUp`, `KeyLeft`, `KeyRight`, `KeyJetpack`, `KeyGrenade`,' +
+    '` (`replayOrder`, `runID`, `KeyUp`, `KeyLeft`, `KeyRight`, `KeyJetpack`, `KeyGrenade`,' +
     ' `KeyChangeWeap`, `KeyThrow`, `KeyCrouch`, `KeyProne`, `AimX`, `AimY`, `PosX`, `PosY`) VALUES' + FILE_NEWLINE;
-    QueryString := QueryString + FILE_NEWLINE + '(' + runIDString + ', ' +
+    QueryString := QueryString + FILE_NEWLINE + '(' + IntToStr(I) + ', ' + runIDString + ', ' +
                                                 iif(ReplayData[I].KeyUp, '1', '0') + ', ' +
                                                 iif(ReplayData[I].KeyLeft, '1', '0') + ', ' +
                                                 iif(ReplayData[I].KeyRight, '1', '0') + ', ' +
@@ -552,7 +553,7 @@ begin
                                                 FloatToStr(ReplayData[I].PosX) + ', ' +
                                                 FloatToStr(ReplayData[I].PosY) + ')';
     for I := 1 to GetArrayLength(ReplayData) - 1 do
-      QueryString := QueryString + ', ' + FILE_NEWLINE + '(' + runIDString + ', ' +
+      QueryString := QueryString + ', ' + FILE_NEWLINE + '(' + IntToStr(I) + ', ' + runIDString + ', ' +
                                                          iif(ReplayData[I].KeyUp, '1', '0') + ', ' +
                                                          iif(ReplayData[I].KeyLeft, '1', '0') + ', ' +
                                                          iif(ReplayData[I].KeyRight, '1', '0') + ', ' +
@@ -802,7 +803,7 @@ begin
     if ReplayBot <> NIL then
       if RM.Runner.PPlayer.ID <> ReplayBot.ID then
       begin
-        WriteLnAndConsole(NIL, '[RM] Saving ' + RM.Runner.PPlayer.Name + '''s data.. This may take up to 3 seconds...', MESSAGE_COLOR_GAME);
+        WriteLnAndConsole(NIL, '[RM] Saving ' + RM.Runner.PPlayer.Name + '''s data.. This may take several seconds...', MESSAGE_COLOR_GAME);
         Game.OnClockTick := Pointers.Clock_Wait_Time;
         RM.Countdown := MATH_SECOND_IN_TICKS * 3;
         RM.Active := True;

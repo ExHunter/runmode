@@ -85,7 +85,7 @@ const
   // SQL queries for replays
  SQL_CREATE_REPLAY_TBL = 'CREATE TABLE IF NOT EXISTS `VAL1` ( ' +
                          '    `replayOrder` SMALLINT(6) NOT NULL, ' +
-                         '    `runID` INT(11) NOT NULL DEFAULT ''0'', ' +
+                         '    `runID` INT(11) NOT NULL, ' +
                          '    `KeyUp` TINYINT(1) NOT NULL DEFAULT ''0'', ' +
                          '    `KeyLeft` TINYINT(1) NOT NULL DEFAULT ''0'', ' +
                          '    `KeyRight` TINYINT(1) NOT NULL DEFAULT ''0'', ' +
@@ -99,7 +99,7 @@ const
                          '    `AimY` SMALLINT(6) NOT NULL DEFAULT ''0'', ' +
                          '    `PosX` FLOAT NOT NULL DEFAULT ''0'', ' +
                          '    `PosY` FLOAT NOT NULL DEFAULT ''0'', ' +
-                         '    PRIMARY KEY (`replayOrder`), ' +
+                         '    UNIQUE INDEX `combination` (`replayOrder`, `runID`), ' +
                          '    INDEX `runID` (`runID`) ' +
                          ') ' +
                          'ENGINE=InnoDB;';
