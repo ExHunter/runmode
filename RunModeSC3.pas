@@ -65,6 +65,11 @@ type
     Clock_Normal, Clock_Load_Replay, Clock_Wait_Time: TOnClockTickEvent;
     end;
 
+  TQueue = record
+    Tail: Byte;
+    Members: Array[1..QUEUE_MAX_PLAYERS] of Byte;
+    end;
+
 var
   RM: TGameVariables;
   HighID: Byte;
@@ -74,6 +79,7 @@ var
   CurrentLoop: Integer;
   Pointers: TPointers;
   WHITESPACES: Array of string;
+  Queue: TQueue;
 
 implementation
 
@@ -97,6 +103,84 @@ end;
 function IsInEditorMode(p: TActivePlayer): Boolean;
 begin
   Result := p.Team = TEAM_EDITOR;
+end;
+
+function IsQueueEmpty(): Boolean;
+begin
+  Result := Queue.Tail = 0;
+end;
+
+function QueuePosition(MemberID: Byte): Byte;
+var
+  I: Byte;
+begin
+  Result := 0;
+  if not IsQueueEmpty() then
+    for I := 1 to Queue.Tail do
+      if Queue.Members[I] = MemberID then
+      begin
+        Result := I;
+        Break;
+      end;
+end;
+
+function RemoveFromQueue(MemberID: Byte): Boolean;
+var
+  I: Byte;
+  QueuePosResult: Byte;
+begin
+  if IsQueueEmpty() then
+    Result := False
+  else
+  begin
+    QueuePosResult := QueuePosition(MemberID);
+    if QueuePosResult = 0 then
+      Result := False
+    else
+    begin
+      for I := QueuePosResult to Queue.Tail do
+        if I < QUEUE_MAX_PLAYERS then
+          Queue.Members[I] := Queue.Members[I + 1]
+        else
+          Queue.Members[I] := 0;
+      Queue.Tail := Queue.Tail - 1;
+      Result := True;
+    end;
+  end;
+end;
+
+function DeQueue(): Byte;
+var
+  I: Byte;
+begin
+  if IsQueueEmpty() then
+    Result := 0
+  else
+  begin
+    Result := Queue.Members[1];
+    if Queue.Tail > 1 then
+    begin
+      for I := 1 to Queue.Tail - 1 do
+        Queue.Members[I] := Queue.Members[I + 1];
+    end else
+      Queue.Members[1] := 0;
+    Queue.Tail := Queue.Tail - 1;
+  end;
+end;
+
+function EnQueue(NewMember: Byte): Boolean;
+begin
+  if Queue.Tail < QUEUE_MAX_PLAYERS then
+  begin
+    Queue.Tail := Queue.Tail + 1;
+    Queue.Members[Queue.Tail] := NewMember;
+  end else
+    Result := False;
+end;
+
+function ReQueue(): Boolean;
+begin
+  Result := EnQueue(DeQueue());
 end;
 
 function Explode_ReplayData(runID: Integer): Array of TReplay;
@@ -1054,6 +1138,24 @@ begin
   end;
 end;
 
+procedure ShowQueue();
+var
+  I: Byte;
+begin
+  if IsQueueEmpty() then
+    Players.WriteConsole('[RM] The queue is empty!', MESSAGE_COLOR_GAME)
+  else
+  begin
+    Players.WriteConsole('+--------------------------+', MESSAGE_COLOR_GAME);
+    Players.WriteConsole('| Players in queue         |', MESSAGE_COLOR_GAME);
+    Players.WriteConsole('+--------------------------+', MESSAGE_COLOR_GAME);
+    for I := 1 to Queue.Tail do
+      Players.WriteConsole('| ' + Players[Queue.Members[I]].Name +
+        WHITESPACES[Length(Players[Queue.Members[I]].Name) - 1] + ' |', Medal_Color_by_Rank(I));
+    Players.WriteConsole('+--------------------------+', MESSAGE_COLOR_GAME);
+  end;
+end;
+
 procedure OnSpeak(p: TActivePlayer; Text: string);
 begin
   if Text[1] = '!' then
@@ -1061,7 +1163,15 @@ begin
       '!play':
       begin
         if not RM.Active and RM.Map.Loaded then
-          p.Team := TEAM_RUNNER;
+          if IsQueueEmpty() then
+            p.Team := TEAM_RUNNER
+          else
+            if QueuePosition(p.ID) = 1 then
+            begin
+              p.Team := TEAM_RUNNER;
+              ReQueue();
+            end else
+              p.WriteConsole('[RM] It''s not your turn yet! If you did not add yourself yet, do !add', MESSAGE_COLOR_RED);
       end;
       '!fail':
       begin
@@ -1070,6 +1180,27 @@ begin
             EndSingleGame(False);
       end;
       '!freerun': p.Team := TEAM_FREERUNNER;
+      '!add':
+      begin
+        if QueuePosition(p.ID) = 0 then
+        begin
+          EnQueue(p.ID);
+          p.WriteConsole('[RM] Successfully added to the queue!', MESSAGE_COLOR_GAME);
+        end else
+          p.WriteConsole('[RM] You are already in the queue!', MESSAGE_COLOR_RED);
+      end;
+      '!del':
+      begin
+        if QueuePosition(p.ID) > 0 then
+        begin
+          if RemoveFromQueue(p.ID) then
+            p.WriteConsole('[RM] Successfully removed from the queue!', MESSAGE_COLOR_GAME)
+          else
+            p.WriteConsole('[RM] Could not remove you from the queue!', MESSAGE_COLOR_RED);
+        end else
+          p.WriteConsole('[RM] You are not in the queue!', MESSAGE_COLOR_RED);
+      end;
+      '!queue': ShowQueue;
       '!top': ShowTop(Text);
       '!top10': ShowTop(Text);
       '!hnseu':

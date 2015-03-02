@@ -143,6 +143,7 @@ const
   QUEUE_TIMER          = MATH_SECOND * 10;
   QUEUE_COLOR_YELLOW   = MATH_SECOND * 5;
   QUEUE_COLOR_RED      = MATH_SECOND * 3;
+  QUEUE_MAX_PLAYERS    = 9;
 
   MEDAL_GOLD           = 1;
   MEDAL_SILVER         = 2;
