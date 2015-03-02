@@ -565,6 +565,10 @@ begin
         Map.Spawns[TEAM_EDITOR].Y     := Map.Spawns[TEAM_VS].Y;
         Map.Spawns[TEAM_FREERUNNER].Y := Map.Spawns[TEAM_EDITOR].Y;
 
+        for I := 1 to 90 do
+          if Map.Objects[I].Active then
+            Map.Objects[I].Kill;
+
         while (DB_NextRow(DB_ID) <> 0) do
         begin
           try
