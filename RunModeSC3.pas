@@ -1198,6 +1198,37 @@ begin
   end;
 end;
 
+procedure ShowStatistics();
+begin
+  if DB_CONNECTED then
+  begin
+    DB_FinishQuery(DB_ID);
+    if (DB_Query(DB_ID, SQL_GET_STATISTICS) <> 0) AND
+       (DB_NextRow(DB_ID) <> 0) then
+    begin
+      Players.WriteConsole('+-------------------+---------------------------------------------+', MESSAGE_COLOR_GAME);
+      Players.WriteConsole('| Server statistics |        RunMode 3 created by ExHunter        |', MESSAGE_COLOR_GAME);
+      Players.WriteConsole('+-------------------+---------------------------------------------+'     + #13#10 +
+                           '|                                                                 |', MESSAGE_COLOR_GAME);
+      Players.WriteConsole('  We have in total ' + DB_GetString(DB_ID, 0) + ' recorded runs.'        + #13#10 + // totalruns
+                           '  Ran by ' + DB_GetString(DB_ID, 1) + ' different players.', MESSAGE_COLOR_GOLD);   // differentplayers
+      Players.WriteConsole('|                                                                 |'     + #13#10 +
+                           '|                                                                 |', MESSAGE_COLOR_GAME);
+      Players.WriteConsole('  On ' + DB_GetString(DB_ID, 3) + ' different maps.'                     + #13#10 + // totalmaps
+                           '  There are in total ' + DB_GetString(DB_ID, 2) + ' achievement points.',           // totalachievementpoints
+                           MESSAGE_COLOR_GOLD);
+      Players.WriteConsole('|                                                                 |', MESSAGE_COLOR_GAME);
+      Players.WriteConsole('+-----------------------------------------------------------------+', MESSAGE_COLOR_GAME);
+    end else
+    begin
+      WriteLnAndConsole(NIL, '[RM] Could not find the statistics!', MESSAGE_COLOR_SYSTEM);
+      WriteLn('[RM] Error in ShowStatistics: ' + DB_Error());
+    end;
+    DB_FinishQuery(DB_ID);
+  end else
+    WriteLnAndConsole(NIL, '[RM] Could not show the statistics! Database is not connected!', MESSAGE_COLOR_SYSTEM);
+end;
+
 procedure OnSpeak(p: TActivePlayer; Text: string);
 begin
   if Text[1] = '!' then
@@ -1245,6 +1276,7 @@ begin
       '!queue': ShowQueue;
       '!top': ShowTop(Text);
       '!top10': ShowTop(Text);
+      '!statistics': ShowStatistics;
       '!hnseu':
       begin
         WriteLn('Forwarding ' + p.Name + ' to !Hide and Seek EU');

@@ -60,6 +60,12 @@ const
                          'AND `rm_maps`.`ID` = VAL1 ' +
                          'AND `rm_mapstats`.`mapID` = VAL1 ' +
                          'ORDER BY `rm_mapstats`.`runtime` ASC LIMIT VAL2;';
+  SQL_GET_STATISTICS   = 'SELECT (SELECT COUNT(`ID`) FROM `rm_mapstats`) AS totalruns, ' +
+                                '(SELECT COUNT(DISTINCT `playerID`) FROM `rm_mapstats`) AS differentplayers, ' +
+                                '(SELECT SUM(`Points`) FROM `rm_achievements`) AS totalachievementpoints, ' +
+                                '(SELECT COUNT(`ID`) FROM `rm_maps`) AS totalmaps ' +
+                         'FROM `rm_maps`, `rm_mapstats`, `rm_achievements` ' +
+                         'LIMIT 1;';
   SQL_GET_RANK_1_OF_2  = 'SET @rownum := 0;';
   SQL_GET_RANK_2_OF_2  = 'SELECT `rank`, `playerID` ' +
                          'FROM (SELECT @rownum := @rownum + 1 AS rank, `runtime`, `playerID` ' +
