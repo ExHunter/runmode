@@ -297,13 +297,13 @@ end;
 
 procedure NewBronzeMedal(NewPlayer, OldBronze: Integer);
 begin
-  if NewPlayer > 0 then
+  if (NewPlayer > 0) or (OldBronze > 0) then
     ExchangeMedal(MEDAL_BRONZE, NewPlayer, OldBronze);
 end;
 
 procedure NewSilverMedal(NewPlayer, OldSilver, OldBronze: Integer);
 begin
-  if NewPlayer > 0 then
+  if (NewPlayer > 0) or (OldSilver > 0) then
   begin
     ExchangeMedal(MEDAL_SILVER, NewPlayer, OldSilver);
     if NewPlayer = OldBronze then
@@ -314,10 +314,13 @@ end;
 
 procedure NewGoldMedal(NewPlayer, OldGold, OldSilver, OldBronze: Integer);
 begin
-  ExchangeMedal(MEDAL_GOLD, NewPlayer, OldGold);
-  if NewPlayer = OldSilver then
-    OldSilver := 0;
-  NewSilverMedal(OldGold, OldSilver, OldBronze);
+  if (NewPlayer > 0) or (OldGold > 0) then
+  begin
+    ExchangeMedal(MEDAL_GOLD, NewPlayer, OldGold);
+    if NewPlayer = OldSilver then
+      OldSilver := 0;
+    NewSilverMedal(OldGold, OldSilver, OldBronze);
+  end;
 end;
 
 function GetPlayerRank(PlayerID, mapID: Integer): Integer;
