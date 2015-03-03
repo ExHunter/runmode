@@ -273,19 +273,22 @@ begin
         case MedalType of
           MEDAL_GOLD:
           begin
-            DB_PerformQuery(DB_ID, 'ExchangeMedal', DB_Query_Replace_Val2(SQL_UPDATE_GOLDS, IntToStr(MedalCountGoldWinner + 1), IntToStr(PlayerWhoGets)));
+            if PlayerWhoGets > 0 then
+              DB_PerformQuery(DB_ID, 'ExchangeMedal', DB_Query_Replace_Val2(SQL_UPDATE_GOLDS, IntToStr(MedalCountGoldWinner + 1), IntToStr(PlayerWhoGets)));
             if (PlayerWhoLoses > 0) and (MedalCountGoldLoser > 0) then
               DB_PerformQuery(DB_ID, 'ExchangeMedal', DB_Query_Replace_Val2(SQL_UPDATE_GOLDS, IntToStr(MedalCountGoldLoser - 1), IntToStr(PlayerWhoLoses)));
           end;
           MEDAL_SILVER:
           begin
-            DB_PerformQuery(DB_ID, 'ExchangeMedal', DB_Query_Replace_Val2(SQL_UPDATE_SILVERS, IntToStr(MedalCountSilverWinner + 1), IntToStr(PlayerWhoGets)));
+            if PlayerWhoGets > 0 then
+              DB_PerformQuery(DB_ID, 'ExchangeMedal', DB_Query_Replace_Val2(SQL_UPDATE_SILVERS, IntToStr(MedalCountSilverWinner + 1), IntToStr(PlayerWhoGets)));
             if (PlayerWhoLoses > 0) and (MedalCountSilverLoser > 0) then
-            DB_PerformQuery(DB_ID,'ExchangeMedal',  DB_Query_Replace_Val2(SQL_UPDATE_SILVERS, IntToStr(MedalCountSilverLoser - 1), IntToStr(PlayerWhoLoses)));
+              DB_PerformQuery(DB_ID,'ExchangeMedal',  DB_Query_Replace_Val2(SQL_UPDATE_SILVERS, IntToStr(MedalCountSilverLoser - 1), IntToStr(PlayerWhoLoses)));
           end;
           MEDAL_BRONZE:
           begin
-            DB_PerformQuery(DB_ID, 'ExchangeMedal', DB_Query_Replace_Val2(SQL_UPDATE_BRONZES, IntToStr(MedalCountBronzeWinner + 1), IntToStr(PlayerWhoGets)));
+            if PlayerWhoGets > 0 then
+              DB_PerformQuery(DB_ID, 'ExchangeMedal', DB_Query_Replace_Val2(SQL_UPDATE_BRONZES, IntToStr(MedalCountBronzeWinner + 1), IntToStr(PlayerWhoGets)));
             if (PlayerWhoLoses > 0) and (MedalCountBronzeLoser > 0) then
               DB_PerformQuery(DB_ID, 'ExchangeMedal', DB_Query_Replace_Val2(SQL_UPDATE_BRONZES, IntToStr(MedalCountBronzeLoser - 1), IntToStr(PlayerWhoLoses)));
           end;
@@ -311,7 +314,10 @@ begin
   begin
     ExchangeMedal(MEDAL_SILVER, NewPlayer, OldSilver);
     if NewPlayer = OldBronze then
+    begin
       OldBronze := 0;
+      ExchangeMedal(MEDAL_BRONZE, OldBronze, NewPlayer);
+    end;
     NewBronzeMedal(OldSilver, OldBronze);
   end;
 end;
@@ -324,7 +330,10 @@ begin
   begin
     ExchangeMedal(MEDAL_GOLD, NewPlayer, OldGold);
     if NewPlayer = OldSilver then
+    begin
       OldSilver := 0;
+      ExchangeMedal(MEDAL_SILVER, OldSilver, NewPlayer);
+    end;
     NewSilverMedal(OldGold, OldSilver, OldBronze);
   end;
 end;
