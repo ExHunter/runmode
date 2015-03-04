@@ -1504,6 +1504,10 @@ procedure GameOnLeave(p: TActivePlayer; Kicked: Boolean);
 var
   I: Byte;
 begin
+  if RM.Active then
+    if RM.Runner.PPlayer <> NIL then
+      if p.ID = RM.Runner.PPlayer.ID then
+        EndSingleGame(False);
   if p.IsAdmin then
     p.IsAdmin := False;
   if HighID = p.ID then
