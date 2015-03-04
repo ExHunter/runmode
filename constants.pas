@@ -75,6 +75,7 @@ const
                                'FROM `rm_mapstats` WHERE `mapID` = VAL1 ORDER BY `runtime` ASC' +
                                ') as result WHERE `playerID` = VAL2;';
   SQL_GET_PLAYER_ID    = 'SELECT `ID` FROM `playerstats` WHERE `HWID` = ''VAL1'' LIMIT 1;';
+  SQL_GET_ACTIVE_BANS  = 'SELECT `date`, `until`, `reason`, `admin` FROM `banlist` WHERE `until` > NOW() AND (`HWID` = ''VAL1'' OR `IP` = ''VAL2'') LIMIT 1;';
   SQL_GET_PLAYER_JOIN  = 'SELECT `name`, `adm`, `lastip` FROM `playerstats` WHERE `HWID` = ''VAL1'' LIMIT 1;';
   SQL_GET_PLR_MEDALS   = 'SELECT `gold`, `silver`, `bronze` FROM `playerstats` WHERE `ID` = VAL1 LIMIT 1;';
   SQL_ADD_PLAYER       = 'INSERT INTO `playerstats` (`HWID`, `name`, `firstjoin`, `lastseen`, `lastip`) VALUES (''VAL1'', ''VAL2'', NOW(), NOW(), ''VAL3'');';
@@ -178,6 +179,13 @@ const
   MESSAGE_COLOR_SILVER = $ACACAC;
   MESSAGE_COLOR_BRONZE = $CD7F32;
   MESSAGE_COLOR_AC     = $FF8000;
+
+  REQUEST_STATE_OK     = 1;
+  REQUEST_STATE_VER    = 2;
+  REQUEST_STATE_PASS   = 3;
+  REQUEST_STATE_BANNED = 4;
+  REQUEST_STATE_FULL   = 5;
+  REQUEST_STATE_DUP_IP = 5;
 
   REGEXP_FIRST_WORD    = '\s\s*[^\s]*';
 

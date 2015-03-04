@@ -1964,6 +1964,33 @@ begin
     AdminChat(NIL, Msg);
 end;
 
+// Ignore BanLists. Use Database.
+function RequestHandlerBan(Ip, Hw: string; Port: Word; State: Byte; Forwarded: Boolean; Password: string): Integer;
+begin
+  if State = REQUEST_STATE_BANNED then
+    State := REQUEST_STATE_OK;
+  if DB_CONNECTED then
+  begin
+    if (DB_Query(DB_ID, DB_Query_Replace_Val2(SQL_GET_ACTIVE_BANS, Hw, Ip)) <> 0) then
+    begin
+      if DB_NextRow(DB_ID) <> 0 then
+      begin
+        WriteLn('[RM] The requesting player is banned!');
+        WriteLn('[RM] Reason: ' + DB_GetString(DB_ID, 2)); // `reason`
+        WriteLn('[RM] Until:  ' + DB_GetString(DB_ID, 1)); // `until`
+        WriteLn('[RM] Date:   ' + DB_GetString(DB_ID, 0)); // `date`
+        WriteLn('[RM] By:     ' + DB_GetString(DB_ID, 3)); // `admin`
+        State := REQUEST_STATE_BANNED;
+      end else
+        WriteLn('[RM] The requesting player is not banned!');
+    end else
+      WriteLn('[RM] Error in RequestHandlerBan: ' + DB_Error());
+    DB_FinishQuery(DB_ID);
+  end else
+    WriteLn('[RM] Could not check for player bans! Database is not connected!');
+  Result := State;
+end;
+
 procedure SetupRM();
 var
   i: Byte;
@@ -1988,6 +2015,7 @@ begin
   Game.OnAdminCommand                := @OnInGameAdminCommand;
   Game.OnTCPCommand                  := @OnTCPAdminCommand;
   Game.OnTCPMessage                  := @OnTCPAdminMessage;
+  Game.OnRequest                     := @RequestHandlerBan;
   Script.OnException                 := @ErrorHandler;
   HighID := 1;
   for i := 1 to 32 do
