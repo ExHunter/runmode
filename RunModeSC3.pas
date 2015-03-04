@@ -861,6 +861,9 @@ begin
   begin
     WriteLnAndConsole(NIL, '[RM] ' + RM.Runner.PPlayer.Name + ' stopped his run.', MESSAGE_COLOR_GAME);
     DB_PerformConnectedQuery('EndSingleGame', DB_Query_Replace_Val1(SQL_INC_FAILSNUM, IntToStr(RM.Map.MapID)));
+    Game.OnClockTick := Pointers.Clock_Wait_Time;
+    RM.Countdown := MATH_SECOND_IN_TICKS * 1;
+    RM.Active := True;
     DB_FinishQuery(DB_ID);
   end;
   RM.Runner.PPlayer := NIL;
@@ -1406,6 +1409,8 @@ begin
   end else
   begin
     Game.OnClockTick := Pointers.Clock_Normal;
+    Players.WriteConsole('[RM] ' + IntToStr(RM.Countdown div MATH_SECOND_IN_TICKS) + '... Ready for next run!',
+      MESSAGE_COLOR_GREEN);
     RM.Active := False;
   end;
 end;
@@ -1424,7 +1429,16 @@ end;
 
 procedure OnKill(Killer, Victim: TActivePlayer; BulletID: Byte);
 begin
+  if RM.Active then
+    if Victim.ID = RM.Runner.PPlayer.ID then
+      EndSingleGame(False);
+end;
 
+procedure EndGameAfterRespawn(p: TActivePlayer);
+begin
+  if RM.Active then
+    if p.ID = RM.Runner.PPlayer.ID then
+      EndSingleGame(False);
 end;
 
 procedure UpdatePlayerDatabase(p: TActivePlayer);
@@ -2023,6 +2037,7 @@ begin
     Players[i].OnDamage              := @OnDamage;
     Players[i].OnSpeak               := @OnSpeak;
     Players[i].OnKill                := @OnKill;
+    Players[i].OnAfterRespawn        := @EndGameAfterRespawn;
    // Players[i].OnCommand             := @OnPCMD;
     //Players[i].OnVoteMapStart        := @TestVoteMap;
   //HnS defines
