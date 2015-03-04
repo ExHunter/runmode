@@ -88,7 +88,7 @@ const
   SQL_SEARCH_ALT_NAME  = 'SELECT `info`, cnt FROM (SELECT `info`, SUM(CASE WHEN `HWID` = ''VAL1'' THEN 1 ELSE 0 END) as cnt ' +
                          'FROM `namechanges` GROUP BY `info`) AS lookuptable ' +
                          'WHERE cnt > 0 ORDER BY cnt DESC LIMIT 15;';
-  SQL_LOG_NAMECHANGE   = 'INSERT INTO `namechanges` (`HWID`, `IP`, `log_time`, `info`) VALUES (''VAL1'', ''VAL2'', NOW(), ''VAL3'');';
+  SQL_LOG_NAMECHANGE   = 'INSERT INTO `namechanges` (`HWID`, `IP`, `serverID`, `log_time`, `info`) VALUES (''VAL1'', ''VAL2'', VAL3, NOW(), ''VAL4'');';
 
   // SQL queries for replays
  SQL_CREATE_REPLAY_TBL = 'CREATE TABLE IF NOT EXISTS `VAL1` ( ' +

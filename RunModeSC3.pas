@@ -1446,7 +1446,7 @@ begin
       if (PlayerName <> p.Name) or (PlayerIP <> p.IP) then
       begin
         DB_PerformQuery(DB_ID, 'UpdatePlayerDatabase', DB_Query_Replace_Val3(SQL_UPDATE_PLR_JOIN, DB_Escape_String(p.Name), p.IP, p.HWID));
-        DB_PerformQuery(DB_ID, 'UpdatePlayerDatabase', DB_Query_Replace_Val3(SQL_LOG_NAMECHANGE, p.HWID, p.IP, DB_Escape_String(p.Name)));
+        DB_PerformQuery(DB_ID, 'UpdatePlayerDatabase', DB_Query_Replace_Val4(SQL_LOG_NAMECHANGE, p.HWID, p.IP, IntToStr(DB_SERVER_ID), DB_Escape_String(p.Name)));
       end;
 
       DB_PerformQuery(DB_ID, 'UpdatePlayerDatabase', DB_Query_Replace_Val1(SQL_UPDATE_PLR_SEEN, p.HWID));
@@ -1457,7 +1457,7 @@ begin
 
       WriteLn('[RM] Adding ' + p.Name + ' to the Database...');
       DB_PerformQuery(DB_ID, 'UpdatePlayerDatabase', DB_Query_Replace_Val3(SQL_ADD_PLAYER, p.HWID, DB_Escape_String(p.Name), p.IP));
-      DB_PerformQuery(DB_ID, 'UpdatePlayerDatabase', DB_Query_Replace_Val3(SQL_LOG_NAMECHANGE, p.HWID, p.IP, DB_Escape_String(p.Name)));
+      DB_PerformQuery(DB_ID, 'UpdatePlayerDatabase', DB_Query_Replace_Val4(SQL_LOG_NAMECHANGE, p.HWID, p.IP, IntToStr(DB_SERVER_ID), DB_Escape_String(p.Name)));
     end;
   end else
     WriteLn('[RM] Could not check for the player! Database is not connected!');
