@@ -1283,8 +1283,9 @@ begin
       '!fail':
       begin
         if RM.Active then
-          if p.ID = RM.Runner.PPlayer.ID then
-            EndSingleGame(False);
+          if RM.Runner.PPlayer <> NIL then
+            if p.ID = RM.Runner.PPlayer.ID then
+              EndSingleGame(False);
       end;
       '!freerun': p.Team := TEAM_FREERUNNER;
       '!add':
@@ -1430,15 +1431,17 @@ end;
 procedure OnKill(Killer, Victim: TActivePlayer; BulletID: Byte);
 begin
   if RM.Active then
-    if Victim.ID = RM.Runner.PPlayer.ID then
-      EndSingleGame(False);
+    if RM.Runner.PPlayer <> NIL then
+      if Victim.ID = RM.Runner.PPlayer.ID then
+        EndSingleGame(False);
 end;
 
 procedure EndGameAfterRespawn(p: TActivePlayer);
 begin
   if RM.Active then
-    if p.ID = RM.Runner.PPlayer.ID then
-      EndSingleGame(False);
+    if RM.Runner.PPlayer <> NIL then
+      if p.ID = RM.Runner.PPlayer.ID then
+        EndSingleGame(False);
 end;
 
 procedure UpdatePlayerDatabase(p: TActivePlayer);
@@ -1483,8 +1486,9 @@ begin
     HighID := p.ID;
   if Team.ID = TEAM_RUNNER then
     if RM.Active then
-      if p.ID = RM.Runner.PPlayer.ID then
-        RM.Active := False;
+      if RM.Runner.PPlayer <> NIL then
+        if p.ID = RM.Runner.PPlayer.ID then
+          RM.Active := False;
   if p.Human then
   begin
     if RM.Map.Loaded then
@@ -1514,11 +1518,12 @@ end;
 procedure OnJoinTeamInvalid(p: TActivePlayer; Team: TTeam);
 begin
   if RM.Active then
-    if p.ID = RM.Runner.PPlayer.ID then
-    begin
-      EndSingleGame(False);
-      Exit;
-    end;
+    if RM.Runner.PPlayer <> NIL then
+      if p.ID = RM.Runner.PPlayer.ID then
+      begin
+        EndSingleGame(False);
+        Exit;
+      end;
   p.WriteConsole('[GAME] You cannot join this Team.', MESSAGE_COLOR_GAME);
   p.Team := TEAM_SPECTATOR;
 end;
@@ -1526,11 +1531,12 @@ end;
 procedure OnJoinTeamRunner(p: TActivePlayer; Team: TTeam);
 begin
   if RM.Active then
-    if p.ID = RM.Runner.PPlayer.ID then
-    begin
-      EndSingleGame(False);
-      Exit;
-    end;
+    if RM.Runner.PPlayer <> NIL then
+      if p.ID = RM.Runner.PPlayer.ID then
+      begin
+        EndSingleGame(False);
+        Exit;
+      end;
   if not RM.Active and RM.Map.Loaded then
   begin
     if ReplayBot <> NIL then
@@ -1561,11 +1567,12 @@ end;
 procedure OnJoinTeamEditor(p: TActivePlayer; Team: TTeam);
 begin
   if RM.Active then
-    if p.ID = RM.Runner.PPlayer.ID then
-    begin
-      EndSingleGame(False);
-      Exit;
-    end;
+    if RM.Runner.PPlayer <> NIL then
+      if p.ID = RM.Runner.PPlayer.ID then
+      begin
+        EndSingleGame(False);
+        Exit;
+      end;
   if not p.IsAdmin then
     OnJoinTeamInvalid(p, Team);
 end;
@@ -1573,22 +1580,24 @@ end;
 procedure OnJoinTeamFreeRunner(p: TActivePlayer; Team: TTeam);
 begin
   if RM.Active then
-    if p.ID = RM.Runner.PPlayer.ID then
-    begin
-      EndSingleGame(False);
-      Exit;
-    end;
+    if RM.Runner.PPlayer <> NIL then
+      if p.ID = RM.Runner.PPlayer.ID then
+      begin
+        EndSingleGame(False);
+        Exit;
+      end;
   p.WriteConsole('[GAME] You are now freerunning.', MESSAGE_COLOR_GAME);
 end;
 
 procedure OnJoinTeamSpectator(p: TActivePlayer; Team: TTeam);
 begin
   if RM.Active then
-    if p.ID = RM.Runner.PPlayer.ID then
-    begin
-      EndSingleGame(False);
-      Exit;
-    end;
+    if RM.Runner.PPlayer <> NIL then
+      if p.ID = RM.Runner.PPlayer.ID then
+      begin
+        EndSingleGame(False);
+        Exit;
+      end;
   if p.Human then
     p.WriteConsole('[GAME] You are now spectating. Type !play or !freerun to play.', MESSAGE_COLOR_GAME);
 end;
