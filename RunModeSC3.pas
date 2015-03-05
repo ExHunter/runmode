@@ -75,6 +75,15 @@ type
     Members: Array[1..QUEUE_MAX_PLAYERS] of Byte;
     end;
 
+  TChooseMap = record
+    VoteInProgress: Boolean;
+    MapChosen: Boolean;
+    MapName: string;
+    Vote_Num: Byte;
+    Vote_Count: Byte;
+    Time_Remaining: Byte;
+    end;
+
 var
   RM: TGameVariables;
   HighID: Byte;
@@ -85,6 +94,7 @@ var
   Pointers: TPointers;
   WHITESPACES: Array of string;
   Queue: TQueue;
+  ChooseMap: TChooseMap;
 
 implementation
 
@@ -103,6 +113,13 @@ begin
     WriteLn(Text)
   else
     p.WriteConsole(Text, Color);
+end;
+
+procedure SetWaitingTime(Seconds: Integer);
+begin
+  Game.OnClockTick := Pointers.Clock_Wait_Time;
+  RM.Countdown := MATH_SECOND_IN_TICKS * Seconds;
+  RM.Active := True;
 end;
 
 function IsInEditorMode(p: TActivePlayer): Boolean;
@@ -848,9 +865,7 @@ begin
       if RM.Runner.PPlayer.ID <> ReplayBot.ID then
       begin
         WriteLnAndConsole(NIL, '[RM] Saving ' + RM.Runner.PPlayer.Name + '''s data.. This may take several seconds...', MESSAGE_COLOR_GAME);
-        Game.OnClockTick := Pointers.Clock_Wait_Time;
-        RM.Countdown := MATH_SECOND_IN_TICKS * 3;
-        RM.Active := True;
+        SetWaitingTime(MATH_SECOND * 3);
 
         Result_Run_ID := Save_RunData(RM.Runner.PPlayer.HWID, RunTime);
         if Result_Run_ID > 0 then
@@ -866,14 +881,20 @@ begin
   begin
     WriteLnAndConsole(NIL, '[RM] ' + RM.Runner.PPlayer.Name + ' stopped his run.', MESSAGE_COLOR_GAME);
     DB_PerformConnectedQuery('EndSingleGame', DB_Query_Replace_Val1(SQL_INC_FAILSNUM, IntToStr(RM.Map.MapID)));
-    Game.OnClockTick := Pointers.Clock_Wait_Time;
-    RM.Countdown := MATH_SECOND_IN_TICKS * 1;
-    RM.Active := True;
+    SetWaitingTime(MATH_SECOND * 1);
     DB_FinishQuery(DB_ID);
   end;
   for j := 1 to 60 do
     RM.Runner.LastDistances[j] := 0;
   RM.Runner.PPlayer := NIL;
+
+  if ChooseMap.MapChosen then
+  begin
+    Map.SetMap(ChooseMap.MapName);
+    ChooseMap.MapChosen := False;
+    ChooseMap.MapName   := '';
+    SetWaitingTime(MATH_SECOND * 6);
+  end;
 end;
 
 procedure PlayBot();
@@ -1012,6 +1033,75 @@ begin
     else
       Result := MESSAGE_COLOR_GAME;
   end;
+end;
+
+procedure StartChooseMap(ChosenMap: string);
+begin
+  if ChooseMap.MapChosen then
+  begin
+    Players.WriteConsole('[RM] Next map has already been chosen: ' + ChooseMap.MapName, MESSAGE_COLOR_GAME);
+    Exit;
+  end;
+
+  if ChooseMap.VoteInProgress then
+  begin
+    Players.WriteConsole('[RM] There is already a choosemap vote in progress!', MESSAGE_COLOR_GAME);
+    Exit;
+  end;
+
+  if DB_CONNECTED then
+  begin
+    if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_GET_MAP_ID_BY_N, DB_Escape_String(ChosenMap))) <> 0) and
+       (DB_NextRow(DB_ID) <> 0) then
+    begin
+      ChooseMap.Vote_Num       := 0;
+      ChooseMap.Vote_Count     := Game.NumPlayers - Game.NumBots;
+      ChooseMap.VoteInProgress := True;
+      ChooseMap.Time_Remaining := VOTE_TIME;
+      Game.StartVoteMap(ChosenMap);
+    end else
+      Players.WriteConsole('[RM] Could not find the map ''' + ChosenMap + '''!', MESSAGE_COLOR_RED);
+  end else
+    WriteLn('[RM] Could not find the map for choosemap! Database is not connected!');
+  DB_FinishQuery(DB_ID);
+end;
+
+function DenyVoteMap(p: TActivePlayer; VotedMap: string): Boolean;
+begin
+  p.WriteConsole('[RM] You cannot start a vote like that! Please see !commands', MESSAGE_COLOR_RED);
+  Result := True;
+end;
+
+function DenyVoteKick(p, Victim: TActivePlayer; Reason: string): Boolean;
+begin
+  p.WriteConsole('[RM] You cannot start a vote like that! Please see !commands', MESSAGE_COLOR_RED);
+  WriteLn('[RM] ' + p.Name + ' tried to start a votekick against ' + Victim.Name + '! Reason: ' + Reason);
+  Result := True;
+end;
+
+procedure CountChooseMapVote(p: TActivePlayer; VotedMap: string);
+var
+  VoteSumPercent: Single;
+begin
+  ChooseMap.Vote_Num := ChooseMap.Vote_Num + 1;
+  VoteSumPercent := ChooseMap.Vote_Num / ChooseMap.Vote_Count * 100;
+  if VoteSumPercent >= VOTE_PERCENT then
+  begin
+    ChooseMap.VoteInProgress := False;
+    WriteLnAndConsole(NIL, '[RM] The choosemap vote for map ' + VotedMap + ' was successful!', MESSAGE_COLOR_GAME);
+    if not RM.Active then
+    begin
+      Map.SetMap(VotedMap);
+      SetWaitingTime(MATH_SECOND * 6);
+    end else
+    begin
+      ChooseMap.MapChosen      := True;
+      ChooseMap.MapName        := VotedMap;
+      Players.WriteConsole('[RM] Waiting for the current run to finish!', MESSAGE_COLOR_GAME);
+    end;
+  end else
+    Players.WriteConsole('[RM] ' + FormatFloat('0.00', VoteSumPercent) + '% of ' +
+      FormatFloat('0.00', VOTE_PERCENT) + '%  for map ' + VotedMap + '!', MESSAGE_COLOR_GAME);
 end;
 
 procedure ShowTop(TypedCommand: String);
@@ -1329,6 +1419,7 @@ begin
       '!top': ShowTop(Text);
       '!top10': ShowTop(Text);
       '!statistics': ShowStatistics;
+      '!choosemap': StartChooseMap(Copy(Text, 12, Length(Text) - 11));
       '!hnseu':
       begin
         WriteLn('Forwarding ' + p.Name + ' to !Hide and Seek EU');
@@ -1404,6 +1495,15 @@ begin
       DrawCheckPoints;
     if t mod (MATH_MINUTE_IN_TICKS * 15) = 0 then
       DB_Ping_Server;
+    if ChooseMap.VoteInProgress then
+    begin
+      ChooseMap.Time_Remaining := ChooseMap.Time_Remaining - (MATH_SECOND * 5);
+      if ChooseMap.Time_Remaining <= 0 then
+      begin
+        ChooseMap.VoteInProgress := False;
+        WriteLnAndConsole(NIL, '[RM] No map has been voted.', MESSAGE_COLOR_GAME);
+      end;
+    end;
   end;
 end;
 
@@ -1450,14 +1550,16 @@ begin
   if RM.Countdown > 0 then
   begin
     if RM.Countdown mod MATH_SECOND_IN_TICKS = 0 then
-      Players.WriteConsole('[RM] ' + IntToStr(RM.Countdown div MATH_SECOND_IN_TICKS) + '...',
-        Medal_Color_by_Rank(RM.Countdown div MATH_SECOND_IN_TICKS));
+      Players.BigText(1, IntToStr(RM.Countdown div MATH_SECOND_IN_TICKS) + '...',
+        MATH_SECOND_IN_TICKS * 2, Medal_Color_by_Rank(RM.Countdown div MATH_SECOND_IN_TICKS),
+        0.068, 5, 360);
     RM.Countdown := RM.Countdown - 1;
   end else
   begin
     Game.OnClockTick := Pointers.Clock_Normal;
-    Players.WriteConsole('[RM] ' + IntToStr(RM.Countdown div MATH_SECOND_IN_TICKS) + '... Ready for next run!',
-      MESSAGE_COLOR_GREEN);
+      Players.BigText(1, '0... Ready for next run!',
+        MATH_SECOND_IN_TICKS * 2, MESSAGE_COLOR_GREEN,
+        0.068, 5, 360);
     RM.Active := False;
   end;
 end;
@@ -2100,9 +2202,10 @@ begin
     Players[i].OnSpeak               := @OnSpeak;
     Players[i].OnKill                := @OnKill;
     Players[i].OnAfterRespawn        := @EndGameAfterRespawn;
-   // Players[i].OnCommand             := @OnPCMD;
-    //Players[i].OnVoteMapStart        := @TestVoteMap;
-  //HnS defines
+    Players[i].OnVoteMapStart        := @DenyVoteMap;
+    Players[i].OnVoteKickStart       := @DenyVoteKick;
+    Players[i].OnVoteMap             := @CountChooseMapVote;
+    Players[i].OnVoteKick            := NIL;
     if Players[i].Active then
       HighID := i;
   end;

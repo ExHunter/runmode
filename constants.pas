@@ -187,6 +187,9 @@ const
   REQUEST_STATE_FULL   = 5;
   REQUEST_STATE_DUP_IP = 5;
 
+  VOTE_TIME            = MATH_SECOND * 20;
+  VOTE_PERCENT         = 70.00;
+
   REGEXP_FIRST_WORD    = '\s\s*[^\s]*';
 
 implementation
