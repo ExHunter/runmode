@@ -934,9 +934,17 @@ begin
       Distances := Distance(RM.Map.CheckPoints[i].X,RM.Map.CheckPoints[i].Y,RM.Runner.PPlayer.X,RM.Runner.PPlayer.Y);
       break;
     end;
+
+  RunTime := Now - RM.Runner.StartTime;
+  if RM.BestRunLoaded and not BotActive then
+    if RunTime - RM.BestRunLap[RM.Runner.Laps].CheckPoint[i] > StrToDateTime('00:00:20.000') then
+    begin
+      WriteLnAndConsole(NIL, '[RM] The runner ''' + RM.Runner.PPlayer.Name + ''' takes too long... Stopping his run!', MESSAGE_COLOR_RED);
+      EndSingleGame(False);
+    end;
+
   if Distances < RM.Map.CheckPoints[i].Distance then
   begin
-    RunTime := Now - RM.Runner.StartTime;
     if i < RM.Map.AmountOfCheckpoints-1 then
     begin
       RM.Map.CheckPoints[i].Checked := True;
