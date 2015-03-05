@@ -1375,14 +1375,14 @@ begin
     p.SumArrayDistance := p.SumArrayDistance + p.LastDistances[p.PositionArrayDistance];
     p.LastPos.X := p.PPlayer.X;
     p.LastPos.Y := p.PPlayer.Y;
-    p.PPlayer.BigText(3, FormatFloat('0.000', (p.SumArrayDistance / 60) * 60 * 3600 / 10000) + ' km/h',
+    Players.BigText(3, FormatFloat('0.000', (p.SumArrayDistance / 60) * 60 * 3600 / 10000) + ' km/h',
       MATH_SECOND_IN_TICKS * 2, MESSAGE_COLOR_GAME, 0.068, 5, 375);
-    if RM.BestRunLoaded then
+    if RM.BestRunLoaded and not BotActive then
       if (Now - p.StartTime) > RM.BestRunLap[p.Laps].CheckPoint[p.CP] then
-        p.PPlayer.BigText(4, '+' + FormatDateTime('nn:ss.zzz', Now - p.StartTime - RM.BestRunLap[p.Laps].CheckPoint[p.CP]), MATH_SECOND_IN_TICKS * 2,
+        Players.BigText(4, '+' + FormatDateTime('nn:ss.zzz', Now - p.StartTime - RM.BestRunLap[p.Laps].CheckPoint[p.CP]), MATH_SECOND_IN_TICKS * 2,
           MESSAGE_COLOR_RED,   0.068, 5, 390)
       else
-        p.PPlayer.BigText(4, '-' + FormatDateTime('nn:ss.zzz', RM.BestRunLap[p.Laps].CheckPoint[p.CP] - (Now - p.StartTime)), MATH_SECOND_IN_TICKS * 2,
+        Players.BigText(4, '-' + FormatDateTime('nn:ss.zzz', RM.BestRunLap[p.Laps].CheckPoint[p.CP] - (Now - p.StartTime)), MATH_SECOND_IN_TICKS * 2,
           MESSAGE_COLOR_GREEN, 0.068, 5, 390);
   end;
   Result := p;
@@ -1403,16 +1403,18 @@ procedure OnIdleTick(t: Integer);
 begin
   UniversalClockCalls(t);
   if RM.Active then
+  begin
+    RM.Runner := UpdateSpeedInfo(RM.Runner);
     if BotActive then
     begin
       PassingCheckPoints();
       PlayBot();
     end else
     begin
-      RM.Runner := UpdateSpeedInfo(RM.Runner);
       RecordKeys();
       PassingCheckPoints();
     end;
+  end;
 end;
 
 procedure WaitingForReplayLoad(t: Integer);
