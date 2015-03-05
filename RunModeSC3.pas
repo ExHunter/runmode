@@ -43,6 +43,11 @@ type
     PPlayer: TActivePlayer;
     StartTime: TDateTime;
     Laps: Byte;
+    LastDistances: Array[1..60] of Single;
+    LastPos: TVector;
+    CP: Byte;
+    PositionArrayDistance: SmallInt;
+    SumArrayDistance: Single;
     end;
 
   TGameVariables = record
@@ -866,6 +871,8 @@ begin
     RM.Active := True;
     DB_FinishQuery(DB_ID);
   end;
+  for j := 1 to 60 do
+    RM.Runner.LastDistances[j] := 0;
   RM.Runner.PPlayer := NIL;
 end;
 
@@ -933,6 +940,7 @@ begin
     if i < RM.Map.AmountOfCheckpoints-1 then
     begin
       RM.Map.CheckPoints[i].Checked := True;
+      RM.Runner.CP := i + 1;
       Players.WorldText(0, FormatDateTime('hh:nn:ss.zzz', RunTime), MATH_SECOND_IN_TICKS * 2,
         MESSAGE_COLOR_GAME, 0.068, RM.Map.CheckPoints[i].X - 65, RM.Map.CheckPoints[i].Y + 50);
       RM.CurrentRunLap[RM.Runner.Laps].CheckPoint[i] := RunTime;
@@ -952,6 +960,7 @@ begin
       RM.Runner.Laps := RM.Runner.Laps + 1;
       for j := 0 to RM.Map.AmountOfCheckpoints-2 do
         RM.Map.CheckPoints[j].Checked := False;
+      RM.Runner.CP := 1;
       RM.Map.CheckPoints[RM.Map.AmountOfCheckpoints-1].Checked := True;
       DrawCheckPoints;
       RM.CurrentRunLap[RM.Runner.Laps - 1].CheckPoint[i] := RunTime;
@@ -1353,6 +1362,32 @@ begin
     end;
 end;
 
+function UpdateSpeedInfo(p: TRunnerProperties): TRunnerProperties;
+begin
+  if p.PPlayer <> NIL then
+  begin
+    if p.PositionArrayDistance = 60 then
+      p.PositionArrayDistance := 1
+    else
+      p.PositionArrayDistance := p.PositionArrayDistance + 1;
+    p.SumArrayDistance := p.SumArrayDistance - p.LastDistances[p.PositionArrayDistance];
+    p.LastDistances[p.PositionArrayDistance] := Distance(p.LastPos.X, p.LastPos.Y, p.PPlayer.X, p.PPlayer.Y);
+    p.SumArrayDistance := p.SumArrayDistance + p.LastDistances[p.PositionArrayDistance];
+    p.LastPos.X := p.PPlayer.X;
+    p.LastPos.Y := p.PPlayer.Y;
+    p.PPlayer.BigText(3, FormatFloat('0.000', (p.SumArrayDistance / 60) * 60 * 3600 / 10000) + ' km/h',
+      MATH_SECOND_IN_TICKS * 2, MESSAGE_COLOR_GAME, 0.068, 5, 375);
+    if RM.BestRunLoaded then
+      if (Now - p.StartTime) > RM.BestRunLap[p.Laps].CheckPoint[p.CP] then
+        p.PPlayer.BigText(4, '+' + FormatDateTime('nn:ss.zzz', Now - p.StartTime - RM.BestRunLap[p.Laps].CheckPoint[p.CP]), MATH_SECOND_IN_TICKS * 2,
+          MESSAGE_COLOR_RED,   0.068, 5, 390)
+      else
+        p.PPlayer.BigText(4, '-' + FormatDateTime('nn:ss.zzz', RM.BestRunLap[p.Laps].CheckPoint[p.CP] - (Now - p.StartTime)), MATH_SECOND_IN_TICKS * 2,
+          MESSAGE_COLOR_GREEN, 0.068, 5, 390);
+  end;
+  Result := p;
+end;
+
 procedure UniversalClockCalls(t: Integer);
 begin
   if t mod (MATH_SECOND_IN_TICKS * 5) = 0 then
@@ -1374,6 +1409,7 @@ begin
       PlayBot();
     end else
     begin
+      RM.Runner := UpdateSpeedInfo(RM.Runner);
       RecordKeys();
       PassingCheckPoints();
     end;
@@ -1556,6 +1592,9 @@ begin
       RM.Runner.StartTime := Now();
     RM.Runner.PPlayer := p;
     RM.Runner.Laps := 0;
+    RM.Runner.CP := 1;
+    RM.Runner.SumArrayDistance := 0;
+    RM.Runner.PositionArrayDistance := 1;
     RM.Active := True;
   end
   else
