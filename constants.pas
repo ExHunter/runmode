@@ -90,6 +90,30 @@ const
                          'FROM `namechanges` GROUP BY `info`) AS lookuptable ' +
                          'WHERE cnt > 0 ORDER BY cnt DESC LIMIT 15;';
   SQL_LOG_NAMECHANGE   = 'INSERT INTO `namechanges` (`HWID`, `IP`, `serverID`, `log_time`, `info`) VALUES (''VAL1'', ''VAL2'', VAL3, NOW(), ''VAL4'');';
+  SQL_GET_ACHIEVE_ID   = 'SELECT `ID` FROM `rm_achievements` WHERE `chainNumber` = VAL1 AND `chainID` = VAL2 LIMIT 1;';
+  SQL_ACHIEVE_IS_PROG  = 'SELECT `AchievementID` FROM `rm_achievements_progress` WHERE (`AchievementID` = VAL1 or `ChainID` = VAL1) AND `PlayerID` = VAL2 LIMIT 1;';
+  SQL_GET_ACHIEVE_PROG = 'SELECT `Progress`, `Requirement` FROM `rm_achievements_progress` WHERE `AchievementID` = VAL1 AND `PlayerID` = VAL2 LIMIT 1;';
+  SQL_ACHIEVE_PROG_ADD = 'UPDATE `rm_achievements_progress` SET `Progress` = VAL1 WHERE `AchievementID` = VAL2 AND `PlayerID` = VAL3 LIMIT 1;'; // works with SQL trigger in Database
+  SQL_BGN_ACHIEVE_PROG = 'INSERT INTO `rm_achievements_progress` (`AchievementID`, `PlayerID`, `ChainID`, `Requirement`) VALUES (VAL1, VAL2, VAL3, VAL4);';
+  SQL_GET_ACH_CHAINREQ = 'SELECT `chainID`, `Requirement` FROM `rm_achievements` WHERE `ID` = VAL1 LIMIT 1;';
+  SQL_ACHIEVE_REWARD_1 = 'INSERT INTO `rm_achievements_claim` (`playerID`, `AchievementID`, `ClaimDate`) VALUES (VAL1, VAL2, NOW());';
+  SQL_ACHIEVE_REWARD_2 = 'UPDATE `rm_achievements` SET `firstPlayerID` = VAL1 WHERE `ID` = VAL2 LIMIT 1;'; // works with SQL trigger in Database
+  SQL_ACHIEVE_PROG_DEL = 'DELETE FROM `rm_achievements_progress` WHERE `PlayerID` = VAL1 AND `AchievementID` = VAL2 LIMIT 1;';
+  SQL_ACHIEVE_NE_CHN_1 = 'SET @nextChain := 0;';
+  SQL_ACHIEVE_NE_CHN_2 = 'SELECT `ID` ' +
+                         'FROM (SELECT `chainID`, ' +
+                         '             @nextChain := `chainNumber` + 1 as `nextChainNumber` ' +
+                         '      FROM `rm_achievements` WHERE `ID` = VAL1 LIMIT 1) as `currAchievement`, ' +
+                         '      `rm_achievements` ' +
+                         'WHERE `currAchievement`.`chainID` = `rm_achievements`.`chainID` ' +
+                         '      AND `currAchievement`.`nextChainNumber` = `rm_achievements`.`chainNumber` ' +
+                         'LIMIT 1;';
+  SQL_ACH_CHN_FIN_1    = 'SELECT `AchievementID` FROM `rm_achievements_progress` WHERE `ChainID` = VAL1 AND `PlayerID` = VAL2;';
+  SQL_ACH_CHN_FIN_2    = 'SELECT COUNT(*) ' +
+                         'FROM `rm_achievements` LEFT JOIN `rm_achievements_claim` ' +
+                         'ON `rm_achievements`.`ID` = `rm_achievements_claim`.`AchievementID` ' +
+                         'WHERE `rm_achievements_claim`.`playerID` = VAL2 AND `rm_achievements`.`chainID` = VAL1;';
+  SQL_ACH_FIN          = 'SELECT `AchievementID` FROM `rm_achievements_claim` WHERE `AchievementID` = VAL1 AND `playerID` = VAL2;';
 
   // SQL queries for replays
  SQL_CREATE_REPLAY_TBL = 'CREATE TABLE IF NOT EXISTS `VAL1` ( ' +

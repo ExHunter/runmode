@@ -13,7 +13,7 @@ unit RunModeSC3;
 interface
 
 uses
-  constants, libdb;
+  constants, libdb, achievements;
 
 type
   TVectorAdvanced = record
@@ -876,6 +876,8 @@ begin
             WriteLn('[RM] Failed to save the replay!');
           LoadBestRun(GetBestRunIDOnMap(RM.Map.MapID));
         end;
+
+        Achievement_Handle_Update(1, 1, RM.Runner.PPlayer, True); // Getting Started (1)
       end;
   end else
   begin

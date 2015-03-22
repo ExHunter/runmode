@@ -203,6 +203,8 @@ function DB_Query_Replace_Val4(Query, Val1, Val2, Val3, Val4: string): string;
 function DB_Query_Replace_Val5(Query, Val1, Val2, Val3, Val4, Val5: string): string;
 function DB_Query_Replace_Val6(Query, Val1, Val2, Val3, Val4, Val5, Val6: string): string;
 
+function DB_PlayerGetIDbyHWID(HWID: string): Integer;
+
 var
   DB_CONNECTED: Boolean;
 
@@ -319,6 +321,22 @@ begin
   Result := ReplaceRegExpr('VAL4', Result, Val4, False);
   Result := ReplaceRegExpr('VAL5', Result, Val5, False);
   Result := ReplaceRegExpr('VAL6', Result, Val6, False);
+end;
+
+
+function DB_PlayerGetIDbyHWID(HWID: string): Integer;
+begin
+  Result := 0;
+  if DB_CONNECTED then
+  begin
+    if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_GET_PLAYER_ID, HWID)) <> 0) and
+       (DB_NextRow(DB_ID) <> 0) then
+      Result := DB_GetLong(DB_ID, 0) // `ID`
+    else
+      WriteLn('[RM] Error in PlayerGetIDbyHWID: Player with HWID ''' + HWID + ''' was not found in Database!');
+    DB_FinishQuery(DB_ID);
+  end else
+    WriteLn('[RM] Error in PlayerGetIDbyHWID: Database is not connected!');
 end;
 
 end.
