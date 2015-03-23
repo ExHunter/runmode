@@ -55,6 +55,7 @@ type
     Active: Boolean;
     Map: TMapVariables;
     BestRunLap: Array of TBestRun;
+    BestRunName: string;
     BestRunLoaded: Boolean;
     CurrentRunLap: Array of TBestRun;
     Runner: TRunnerProperties;
@@ -392,7 +393,8 @@ begin
     if (DB_Query(DB_ID, DB_Query_Replace_Val2(SQL_GET_TOP_X, IntToStr(MapID), '1')) <> 0) and
        (DB_NextRow(DB_ID) <> 0) then
     begin
-      Result := DB_GetLong(DB_ID, 0); // `rm_mapstats`.`mapID`
+      Result         := DB_GetLong(DB_ID, 0);   // `rm_mapstats`.`mapID`
+      RM.BestRunName := DB_GetString(DB_ID, 2); // `playerstats`.`name`
       DB_FinishQuery(DB_ID);
     end else
     begin
@@ -1372,6 +1374,26 @@ begin
     WriteLnAndConsole(NIL, '[RM] Could not show the statistics! Database is not connected!', MESSAGE_COLOR_SYSTEM);
 end;
 
+procedure ShowBestRun();
+var
+  I, J: Byte;
+begin
+  if RM.BestRunLoaded then
+  begin
+    Players.WriteConsole('+--------------------------+', MESSAGE_COLOR_GAME);
+    Players.WriteConsole('| ' + RM.BestRunName + WHITESPACES[Length(RM.BestRunName) - 1] + ' |', MESSAGE_COLOR_GOLD);
+    Players.WriteConsole('|                          |', MESSAGE_COLOR_GAME);
+    for I := 0 to RM.Map.AmountOfLaps - 1 do
+    begin
+      Players.WriteConsole('|   Lap ' + IntToStr(I + 1) + WHITESPACES[23 - Length(IntToStr(I))] + '    +------------+', MESSAGE_COLOR_GAME);
+      for J := 0 to RM.Map.AmountOfCheckpoints - 1 do
+        Players.WriteConsole('| CP ' + IntToStr(J + 1) + WHITESPACES[23 - Length(IntToStr(J))] + '       | ' + FormatDateTime('nn:ss.zzz', RM.BestRunLap[I].CheckPoint[J]) + 's |', MESSAGE_COLOR_GAME);
+    end;
+    Players.WriteConsole('+-------------+------------+', MESSAGE_COLOR_GAME);
+  end else
+    WriteLnAndConsole(NIL, '[RM] Could not load the best run for this map!', MESSAGE_COLOR_SYSTEM);
+end;
+
 procedure OnSpeak(p: TActivePlayer; Text: string);
 begin
   if Text[1] = '!' then
@@ -1420,6 +1442,7 @@ begin
       '!queue': ShowQueue;
       '!top': ShowTop(Text);
       '!top10': ShowTop(Text);
+      '!bestrun': ShowBestRun;
       '!statistics': ShowStatistics;
       '!choosemap': StartChooseMap(Copy(Text, 12, Length(Text) - 11));
       '!hnseu':
