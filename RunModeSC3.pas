@@ -59,6 +59,7 @@ type
     BestRunLoaded: Boolean;
     CurrentRunLap: Array of TBestRun;
     Runner: TRunnerProperties;
+    TimeLeft: TDateTime;
     end;
 
   TReplay = record
@@ -739,6 +740,8 @@ begin
 
         if RM.Map.Loaded then
           WriteLn('[RM] The Map ' + MapToLoad + ' was loaded successfully!');
+
+        RM.TimeLeft := StrToDateTime(STR_TIME_LIMIT);
 
         WriteLn('[RM] Looking for a possible nextmap...');
         if DB_Query(DB_ID, SQL_GET_RND_MAP) <> 0 then
@@ -1612,7 +1615,19 @@ begin
       RecordKeys();
       PassingCheckPoints();
     end;
-  end;
+  end else
+    if t mod 60 = 0 then
+    begin
+      RM.TimeLeft := RM.TimeLeft - StrToDateTime(STR_TIME_SECOND);
+      if RM.TimeLeft <= 0 then
+      begin
+        Map.SetMap(RM.Map.NextMap);
+        SetWaitingTime(MATH_SECOND * 6);
+      end else
+        Players.BigText(5, 'Time Left: ' + FormatDateTime('nn:ss', RM.TimeLeft),
+          MATH_SECOND_IN_TICKS * 3, MESSAGE_COLOR_GAME,
+          0.068, 5, 405);
+    end;
 end;
 
 procedure WaitingForReplayLoad(t: Integer);
