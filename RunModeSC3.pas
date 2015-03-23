@@ -993,7 +993,7 @@ begin
       RM.Runner.Laps := RM.Runner.Laps + 1;
       for j := 0 to RM.Map.AmountOfCheckpoints-2 do
         RM.Map.CheckPoints[j].Checked := False;
-      RM.Runner.CP := 1;
+      RM.Runner.CP := 0;
       RM.Map.CheckPoints[RM.Map.AmountOfCheckpoints-1].Checked := True;
       DrawCheckPoints;
       RM.CurrentRunLap[RM.Runner.Laps - 1].CheckPoint[i] := RunTime;
@@ -1729,7 +1729,7 @@ begin
       RM.Runner.StartTime := Now();
     RM.Runner.PPlayer := p;
     RM.Runner.Laps := 0;
-    RM.Runner.CP := 1;
+    RM.Runner.CP := 0;
     RM.Runner.SumArrayDistance := 0;
     RM.Runner.PositionArrayDistance := 1;
     RM.Active := True;
