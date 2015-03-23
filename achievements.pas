@@ -168,6 +168,46 @@ begin
     WriteLn('[RM] Error in Achievement_Add_Next_Chain_If_Exists: Database is not connected!');
 end;
 
+procedure Achievement_Display_Claim(AchievementID, PlayerID: Integer; p: TActivePlayer);
+var
+  AchievementName: string;
+  AchievementPoints: string;
+  AchievementFirstClaimer: string;
+begin
+  if DB_CONNECTED then
+  begin
+    if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_ACHIEVE_INFO_1, IntToStr(AchievementID))) <> 0) and
+       (DB_NextRow(DB_ID) <> 0) then
+    begin
+      AchievementName         := DB_GetString(DB_ID, 0); // `Name`
+      AchievementPoints       := DB_GetString(DB_ID, 1); // `Points`
+      AchievementFirstClaimer := DB_GetString(DB_ID, 2); // `FirstPlayerID`
+      if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_ACHIEVE_INFO_2, AchievementFirstClaimer)) <> 0) and
+         (DB_NextRow(DB_ID) <> 0) then
+        AchievementFirstClaimer := DB_GetString(DB_ID, 0); // `name`
+      p.BigText(200, 'ACHIEVEMENT EARNED:' + FILE_NEWLINE +
+                     FILE_NEWLINE +
+                     'POINTS EARNED:' + FILE_NEWLINE +
+                     FILE_NEWLINE +
+                     'FIRST PLAYER:' + FILE_NEWLINE,
+        MATH_SECOND_IN_TICKS * 10, MESSAGE_COLOR_SILVER,
+        0.068, 75, 240);
+      p.BigText(201, FILE_NEWLINE +
+                     AchievementName + ' -' + FILE_NEWLINE +
+                     FILE_NEWLINE +
+                     AchievementPoints + FILE_NEWLINE +
+                     FILE_NEWLINE +
+                     AchievementFirstClaimer + FILE_NEWLINE,
+        MATH_SECOND_IN_TICKS * 10, MESSAGE_COLOR_GOLD,
+        0.068, 150, 240);
+      Players.WriteConsole(p.Name + ' has earned the achievement ''' + AchievementName + '''!', MESSAGE_COLOR_GOLD);
+      
+    end;
+    DB_FinishQuery(DB_ID);
+  end else
+    WriteLn('[RM] Error in Achievement_Has_ID_Finished: Database is not connected!');
+end;
+
 procedure Achievement_Handle_Update(AchievementOrChainID, Progress: Integer; p: TActivePlayer; IsChain: Boolean);
 var
   PlayerID: Integer;
@@ -198,6 +238,7 @@ begin
   if Achievement_Criteria_Met(UpdatingAchievementID, PlayerID) then
   begin
     Achievement_Reward(UpdatingAchievementID, PlayerID, p);
+    Achievement_Display_Claim(UpdatingAchievementID, PlayerID, p);
     Achievement_End_Progress(UpdatingAchievementID, PlayerID);
     Achievement_Add_Next_Chain_If_Exists(UpdatingAchievementID, PlayerID);
   end;

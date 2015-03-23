@@ -114,6 +114,8 @@ const
                          'ON `rm_achievements`.`ID` = `rm_achievements_claim`.`AchievementID` ' +
                          'WHERE `rm_achievements_claim`.`playerID` = VAL2 AND `rm_achievements`.`chainID` = VAL1;';
   SQL_ACH_FIN          = 'SELECT `AchievementID` FROM `rm_achievements_claim` WHERE `AchievementID` = VAL1 AND `playerID` = VAL2;';
+  SQL_ACHIEVE_INFO_1   = 'SELECT `Name`, `Points`, `FirstPlayerID` FROM `rm_achievements` WHERE `ID` = VAL1 LIMIT 1;';
+  SQL_ACHIEVE_INFO_2   = 'SELECT `name` FROM `playerstats` WHERE `ID` = VAL1 LIMIT 1;';
 
   // SQL queries for replays
  SQL_CREATE_REPLAY_TBL = 'CREATE TABLE IF NOT EXISTS `VAL1` ( ' +
