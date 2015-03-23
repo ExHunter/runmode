@@ -1108,7 +1108,7 @@ begin
       FormatFloat('0.00', VOTE_PERCENT) + '%  for map ' + VotedMap + '!', MESSAGE_COLOR_GAME);
 end;
 
-procedure ShowTop(TypedCommand: String);
+procedure ShowTop(p: TActivePlayer; TypedCommand: String);
 var
   Text_Piece: TStringList;
   Top_X, SearchedMapID, RankID: Integer;
@@ -1139,7 +1139,7 @@ begin
           SearchedMap   := Text_Piece.Strings[1];
         end else
         begin
-          Players.WriteConsole('[RM] Could not find the map ''' + Text_Piece.Strings[1] + '''!', MESSAGE_COLOR_RED);
+          p.WriteConsole('[RM] Could not find the map ''' + Text_Piece.Strings[1] + '''!', MESSAGE_COLOR_RED);
           Exit;
         end;
       end else
@@ -1164,20 +1164,20 @@ begin
             TotalRuns := DB_GetString(DB_ID, 5);
             if StrToInt(TotalRuns) < Top_X then
               Top_X := StrToInt(TotalRuns);
-            Players.WriteConsole('+-------------------------------------------------------------------------+', MESSAGE_COLOR_GAME);
-            Players.WriteConsole('| Showing ' + IntToStr(Top_X) +' of ' + TotalRuns + ' recorded runs on map ''' +
+            p.WriteConsole('+-------------------------------------------------------------------------+', MESSAGE_COLOR_GAME);
+            p.WriteConsole('| Showing ' + IntToStr(Top_X) +' of ' + TotalRuns + ' recorded runs on map ''' +
               SearchedMap + '''! ' + WHITESPACES[23 - Length(SearchedMap)] + WHITESPACES[23 - Length(IntToStr(Top_X))] +
               WHITESPACES[23 - Length(TotalRuns)] +'                |', MESSAGE_COLOR_GOLD);
-            Players.WriteConsole('+------+--------------------------+-----------------+---------------------+', MESSAGE_COLOR_GAME);
-            Players.WriteConsole('| Rank | Name                     | Time (H:M:S.ms) | Date (Y-M-D H:M:S)  |', MESSAGE_COLOR_GAME);
-            Players.WriteConsole('+------+--------------------------+-----------------+---------------------+', MESSAGE_COLOR_GAME);
+            p.WriteConsole('+------+--------------------------+-----------------+---------------------+', MESSAGE_COLOR_GAME);
+            p.WriteConsole('| Rank | Name                     | Time (H:M:S.ms) | Date (Y-M-D H:M:S)  |', MESSAGE_COLOR_GAME);
+            p.WriteConsole('+------+--------------------------+-----------------+---------------------+', MESSAGE_COLOR_GAME);
           end;
           PlayerName := DB_GetString(DB_ID, 2);
-          Players.WriteConsole('| #' + IntToStr(RankID) + WHITESPACES[20 + Length(IntToStr(RankID))] + ' | ' + PlayerName + WHITESPACES[Length(PlayerName) - 1] + ' | ' +
+          p.WriteConsole('| #' + IntToStr(RankID) + WHITESPACES[20 + Length(IntToStr(RankID))] + ' | ' + PlayerName + WHITESPACES[Length(PlayerName) - 1] + ' | ' +
             DB_GetString(DB_ID, 3) + 's   | ' + DB_GetString(DB_ID, 4) + ' | [' + DB_GetString(DB_ID, 0) + ']', Medal_Color_by_Rank(RankID));
           RankID := RankID + 1;
         end;
-        Players.WriteConsole('+------+--------------------------+-----------------+---------------------+', MESSAGE_COLOR_GAME);
+        p.WriteConsole('+------+--------------------------+-----------------+---------------------+', MESSAGE_COLOR_GAME);
 
         DB_FinishQuery(DB_ID);
 
@@ -1320,25 +1320,25 @@ begin
   end;
 end;
 
-procedure ShowQueue();
+procedure ShowQueue(p: TActivePlayer);
 var
   I: Byte;
 begin
   if IsQueueEmpty() then
-    Players.WriteConsole('[RM] The queue is empty!', MESSAGE_COLOR_GAME)
+    p.WriteConsole('[RM] The queue is empty!', MESSAGE_COLOR_GAME)
   else
   begin
-    Players.WriteConsole('+--------------------------+', MESSAGE_COLOR_GAME);
-    Players.WriteConsole('| Players in queue         |', MESSAGE_COLOR_GAME);
-    Players.WriteConsole('+--------------------------+', MESSAGE_COLOR_GAME);
+    p.WriteConsole('+--------------------------+', MESSAGE_COLOR_GAME);
+    p.WriteConsole('| Players in queue         |', MESSAGE_COLOR_GAME);
+    p.WriteConsole('+--------------------------+', MESSAGE_COLOR_GAME);
     for I := 1 to Queue.Tail do
-      Players.WriteConsole('| ' + Players[Queue.Members[I]].Name +
+      p.WriteConsole('| ' + Players[Queue.Members[I]].Name +
         WHITESPACES[Length(Players[Queue.Members[I]].Name) - 1] + ' |', Medal_Color_by_Rank(I));
-    Players.WriteConsole('+--------------------------+', MESSAGE_COLOR_GAME);
+    p.WriteConsole('+--------------------------+', MESSAGE_COLOR_GAME);
   end;
 end;
 
-procedure ShowStatistics();
+procedure ShowStatistics(p: TActivePlayer);
 begin
   if DB_CONNECTED then
   begin
@@ -1346,52 +1346,52 @@ begin
     if (DB_Query(DB_ID, SQL_GET_STATISTICS) <> 0) AND
        (DB_NextRow(DB_ID) <> 0) then
     begin
-      Players.WriteConsole('+-------------------+---------------------------------------------+', MESSAGE_COLOR_GAME);
-      Players.WriteConsole('| Server statistics |        RunMode 3 created by ExHunter        |', MESSAGE_COLOR_GAME);
-      Players.WriteConsole('+-------------------+---------------------------------------------+'     + #13#10 +
-                           '|                                                                 |', MESSAGE_COLOR_GAME);
-      Players.WriteConsole('  We have in total ' + DB_GetString(DB_ID, 0) + ' recorded runs.'        + #13#10 + // totalruns
-                           '  Ran by ' + DB_GetString(DB_ID, 1) + ' different players.', MESSAGE_COLOR_GOLD);   // differentplayers
-      Players.WriteConsole('|                                                                 |'     + #13#10 +
-                           '|                                                                 |', MESSAGE_COLOR_GAME);
-      Players.WriteConsole('  On ' + DB_GetString(DB_ID, 3) + ' different maps.'                     + #13#10 + // totalmaps
-                           '  There are in total ' + DB_GetString(DB_ID, 2) + ' achievement points.',           // totalachievementpoints
-                           MESSAGE_COLOR_GOLD);
-      Players.WriteConsole('|                                                                 |'     + #13#10 +
-                           '|                                                                 |', MESSAGE_COLOR_GAME);
-      Players.WriteConsole('  In ' + DB_GetString(DB_ID, 4) + ' different achievements.'             + #13#10 + // totaldifferentachievements
-                           '  There are already ' + DB_GetString(DB_ID, 6) + ' runs and ' + DB_GetString(DB_ID, 5) + ' fails made.',
-                           MESSAGE_COLOR_GOLD);  // totaltries = 6 and totalfails = 5
-      Players.WriteConsole('|                                                                 |', MESSAGE_COLOR_GAME);
-      Players.WriteConsole('+-----------------------------------------------------------------+', MESSAGE_COLOR_GAME);
+      p.WriteConsole('+-------------------+---------------------------------------------+', MESSAGE_COLOR_GAME);
+      p.WriteConsole('| Server statistics |        RunMode 3 created by ExHunter        |', MESSAGE_COLOR_GAME);
+      p.WriteConsole('+-------------------+---------------------------------------------+'     + #13#10 +
+                     '|                                                                 |', MESSAGE_COLOR_GAME);
+      p.WriteConsole('  We have in total ' + DB_GetString(DB_ID, 0) + ' recorded runs.'        + #13#10 + // totalruns
+                     '  Ran by ' + DB_GetString(DB_ID, 1) + ' different players.', MESSAGE_COLOR_GOLD);   // differentplayers
+      p.WriteConsole('|                                                                 |'     + #13#10 +
+                     '|                                                                 |', MESSAGE_COLOR_GAME);
+      p.WriteConsole('  On ' + DB_GetString(DB_ID, 3) + ' different maps.'                     + #13#10 + // totalmaps
+                     '  There are in total ' + DB_GetString(DB_ID, 2) + ' achievement points.',           // totalachievementpoints
+                     MESSAGE_COLOR_GOLD);
+      p.WriteConsole('|                                                                 |'     + #13#10 +
+                     '|                                                                 |', MESSAGE_COLOR_GAME);
+      p.WriteConsole('  In ' + DB_GetString(DB_ID, 4) + ' different achievements.'             + #13#10 + // totaldifferentachievements
+                    '  There are already ' + DB_GetString(DB_ID, 6) + ' runs and ' + DB_GetString(DB_ID, 5) + ' fails made.',
+                    MESSAGE_COLOR_GOLD);  // totaltries = 6 and totalfails = 5
+      p.WriteConsole('|                                                                 |', MESSAGE_COLOR_GAME);
+      p.WriteConsole('+-----------------------------------------------------------------+', MESSAGE_COLOR_GAME);
     end else
     begin
-      WriteLnAndConsole(NIL, '[RM] Could not find the statistics!', MESSAGE_COLOR_SYSTEM);
+      WriteLnAndConsole(p, '[RM] Could not find the statistics!', MESSAGE_COLOR_SYSTEM);
       WriteLn('[RM] Error in ShowStatistics: ' + DB_Error());
     end;
     DB_FinishQuery(DB_ID);
   end else
-    WriteLnAndConsole(NIL, '[RM] Could not show the statistics! Database is not connected!', MESSAGE_COLOR_SYSTEM);
+    WriteLnAndConsole(p, '[RM] Could not show the statistics! Database is not connected!', MESSAGE_COLOR_SYSTEM);
 end;
 
-procedure ShowBestRun();
+procedure ShowBestRun(p: TActivePlayer);
 var
   I, J: Byte;
 begin
   if RM.BestRunLoaded then
   begin
-    Players.WriteConsole('+--------------------------+', MESSAGE_COLOR_GAME);
-    Players.WriteConsole('| ' + RM.BestRunName + WHITESPACES[Length(RM.BestRunName) - 1] + ' |', MESSAGE_COLOR_GOLD);
-    Players.WriteConsole('|                          |', MESSAGE_COLOR_GAME);
+    p.WriteConsole('+--------------------------+', MESSAGE_COLOR_GAME);
+    p.WriteConsole('| ' + RM.BestRunName + WHITESPACES[Length(RM.BestRunName) - 1] + ' |', MESSAGE_COLOR_GOLD);
+    p.WriteConsole('|                          |', MESSAGE_COLOR_GAME);
     for I := 0 to RM.Map.AmountOfLaps - 1 do
     begin
-      Players.WriteConsole('|   Lap ' + IntToStr(I + 1) + WHITESPACES[23 - Length(IntToStr(I))] + '    +------------+', MESSAGE_COLOR_GAME);
+      p.WriteConsole('|   Lap ' + IntToStr(I + 1) + WHITESPACES[23 - Length(IntToStr(I))] + '    +------------+', MESSAGE_COLOR_GAME);
       for J := 0 to RM.Map.AmountOfCheckpoints - 1 do
-        Players.WriteConsole('| CP ' + IntToStr(J + 1) + WHITESPACES[23 - Length(IntToStr(J))] + '       | ' + FormatDateTime('nn:ss.zzz', RM.BestRunLap[I].CheckPoint[J]) + 's |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| CP ' + IntToStr(J + 1) + WHITESPACES[23 - Length(IntToStr(J))] + '       | ' + FormatDateTime('nn:ss.zzz', RM.BestRunLap[I].CheckPoint[J]) + 's |', MESSAGE_COLOR_GAME);
     end;
-    Players.WriteConsole('+-------------+------------+', MESSAGE_COLOR_GAME);
+    p.WriteConsole('+-------------+------------+', MESSAGE_COLOR_GAME);
   end else
-    WriteLnAndConsole(NIL, '[RM] Could not load the best run for this map!', MESSAGE_COLOR_SYSTEM);
+    WriteLnAndConsole(p, '[RM] Could not load the best run for this map!', MESSAGE_COLOR_SYSTEM);
 end;
 
 procedure OnSpeak(p: TActivePlayer; Text: string);
@@ -1444,9 +1444,9 @@ begin
         end else
           p.WriteConsole('[RM] You are not in the queue!', MESSAGE_COLOR_RED);
       end;
-      '!queue': ShowQueue;
-      '!top': ShowTop(Text);
-      '!top10': ShowTop(Text);
+      '!queue': ShowQueue(p);
+      '!top': ShowTop(p, Text);
+      '!top10': ShowTop(p, Text);
       '!commands',
       '!cmds':
       begin
@@ -1507,8 +1507,8 @@ begin
         p.WriteConsole('| Type !cmds for a list of commands          |', MESSAGE_COLOR_GOLD);
         p.WriteConsole('+--------------------------------------------+', MESSAGE_COLOR_GAME);
       end;
-      '!bestrun': ShowBestRun;
-      '!statistics': ShowStatistics;
+      '!bestrun': ShowBestRun(p);
+      '!statistics': ShowStatistics(p);
       '!choosemap': StartChooseMap(Copy(Text, 12, Length(Text) - 11));
       '!hnseu':
       begin
