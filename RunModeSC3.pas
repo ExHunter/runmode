@@ -1442,6 +1442,38 @@ begin
       '!queue': ShowQueue;
       '!top': ShowTop(Text);
       '!top10': ShowTop(Text);
+      '!commands',
+      '!cmds':
+       begin
+         p.WriteConsole('+----------------R-U-N-M-O-D-E--C-O-M-M-A-N-D-S----------------+', MESSAGE_COLOR_GAME);
+         p.WriteConsole('| COMMAND               | DESCRIPTION                          |', MESSAGE_COLOR_GOLD);
+         p.WriteConsole('+-----------------------+--------------------------------------+', MESSAGE_COLOR_GAME);
+         p.WriteConsole('| !play                 | start a run                          |', MESSAGE_COLOR_GAME);
+         p.WriteConsole('| !fail / !quit         |                                      |', MESSAGE_COLOR_GAME);
+         p.WriteConsole('| !stop / !giveup       | stops a run                          |', MESSAGE_COLOR_GAME);
+         p.WriteConsole('| !add                  | adds you to the queue                |', MESSAGE_COLOR_GAME);
+         p.WriteConsole('| !del                  | removes you from the queue           |', MESSAGE_COLOR_GAME);
+         p.WriteConsole('| !queue                | players in the queue                 |', MESSAGE_COLOR_GAME);
+         p.WriteConsole('| !bestrun              | shows times of the best run          |', MESSAGE_COLOR_GAME);
+         p.WriteConsole('| !search map/player ?  | searches for the map or player <?>   |', MESSAGE_COLOR_GAME);
+         p.WriteConsole('| !search achievement ? | searches for the player <?>          |', MESSAGE_COLOR_GAME);
+         p.WriteConsole('| !achievement ?        | info about achievement ID <?>        |', MESSAGE_COLOR_GAME);
+         p.WriteConsole('| !last10 achievements  | your last 10 achievements            |', MESSAGE_COLOR_GAME);
+         p.WriteConsole('| !last10 runs          | your last 10 runs                    |', MESSAGE_COLOR_GAME);
+         p.WriteConsole('| !maps / !mapslist     | up to 75 maps from mapslist          |', MESSAGE_COLOR_GAME);
+         p.WriteConsole('| !top !top10           | the top on current map               |', MESSAGE_COLOR_GAME);
+         p.WriteConsole('| !top ? / !top10 ?     | top players on map <?>               |', MESSAGE_COLOR_GAME);
+         p.WriteConsole('| !runs                 | list runs of online players          |', MESSAGE_COLOR_GAME);
+         p.WriteConsole('| !help / !info         | a litte info about the game          |', MESSAGE_COLOR_GAME);
+         p.WriteConsole('| !rules                | rules for this server                |', MESSAGE_COLOR_GOLD);
+         p.WriteConsole('| !profile ?            | profile of player name <?>           |', MESSAGE_COLOR_GAME);
+         p.WriteConsole('| !player ?             | profile of ID <?> from search player |', MESSAGE_COLOR_GAME);
+         p.WriteConsole('| !statistics           | some server statistics               |', MESSAGE_COLOR_GAME);
+         p.WriteConsole('| !adminlist            | server admins                        |', MESSAGE_COLOR_GAME);
+         p.WriteConsole('| !choosemap ?          | starts vote for map <?>              |', MESSAGE_COLOR_GAME);
+         p.WriteConsole('| !replay ?             | replay RunID <?> (in top [] number)  |', MESSAGE_COLOR_GAME);
+         p.WriteConsole('+-----------------------+--------------------------------------+', MESSAGE_COLOR_GAME);
+       end;
       '!bestrun': ShowBestRun;
       '!statistics': ShowStatistics;
       '!choosemap': StartChooseMap(Copy(Text, 12, Length(Text) - 11));
