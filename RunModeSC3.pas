@@ -1811,7 +1811,8 @@ begin
   end else
     if t mod 60 = 0 then
     begin
-      RM.TimeLeft := RM.TimeLeft - StrToDateTime(STR_TIME_SECOND);
+      if Game.NumPlayers - Game.NumBots > 0 then
+        RM.TimeLeft := RM.TimeLeft - StrToDateTime(STR_TIME_SECOND);
       if RM.TimeLeft <= 0 then
       begin
         Map.SetMap(RM.Map.NextMap);
