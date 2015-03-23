@@ -97,6 +97,7 @@ var
   WHITESPACES: Array of string;
   Queue: TQueue;
   ChooseMap: TChooseMap;
+  ReplayString: string;
 
 implementation
 
@@ -575,7 +576,6 @@ function Save_ReplayData(runID: Integer; ReplayData: Array of TReplay): Boolean;
 var
   I, J: Integer;
   runIDString: string;
-  QueryString: string;
 begin
   Result := True;
 
@@ -585,41 +585,8 @@ begin
     runIDString := IntToStr(runID);
     DB_PerformQuery(DB_ID_REPLAYS, 'Save_ReplayData', DB_Query_Replace_Val2(SQL_DELETE_REPLAY, Game.CurrentMap, runIDString));
     WriteLn('[RM] Inserting new replay data...');
-    I := 0;
-    QueryString := 'INSERT INTO `' + Game.CurrentMap +
-    '` (`replayOrder`, `runID`, `KeyUp`, `KeyLeft`, `KeyRight`, `KeyJetpack`, `KeyGrenade`,' +
-    ' `KeyChangeWeap`, `KeyThrow`, `KeyCrouch`, `KeyProne`, `AimX`, `AimY`, `PosX`, `PosY`) VALUES' + FILE_NEWLINE;
-    QueryString := QueryString + FILE_NEWLINE + '(' + IntToStr(I) + ', ' + runIDString + ', ' +
-                                                iif(ReplayData[I].KeyUp, '1', '0') + ', ' +
-                                                iif(ReplayData[I].KeyLeft, '1', '0') + ', ' +
-                                                iif(ReplayData[I].KeyRight, '1', '0') + ', ' +
-                                                iif(ReplayData[I].KeyJetpack, '1', '0') + ', ' +
-                                                iif(ReplayData[I].KeyGrenade, '1', '0') + ', ' +
-                                                iif(ReplayData[I].KeyChangeWeap, '1', '0') + ', ' +
-                                                iif(ReplayData[I].KeyThrow, '1', '0') + ', ' +
-                                                iif(ReplayData[I].KeyCrouch, '1', '0') + ', ' +
-                                                iif(ReplayData[I].KeyProne, '1', '0') + ', ' +
-                                                IntToStr(ReplayData[I].AimX) + ', ' +
-                                                IntToStr(ReplayData[I].AimY) + ', ' +
-                                                FloatToStr(ReplayData[I].PosX) + ', ' +
-                                                FloatToStr(ReplayData[I].PosY) + ')';
-    for I := 1 to GetArrayLength(ReplayData) - 1 do
-      QueryString := QueryString + ', ' + FILE_NEWLINE + '(' + IntToStr(I) + ', ' + runIDString + ', ' +
-                                                         iif(ReplayData[I].KeyUp, '1', '0') + ', ' +
-                                                         iif(ReplayData[I].KeyLeft, '1', '0') + ', ' +
-                                                         iif(ReplayData[I].KeyRight, '1', '0') + ', ' +
-                                                         iif(ReplayData[I].KeyJetpack, '1', '0') + ', ' +
-                                                         iif(ReplayData[I].KeyGrenade, '1', '0') + ', ' +
-                                                         iif(ReplayData[I].KeyChangeWeap, '1', '0') + ', ' +
-                                                         iif(ReplayData[I].KeyThrow, '1', '0') + ', ' +
-                                                         iif(ReplayData[I].KeyCrouch, '1', '0') + ', ' +
-                                                         iif(ReplayData[I].KeyProne, '1', '0') + ', ' +
-                                                         IntToStr(ReplayData[I].AimX) + ', ' +
-                                                         IntToStr(ReplayData[I].AimY) + ', ' +
-                                                         FloatToStr(ReplayData[I].PosX) + ', ' +
-                                                         FloatToStr(ReplayData[I].PosY) + ')';
-    QueryString := QueryString + ';';
-    DB_PerformQuery(DB_ID_REPLAYS, 'Save_ReplayData', QueryString);
+
+    DB_PerformQuery(DB_ID_REPLAYS, 'Save_ReplayData', DB_Query_Replace_Val1(ReplayString, runIDString));
 
     // Save CheckPoint data
     DB_PerformQuery(DB_ID_REPLAYS, 'Save_ReplayData', DB_Query_Replace_Val2(SQL_DELETE_BESTRUN, Game.CurrentMap, runIDString));
@@ -934,20 +901,41 @@ var
   Len: Integer;
 begin
   Len := GetArrayLength(ReplayValues);
+  if Len = 0 then
+  begin
+    ReplayString := 'INSERT INTO `' + Game.CurrentMap +
+    '` (`replayOrder`, `runID`, `KeyUp`, `KeyLeft`, `KeyRight`, `KeyJetpack`, `KeyGrenade`,' +
+    ' `KeyChangeWeap`, `KeyThrow`, `KeyCrouch`, `KeyProne`, `AimX`, `AimY`, `PosX`, `PosY`) VALUES' + FILE_NEWLINE;
+    ReplayString := ReplayString + FILE_NEWLINE + '(' + IntToStr(Len) + ', ' + 'VAL1' + ', ' +
+                                                  iif(RM.Runner.PPlayer.KeyUp, '1', '0') + ', ' +
+                                                  iif(RM.Runner.PPlayer.KeyLeft, '1', '0') + ', ' +
+                                                  iif(RM.Runner.PPlayer.KeyRight, '1', '0') + ', ' +
+                                                  iif(RM.Runner.PPlayer.KeyJetpack, '1', '0') + ', ' +
+                                                  iif(RM.Runner.PPlayer.KeyGrenade, '1', '0') + ', ' +
+                                                  iif(RM.Runner.PPlayer.KeyChangeWeap, '1', '0') + ', ' +
+                                                  iif(RM.Runner.PPlayer.KeyThrow, '1', '0') + ', ' +
+                                                  iif(RM.Runner.PPlayer.KeyCrouch, '1', '0') + ', ' +
+                                                  iif(RM.Runner.PPlayer.KeyProne, '1', '0') + ', ' +
+                                                  IntToStr(RM.Runner.PPlayer.MouseAimX) + ', ' +
+                                                  IntToStr(RM.Runner.PPlayer.MouseAimY) + ', ' +
+                                                  FloatToStr(RM.Runner.PPlayer.X) + ', ' +
+                                                  FloatToStr(RM.Runner.PPlayer.Y) + ')';
+  end else
+    ReplayString := ReplayString + ', ' + FILE_NEWLINE + '(' + IntToStr(Len) + ', ' + 'VAL1' + ', ' +
+                                                         iif(RM.Runner.PPlayer.KeyUp, '1', '0') + ', ' +
+                                                         iif(RM.Runner.PPlayer.KeyLeft, '1', '0') + ', ' +
+                                                         iif(RM.Runner.PPlayer.KeyRight, '1', '0') + ', ' +
+                                                         iif(RM.Runner.PPlayer.KeyJetpack, '1', '0') + ', ' +
+                                                         iif(RM.Runner.PPlayer.KeyGrenade, '1', '0') + ', ' +
+                                                         iif(RM.Runner.PPlayer.KeyChangeWeap, '1', '0') + ', ' +
+                                                         iif(RM.Runner.PPlayer.KeyThrow, '1', '0') + ', ' +
+                                                         iif(RM.Runner.PPlayer.KeyCrouch, '1', '0') + ', ' +
+                                                         iif(RM.Runner.PPlayer.KeyProne, '1', '0') + ', ' +
+                                                         IntToStr(RM.Runner.PPlayer.MouseAimX) + ', ' +
+                                                         IntToStr(RM.Runner.PPlayer.MouseAimY) + ', ' +
+                                                         FloatToStr(RM.Runner.PPlayer.X) + ', ' +
+                                                         FloatToStr(RM.Runner.PPlayer.Y) + ')';
   SetArrayLength(ReplayValues, Len + 1);
-  ReplayValues[Len].KeyUp         := RM.Runner.PPlayer.KeyUp;
-  ReplayValues[Len].KeyLeft       := RM.Runner.PPlayer.KeyLeft;
-  ReplayValues[Len].KeyRight      := RM.Runner.PPlayer.KeyRight;
-  ReplayValues[Len].KeyJetpack    := RM.Runner.PPlayer.KeyJetpack;
-  ReplayValues[Len].KeyGrenade    := RM.Runner.PPlayer.KeyGrenade;
-  ReplayValues[Len].KeyChangeWeap := RM.Runner.PPlayer.KeyChangeWeap;
-  ReplayValues[Len].KeyThrow      := RM.Runner.PPlayer.KeyThrow;
-  ReplayValues[Len].KeyCrouch     := RM.Runner.PPlayer.KeyCrouch;
-  ReplayValues[Len].KeyProne      := RM.Runner.PPlayer.KeyProne;
-  ReplayValues[Len].PosX          := RM.Runner.PPlayer.X;
-  ReplayValues[Len].PosY          := RM.Runner.PPlayer.Y;
-  ReplayValues[Len].AimX          := RM.Runner.PPlayer.MouseAimX;
-  ReplayValues[Len].AimY          := RM.Runner.PPlayer.MouseAimY;
 end;
 
 procedure PassingCheckPoints();
