@@ -86,6 +86,7 @@ const
   SQL_UPDATE_BRONZES   = 'UPDATE `playerstats` SET `bronze` = VAL1 WHERE `ID` = VAL2;';
   SQL_SEARCH_MAP_BY_N  = 'SELECT `mapname` FROM `rm_maps` WHERE `mapname` LIKE ''%VAL1%'' LIMIT 15;';
   SQL_SEARCH_PLR_BY_N  = 'SELECT `ID`, `name`, `gold`, `silver`, `bronze` FROM `playerstats` WHERE `name` LIKE ''%VAL1%'' LIMIT 15;';
+  SQL_SEARCH_PLR_BY_ID = 'SELECT `ID`, `name`, `gold`, `silver`, `bronze`, `firstjoin`, `lastseen` FROM `playerstats` WHERE `ID` = VAL1 LIMIT 1;';
   SQL_SEARCH_ALT_NAME  = 'SELECT `info`, cnt FROM (SELECT `info`, SUM(CASE WHEN `HWID` = ''VAL1'' THEN 1 ELSE 0 END) as cnt ' +
                          'FROM `namechanges` GROUP BY `info`) AS lookuptable ' +
                          'WHERE cnt > 0 ORDER BY cnt DESC LIMIT 15;';
@@ -113,10 +114,21 @@ const
                          'FROM `rm_achievements` LEFT JOIN `rm_achievements_claim` ' +
                          'ON `rm_achievements`.`ID` = `rm_achievements_claim`.`AchievementID` ' +
                          'WHERE `rm_achievements_claim`.`playerID` = VAL2 AND `rm_achievements`.`chainID` = VAL1;';
+  SQL_PLAYER_ACHIEVES  = 'SELECT SUM(`rm_achievements`.`Points`), COUNT(`rm_achievements`.`ID`) ' +
+                         'FROM `rm_achievements` LEFT JOIN `rm_achievements_claim` ' +
+                         'ON `rm_achievements`.`ID` = `rm_achievements_claim`.`AchievementID` ' +
+                         'WHERE `rm_achievements_claim`.`playerID` = VAL1 ' +
+                         'LIMIT 1;';
+  SQL_ACHIEVE_RECENT   = 'SELECT `rm_achievements`.`Name`, `rm_achievements`.`Points`, `rm_achievements_claim`.`ClaimDate` ' +
+                         'FROM `rm_achievements` LEFT JOIN `rm_achievements_claim` ' +
+                         'ON `rm_achievements`.`ID` = `rm_achievements_claim`.`AchievementID` ' +
+                         'WHERE `rm_achievements_claim`.`playerID` = VAL1 ' +
+                         'ORDER BY `rm_achievements_claim`.`ClaimDate` DESC LIMIT 5;';
   SQL_ACH_FIN          = 'SELECT `AchievementID` FROM `rm_achievements_claim` WHERE `AchievementID` = VAL1 AND `playerID` = VAL2;';
   SQL_ACHIEVE_INFO_1   = 'SELECT `Name`, `Points`, `FirstPlayerID` FROM `rm_achievements` WHERE `ID` = VAL1 LIMIT 1;';
   SQL_ACHIEVE_INFO_2   = 'SELECT `name` FROM `playerstats` WHERE `ID` = VAL1 LIMIT 1;';
-  SQL_RECENT_ACTIONS   = 'SELECT `serverID`, `time`, `Kind`, `info` FROM `rm_activity` WHERE `PlayerID` = VAL1 ORDER BY `time` DESC LIMIT 15;';
+  SQL_RECENT_ACTIONS5  = 'SELECT `serverID`, `time`, `Kind`, `info` FROM `rm_activity` WHERE `PlayerID` = VAL1 ORDER BY `time` DESC LIMIT 5;';
+  SQL_RECENT_ACTIONS15 = 'SELECT `serverID`, `time`, `Kind`, `info` FROM `rm_activity` WHERE `PlayerID` = VAL1 ORDER BY `time` DESC LIMIT 15;';
   SQL_INSERT_ACTION    = 'INSERT INTO `rm_activity` (`playerID`, `serverID`, `time`, `kind`, `info`) VALUES (VAL1, VAL2, NOW(), VAL3, ''VAL4'');';
 
   // SQL queries for replays

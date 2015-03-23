@@ -1357,7 +1357,7 @@ procedure ShowLast15(p: TActivePlayer);
 begin
   if DB_CONNECTED then
   begin
-    if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_RECENT_ACTIONS, IntToStr(DB_PlayerGetIDbyHWID(p.HWID)))) <> 0) THEN
+    if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_RECENT_ACTIONS15, IntToStr(DB_PlayerGetIDbyHWID(p.HWID)))) <> 0) THEN
     begin
       p.WriteConsole('[RM] Your last 15 actions:', MESSAGE_COLOR_GAME);
       // `serverID` = 0, `time` = 1, `Kind` = 2, `info` = 3
@@ -1372,6 +1372,119 @@ begin
     DB_FinishQuery(DB_ID);
   end else
     WriteLnAndConsole(p, '[RM] Could not show the statistics! Database is not connected!', MESSAGE_COLOR_SYSTEM);
+end;
+
+procedure ShowProfile(p: TActivePlayer; ProfileIDText: string);
+var
+  ProfileID: Integer;
+  ProfileName: string;
+  ProfileGolds: string;
+  ProfileSilvers: string;
+  ProfileBronzes: string;
+  ProfileFirstJoin: string;
+  ProfileLastJoin: string;
+  ProfileAchievementNum: string;
+  ProfileAchievementPoints: string;
+  ProfileRecentAchievements: string;
+  ProfileRecentAction: string;
+begin
+  try
+    ProfileID := StrToInt(ProfileIDText);
+  except
+    p.WriteConsole('[RM] Could not load profile ''' + ProfileIDText + '''! It is not a numeric value!', MESSAGE_COLOR_RED);
+    Exit;
+  end;
+  if ProfileID <= 0 then
+  begin
+    p.WriteConsole('[RM] Could not load profile ''' + ProfileIDText + '''! The ID needs to be 1 or higher!', MESSAGE_COLOR_RED);
+    Exit;
+  end;
+  if DB_CONNECTED then
+  begin
+    if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_SEARCH_PLR_BY_ID, ProfileIDText)) <> 0) AND
+       (DB_NextRow(DB_ID) <> 0) then
+    begin
+      ProfileName      := DB_GetString(DB_ID, 1); // `name`
+      ProfileGolds     := DB_GetString(DB_ID, 2); // `gold`
+      ProfileSilvers   := DB_GetString(DB_ID, 3); // `silver`
+      ProfileBronzes   := DB_GetString(DB_ID, 4); // `bronze`
+      ProfileFirstJoin := DB_GetString(DB_ID, 5); // `firstjoin`
+      ProfileLastJoin  := DB_GetString(DB_ID, 6); // `lastseen`
+      p.WriteConsole('+--------------------------------+----------------------------------------------------------------+', MESSAGE_COLOR_GAME);
+      p.WriteConsole('| Name: ' + ProfileName + WHITESPACES[Length(ProfileName) - 1] + ' | First/Last seen: ' + ProfileFirstJoin + ' / ' + ProfileLastJoin +
+                      '     |', MESSAGE_COLOR_GAME);
+      p.WriteConsole('+--------------------------------+------------------+--------------------+------------------------+', MESSAGE_COLOR_GAME);
+      p.WriteConsole('|             Medals             | Golds: ' + ProfileGolds + WHITESPACES[14 + Length(ProfileGolds)] + ' | Silvers: ' + ProfileSilvers
+                      + WHITESPACES[14 + Length(ProfileSilvers)] + ' | Bronzes: ' + ProfileBronzes + WHITESPACES[14 + Length(ProfileBronzes)] +
+                      '     |', MESSAGE_COLOR_GAME);
+      p.WriteConsole('+--------------------------------+------------------+----------+---------+------------------------+', MESSAGE_COLOR_GAME);
+      if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_PLAYER_ACHIEVES, ProfileIDText)) <> 0) AND
+         (DB_NextRow(DB_ID) <> 0) then
+      begin
+        ProfileAchievementPoints := DB_GetString(DB_ID, 0); // SUM(`rm_achievements`.`Points`)
+        ProfileAchievementNum    := DB_GetString(DB_ID, 1); // COUNT(`rm_achievements`.`ID`)
+        p.WriteConsole('|          Achievements          | Earned: ' + ProfileAchievementNum + WHITESPACES[14 + Length(ProfileAchievementNum)] +
+                        '           | Points: ' + ProfileAchievementPoints + WHITESPACES[14 + Length(ProfileAchievementPoints)] +
+                        '                |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('+--------------------------------+-----------------------------+----------------------------------+', MESSAGE_COLOR_GAME);
+      end;
+      p.WriteConsole('| Recent achievements                                                                             |' + FILE_NEWLINE +
+                     '|                                                                                                 |', MESSAGE_COLOR_GAME);
+      ProfileRecentAchievements := '';
+      if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_ACHIEVE_RECENT, IntToStr(ProfileID))) <> 0) then
+      begin
+        // `rm_achievements`.`Name` = 0, `rm_achievements`.`Points` = 1, `rm_achievements_claim`.`ClaimDate` = 2
+        while DB_NextRow(DB_ID) <> 0 do
+          ProfileRecentAchievements := ProfileRecentAchievements + '  [' + DB_GetString(DB_ID, 2) + '] ' +
+            DB_GetString(DB_ID, 0) + ' (Points: ' + DB_GetString(DB_ID, 1) + ')' + FILE_NEWLINE;
+      end;
+      if ProfileRecentAchievements = '' then
+        p.WriteConsole('  Could not find any recent actions!', MESSAGE_COLOR_SYSTEM)
+      else
+        p.WriteConsole(ProfileRecentAchievements, MESSAGE_COLOR_GAME);
+      p.WriteConsole('|                                                                                                 |', MESSAGE_COLOR_GAME);
+      p.WriteConsole('|                                                                                                 |', MESSAGE_COLOR_GAME);
+      p.WriteConsole('|                                                                                                 |', MESSAGE_COLOR_GAME);
+      p.WriteConsole('|                                                                                                 |', MESSAGE_COLOR_GAME);
+      p.WriteConsole('+-------------------------------------------------------------------------------------------------+', MESSAGE_COLOR_GAME);
+      p.WriteConsole('| Recent activity                                                                                 |' + FILE_NEWLINE +
+                     '|                                                                                                 |', MESSAGE_COLOR_GAME);
+      ProfileRecentAction := '';
+      if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_RECENT_ACTIONS5, IntToStr(ProfileID))) <> 0) then
+      begin
+        // `serverID` = 0, `time` = 1, `Kind` = 2, `info` = 3
+        while DB_NextRow(DB_ID) <> 0 do
+          ProfileRecentAction := ProfileRecentAction + '  [' + DB_GetString(DB_ID, 1) + '] ' +
+            LastActionSentence(DB_GetLong(DB_ID, 2), DB_GetString(DB_ID, 3), p.Name) + FILE_NEWLINE;
+      end;
+      if ProfileRecentAction = '' then
+        p.WriteConsole('  Could not find any recent actions!', MESSAGE_COLOR_SYSTEM)
+      else
+        p.WriteConsole(ProfileRecentAction, MESSAGE_COLOR_GAME);
+      end;
+      p.WriteConsole('|                                                                                                 |', MESSAGE_COLOR_GAME);
+      p.WriteConsole('|                                                                                                 |', MESSAGE_COLOR_GAME);
+      p.WriteConsole('|                                                                                                 |', MESSAGE_COLOR_GAME);
+      p.WriteConsole('|                                                                                                 |', MESSAGE_COLOR_GAME);
+      p.WriteConsole('+-------------------------------------------------------------------------------------------------+', MESSAGE_COLOR_GAME);
+    end else
+      WriteLnAndConsole(p, '[RM] Could not search for a profile because Database is not connected!', MESSAGE_COLOR_SYSTEM);
+end;
+
+procedure FindAndShowProfile(p: TActivePlayer; ProfileName: string);
+begin
+  if Length(ProfileName) = 0 then
+    ShowProfile(p, IntToStr(DB_PlayerGetIDbyHWID(p.HWID)))
+  else
+    if DB_CONNECTED then
+    begin
+      if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_SEARCH_PLR_BY_N, DB_Escape_String(ProfileName))) <> 0) AND
+         (DB_NextRow(DB_ID) <> 0) then
+        ShowProfile(p, DB_GetString(DB_ID, 0)) // `ID`
+      else
+        p.WriteConsole('[RM] Could not find a profile for ''' + ProfileName + '''!', MESSAGE_COLOR_RED);
+    end else
+      WriteLnAndConsole(p, '[RM] Could not search for a profile because Database is not connected!', MESSAGE_COLOR_SYSTEM);
 end;
 
 procedure ShowQueue(p: TActivePlayer);
@@ -1528,6 +1641,8 @@ begin
         p.WriteConsole('| being removed, mutes, etc.               |', MESSAGE_COLOR_GOLD);
         p.WriteConsole('+------------------------------------------+', MESSAGE_COLOR_GOLD);
       end;
+      '!profile': FindAndShowProfile(p, Copy(Text, 10, Length(Text) - 9));
+      '!profileid': ShowProfile(p, Copy(Text, 12, Length(Text) - 11));
       '!commands',
       '!cmds':
       begin
@@ -1553,11 +1668,11 @@ begin
         p.WriteConsole('| !help / !info         | a litte info about the game          |', MESSAGE_COLOR_GAME);
         p.WriteConsole('| !rules                | rules for this server                |', MESSAGE_COLOR_GOLD);
         p.WriteConsole('| !profile ?            | profile of player name <?>           |', MESSAGE_COLOR_GAME);
-        p.WriteConsole('| !player ?             | profile of ID <?> from search player |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| !profileid ?          | profile of ID <?> from search player |', MESSAGE_COLOR_GAME);
         p.WriteConsole('| !statistics           | some server statistics               |', MESSAGE_COLOR_GAME);
         p.WriteConsole('| !adminlist            | server admins                        |', MESSAGE_COLOR_GAME);
         p.WriteConsole('| !choosemap ?          | starts vote for map <?>              |', MESSAGE_COLOR_GAME);
-        p.WriteConsole('| !replay ?             + replay RunID <?> (in top [] number)  |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| !replay ?             | replay RunID <?> (in top [] number)  |', MESSAGE_COLOR_GAME);
         p.WriteConsole('+-----------------------+--------------------------------------+', MESSAGE_COLOR_GAME);
       end;
       '!last15': ShowLast15(p);
