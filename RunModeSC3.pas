@@ -530,28 +530,48 @@ begin
         end;
       end;
 
+      DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val4(SQL_INSERT_ACTION, IntToStr(PlayerID), IntToStr(DB_SERVER_ID),
+        IntToStr(ACTION_KIND_RUN), Game.CurrentMap + ' (Time: ' + FormatDateTime('nn:ss.zzz', RunnerTime) + ')'));
+
       DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val1(SQL_INC_RUNSNUM, IntToStr(RM.Map.MapID)));
       DB_FinishQuery(DB_ID);
 
       // Now check for any difference in medals rankings
       if Result > 0 then // Result is over 0 if something changed
       begin
-        PlayerNewRank := GetPlayerRank(PlayerID, RM.Map.MapID);
+
+      DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val4(SQL_INSERT_ACTION, IntToStr(PlayerID),
+        IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_RUN), Game.CurrentMap + ' (Rank: )'));
         case PlayerNewRank of
           MEDAL_GOLD:
           begin
-          if PlayerID <> GoldPlayer then
-            NewGoldMedal(PlayerID, GoldPlayer, SilverPlayer, BronzePlayer);
+            if PlayerID <> GoldPlayer then
+              NewGoldMedal(PlayerID, GoldPlayer, SilverPlayer, BronzePlayer);
+            DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val4(SQL_INSERT_ACTION, IntToStr(PlayerID),
+              IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_GOLD), Game.CurrentMap));
+            if GoldPlayer > 0 then
+              DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val4(SQL_INSERT_ACTION, IntToStr(PlayerID),
+                IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_L_GOLD), Game.CurrentMap));
           end;
           MEDAL_SILVER:
           begin
             if PlayerID <> SilverPlayer then
               NewSilverMedal(PlayerID, SilverPlayer, BronzePlayer);
+            DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val4(SQL_INSERT_ACTION, IntToStr(PlayerID),
+              IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_SILVER), Game.CurrentMap));
+            if SilverPlayer > 0 then
+              DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val4(SQL_INSERT_ACTION, IntToStr(PlayerID),
+                IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_L_SILVER), Game.CurrentMap));
           end;
           MEDAL_BRONZE:
           begin
             if PlayerID <> BronzePlayer then
               NewBronzeMedal(PlayerID, BronzePlayer);
+            DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val4(SQL_INSERT_ACTION, IntToStr(PlayerID),
+              IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_BRONZE), Game.CurrentMap));
+            if BronzePlayer > 0 then
+              DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val4(SQL_INSERT_ACTION, IntToStr(PlayerID),
+                IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_L_BRONZE), Game.CurrentMap));
           end;
         end;
       end;
@@ -855,6 +875,9 @@ begin
   begin
     WriteLnAndConsole(NIL, '[RM] ' + RM.Runner.PPlayer.Name + ' stopped his run.', MESSAGE_COLOR_GAME);
     DB_PerformConnectedQuery('EndSingleGame', DB_Query_Replace_Val1(SQL_INC_FAILSNUM, IntToStr(RM.Map.MapID)));
+    DB_PerformConnectedQuery('EndSingleGame', DB_Query_Replace_Val4(SQL_INSERT_ACTION,
+      IntToStr(DB_PlayerGetIDbyHWID(RM.Runner.PPlayer.HWID)), IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_FAIL),
+      Game.CurrentMap));
     SetWaitingTime(MATH_SECOND * 1);
     DB_FinishQuery(DB_ID);
   end;
@@ -1311,6 +1334,46 @@ begin
   end;
 end;
 
+function LastActionSentence(Kind: Byte; Info, Name: string): string;
+begin
+  case Kind of
+    ACTION_KIND_RUN:      Result := Name + ' finished a run on ' + Info;
+    ACTION_KIND_FAIL:     Result := Name + ' stopped a run on ' + Info;
+    ACTION_KIND_VS_WON:   Result := Name + ' won a vs race on ' + Info;
+    ACTION_KIND_VS_LOST:  Result := Name + ' lost a vs race on ' + Info;
+    ACTION_KIND_ACHIEVE:  Result := Name + ' earned the achievement ' + Info;
+    ACTION_KIND_GOLD:     Result := Name + ' got a gold medal on ' + Info;
+    ACTION_KIND_SILVER:   Result := Name + ' got a silver medal on ' + Info;
+    ACTION_KIND_BRONZE:   Result := Name + ' got a bronze medal on ' + Info;
+    ACTION_KIND_L_GOLD:   Result := Name + ' lost a gold medal on ' + Info;
+    ACTION_KIND_L_SILVER: Result := Name + ' lost a silver medal on ' + Info;
+    ACTION_KIND_L_BRONZE: Result := Name + ' lost a bronze medal on ' + Info;
+  else
+    Result := 'ERROR - DEBUG DATA ' + IntToStr(Kind) + ' ' + Info + ' ' + Name;
+  end;
+end;
+
+procedure ShowLast15(p: TActivePlayer);
+begin
+  if DB_CONNECTED then
+  begin
+    if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_RECENT_ACTIONS, IntToStr(DB_PlayerGetIDbyHWID(p.HWID)))) <> 0) THEN
+    begin
+      p.WriteConsole('[RM] Your last 15 actions:', MESSAGE_COLOR_GAME);
+      // `serverID` = 0, `time` = 1, `Kind` = 2, `info` = 3
+      while DB_NextRow(DB_ID) <> 0 do
+        p.WriteConsole('[' + DB_GetString(DB_ID, 1) + '] ' + LastActionSentence(DB_GetLong(DB_ID, 2),
+          DB_GetString(DB_ID, 3), p.Name), MESSAGE_COLOR_GAME);
+      p.WriteConsole('[RM] That''s all.', MESSAGE_COLOR_GAME);
+    end else
+    begin
+      WriteLnAndConsole(p, '[RM] Could not find any recent actions from you!', MESSAGE_COLOR_SYSTEM);
+    end;
+    DB_FinishQuery(DB_ID);
+  end else
+    WriteLnAndConsole(p, '[RM] Could not show the statistics! Database is not connected!', MESSAGE_COLOR_SYSTEM);
+end;
+
 procedure ShowQueue(p: TActivePlayer);
 var
   I: Byte;
@@ -1482,8 +1545,7 @@ begin
         p.WriteConsole('| !search map/player ?  | searches for the map or player <?>   |', MESSAGE_COLOR_GAME);
         p.WriteConsole('| !search achievement ? | searches for the achievement <?>     |', MESSAGE_COLOR_GAME);
         p.WriteConsole('| !achievement ?        | info about achievement ID <?>        |', MESSAGE_COLOR_GAME);
-        p.WriteConsole('| !last10 achievements  | your last 10 achievements            |', MESSAGE_COLOR_GAME);
-        p.WriteConsole('| !last10 runs          | your last 10 runs                    |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| !last15               | your last 15 actions                 |', MESSAGE_COLOR_GAME);
         p.WriteConsole('| !maps / !mapslist     | up to 75 maps from mapslist          |', MESSAGE_COLOR_GAME);
         p.WriteConsole('| !top !top10           | the top on current map               |', MESSAGE_COLOR_GAME);
         p.WriteConsole('| !top ? / !top10 ?     | top players on map <?>               |', MESSAGE_COLOR_GAME);
@@ -1498,6 +1560,7 @@ begin
         p.WriteConsole('| !replay ?             + replay RunID <?> (in top [] number)  |', MESSAGE_COLOR_GAME);
         p.WriteConsole('+-----------------------+--------------------------------------+', MESSAGE_COLOR_GAME);
       end;
+      '!last15': ShowLast15(p);
       '!help',
       '!info':
       begin

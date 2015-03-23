@@ -116,6 +116,8 @@ const
   SQL_ACH_FIN          = 'SELECT `AchievementID` FROM `rm_achievements_claim` WHERE `AchievementID` = VAL1 AND `playerID` = VAL2;';
   SQL_ACHIEVE_INFO_1   = 'SELECT `Name`, `Points`, `FirstPlayerID` FROM `rm_achievements` WHERE `ID` = VAL1 LIMIT 1;';
   SQL_ACHIEVE_INFO_2   = 'SELECT `name` FROM `playerstats` WHERE `ID` = VAL1 LIMIT 1;';
+  SQL_RECENT_ACTIONS   = 'SELECT `serverID`, `time`, `Kind`, `info` FROM `rm_activity` WHERE `PlayerID` = VAL1 ORDER BY `time` DESC LIMIT 15;';
+  SQL_INSERT_ACTION    = 'INSERT INTO `rm_activity` (`playerID`, `serverID`, `time`, `kind`, `info`) VALUES (VAL1, VAL2, NOW(), VAL3, ''VAL4'');';
 
   // SQL queries for replays
  SQL_CREATE_REPLAY_TBL = 'CREATE TABLE IF NOT EXISTS `VAL1` ( ' +
@@ -183,6 +185,18 @@ const
   MEDAL_GOLD           = 1;
   MEDAL_SILVER         = 2;
   MEDAL_BRONZE         = 3;
+
+  ACTION_KIND_RUN      = 0;  // made a run          - info contains map and time
+  ACTION_KIND_FAIL     = 1;  // failed a run        - info contains map
+  ACTION_KIND_VS_WON   = 2;  // versus mode won     - info contains map and vs who
+  ACTION_KIND_VS_LOST  = 3;  // versus mode lost    - info contains map and vs who
+  ACTION_KIND_ACHIEVE  = 4;  // achievement claimed - info contains name and points
+  ACTION_KIND_GOLD     = 5;  // got a gold medal    - info contains map
+  ACTION_KIND_SILVER   = 6;  // got a silver medal  - info contains map
+  ACTION_KIND_BRONZE   = 7;  // got a bronze medal  - info contains map
+  ACTION_KIND_L_GOLD   = 8;  // lost a gold medal   - info contains map
+  ACTION_KIND_L_SILVER = 9;  // lost a silver medal - info contains map
+  ACTION_KIND_L_BRONZE = 10; // lost a bronze medal - info contains map
 
   REPLAY_BOT_NAME      = 'ReplayBot v0.2';
   REPLAY_BOT_COL_PANTS = $000000;           // Black
