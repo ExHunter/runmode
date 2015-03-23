@@ -862,7 +862,7 @@ begin
   begin
     RunTime := RM.CurrentRunLap[RM.Map.AmountOfLaps - 1].CheckPoint[RM.Map.AmountOfCheckPoints - 1];
 
-    WriteLnAndConsole(NIL, '[RM] ' + RM.Runner.PPlayer.Name + ' has finished a run in ' + FormatDateTime('hh:nn:ss.zzz', RunTime), MESSAGE_COLOR_GAME);
+    WriteLnAndConsole(NIL, '[RM] ' + RM.Runner.PPlayer.Name + ' has finished a run in ' + FormatDateTime('nn:ss.zzz', RunTime), MESSAGE_COLOR_GAME);
     if ReplayBot <> NIL then
       if RM.Runner.PPlayer.ID <> ReplayBot.ID then
       begin
@@ -974,15 +974,15 @@ begin
     begin
       RM.Map.CheckPoints[i].Checked := True;
       RM.Runner.CP := i + 1;
-      Players.WorldText(0, FormatDateTime('hh:nn:ss.zzz', RunTime), MATH_SECOND_IN_TICKS * 2,
+      Players.WorldText(0, FormatDateTime('nn:ss.zzz', RunTime), MATH_SECOND_IN_TICKS * 2,
         MESSAGE_COLOR_GAME, 0.068, RM.Map.CheckPoints[i].X - 65, RM.Map.CheckPoints[i].Y + 50);
       RM.CurrentRunLap[RM.Runner.Laps].CheckPoint[i] := RunTime;
       if RM.BestRunLoaded and not BotActive then
         if RunTime > RM.BestRunLap[RM.Runner.Laps].CheckPoint[i] then
-          Players.WorldText(1, '+' + FormatDateTime('hh:nn:ss.zzz', RunTime - RM.BestRunLap[RM.Runner.Laps].CheckPoint[i]), MATH_SECOND_IN_TICKS * 2,
+          Players.WorldText(1, '+' + FormatDateTime('nn:ss.zzz', RunTime - RM.BestRunLap[RM.Runner.Laps].CheckPoint[i]), MATH_SECOND_IN_TICKS * 2,
             MESSAGE_COLOR_RED,   0.068, RM.Map.CheckPoints[i].X - 85, RM.Map.CheckPoints[i].Y + 70)
         else
-          Players.WorldText(1, '-' + FormatDateTime('hh:nn:ss.zzz', RM.BestRunLap[RM.Runner.Laps].CheckPoint[i] - RunTime), MATH_SECOND_IN_TICKS * 2,
+          Players.WorldText(1, '-' + FormatDateTime('nn:ss.zzz', RM.BestRunLap[RM.Runner.Laps].CheckPoint[i] - RunTime), MATH_SECOND_IN_TICKS * 2,
             MESSAGE_COLOR_GREEN, 0.068, RM.Map.CheckPoints[i].X - 75, RM.Map.CheckPoints[i].Y + 70);
       if i = 0 then
         RM.Map.CheckPoints[RM.Map.AmountOfCheckpoints-1].Checked := False;
@@ -1001,14 +1001,14 @@ begin
         EndSingleGame(True)
       else
       begin
-        Players.WorldText(0, FormatDateTime('hh:nn:ss.zzz', RunTime), MATH_SECOND_IN_TICKS * 2,
+        Players.WorldText(0, FormatDateTime('nn:ss.zzz', RunTime), MATH_SECOND_IN_TICKS * 2,
           MESSAGE_COLOR_GAME, 0.068, RM.Map.CheckPoints[i].X - 65, RM.Map.CheckPoints[i].Y + 50);
         if RM.BestRunLoaded and not BotActive then
           if RunTime > RM.BestRunLap[RM.Runner.Laps - 1].CheckPoint[i] then
-            Players.WorldText(1, '+' + FormatDateTime('hh:nn:ss.zzz', RunTime - RM.BestRunLap[RM.Runner.Laps - 1].CheckPoint[i]), MATH_SECOND_IN_TICKS * 2,
+            Players.WorldText(1, '+' + FormatDateTime('nn:ss.zzz', RunTime - RM.BestRunLap[RM.Runner.Laps - 1].CheckPoint[i]), MATH_SECOND_IN_TICKS * 2,
               MESSAGE_COLOR_RED,   0.068, RM.Map.CheckPoints[i].X - 85, RM.Map.CheckPoints[i].Y + 70)
           else
-            Players.WorldText(1, '-' + FormatDateTime('hh:nn:ss.zzz', RM.BestRunLap[RM.Runner.Laps - 1].CheckPoint[i] - RunTime), MATH_SECOND_IN_TICKS * 2,
+            Players.WorldText(1, '-' + FormatDateTime('nn:ss.zzz', RM.BestRunLap[RM.Runner.Laps - 1].CheckPoint[i] - RunTime), MATH_SECOND_IN_TICKS * 2,
               MESSAGE_COLOR_GREEN, 0.068, RM.Map.CheckPoints[i].X - 75, RM.Map.CheckPoints[i].Y + 70);
       end;
     end;
