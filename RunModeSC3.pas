@@ -1398,7 +1398,8 @@ procedure OnSpeak(p: TActivePlayer; Text: string);
 begin
   if Text[1] = '!' then
     case LowerCase(ReplaceRegExpr(REGEXP_FIRST_WORD, Text, '', False)) of
-      '!play':
+      '!play',
+      '!start':
       begin
         if not RM.Active and RM.Map.Loaded then
           if IsQueueEmpty() then
@@ -1411,14 +1412,18 @@ begin
             end else
               p.WriteConsole('[RM] It''s not your turn yet! If you did not add yourself yet, do !add', MESSAGE_COLOR_RED);
       end;
-      '!fail':
+      '!fail',
+      '!stop',
+      '!quit',
+      '!giveup':
       begin
         if RM.Active then
           if RM.Runner.PPlayer <> NIL then
             if p.ID = RM.Runner.PPlayer.ID then
               EndSingleGame(False);
       end;
-      '!freerun': p.Team := TEAM_FREERUNNER;
+      '!freerun',
+      '!delta': p.Team := TEAM_FREERUNNER;
       '!add':
       begin
         if QueuePosition(p.ID) = 0 then
@@ -1444,36 +1449,64 @@ begin
       '!top10': ShowTop(Text);
       '!commands',
       '!cmds':
-       begin
-         p.WriteConsole('+----------------R-U-N-M-O-D-E--C-O-M-M-A-N-D-S----------------+', MESSAGE_COLOR_GAME);
-         p.WriteConsole('| COMMAND               | DESCRIPTION                          |', MESSAGE_COLOR_GOLD);
-         p.WriteConsole('+-----------------------+--------------------------------------+', MESSAGE_COLOR_GAME);
-         p.WriteConsole('| !play                 | start a run                          |', MESSAGE_COLOR_GAME);
-         p.WriteConsole('| !fail / !quit         |                                      |', MESSAGE_COLOR_GAME);
-         p.WriteConsole('| !stop / !giveup       | stops a run                          |', MESSAGE_COLOR_GAME);
-         p.WriteConsole('| !add                  | adds you to the queue                |', MESSAGE_COLOR_GAME);
-         p.WriteConsole('| !del                  | removes you from the queue           |', MESSAGE_COLOR_GAME);
-         p.WriteConsole('| !queue                | players in the queue                 |', MESSAGE_COLOR_GAME);
-         p.WriteConsole('| !bestrun              | shows times of the best run          |', MESSAGE_COLOR_GAME);
-         p.WriteConsole('| !search map/player ?  | searches for the map or player <?>   |', MESSAGE_COLOR_GAME);
-         p.WriteConsole('| !search achievement ? | searches for the player <?>          |', MESSAGE_COLOR_GAME);
-         p.WriteConsole('| !achievement ?        | info about achievement ID <?>        |', MESSAGE_COLOR_GAME);
-         p.WriteConsole('| !last10 achievements  | your last 10 achievements            |', MESSAGE_COLOR_GAME);
-         p.WriteConsole('| !last10 runs          | your last 10 runs                    |', MESSAGE_COLOR_GAME);
-         p.WriteConsole('| !maps / !mapslist     | up to 75 maps from mapslist          |', MESSAGE_COLOR_GAME);
-         p.WriteConsole('| !top !top10           | the top on current map               |', MESSAGE_COLOR_GAME);
-         p.WriteConsole('| !top ? / !top10 ?     | top players on map <?>               |', MESSAGE_COLOR_GAME);
-         p.WriteConsole('| !runs                 | list runs of online players          |', MESSAGE_COLOR_GAME);
-         p.WriteConsole('| !help / !info         | a litte info about the game          |', MESSAGE_COLOR_GAME);
-         p.WriteConsole('| !rules                | rules for this server                |', MESSAGE_COLOR_GOLD);
-         p.WriteConsole('| !profile ?            | profile of player name <?>           |', MESSAGE_COLOR_GAME);
-         p.WriteConsole('| !player ?             | profile of ID <?> from search player |', MESSAGE_COLOR_GAME);
-         p.WriteConsole('| !statistics           | some server statistics               |', MESSAGE_COLOR_GAME);
-         p.WriteConsole('| !adminlist            | server admins                        |', MESSAGE_COLOR_GAME);
-         p.WriteConsole('| !choosemap ?          | starts vote for map <?>              |', MESSAGE_COLOR_GAME);
-         p.WriteConsole('| !replay ?             | replay RunID <?> (in top [] number)  |', MESSAGE_COLOR_GAME);
-         p.WriteConsole('+-----------------------+--------------------------------------+', MESSAGE_COLOR_GAME);
-       end;
+      begin
+        p.WriteConsole('+----------------R-U-N-M-O-D-E--C-O-M-M-A-N-D-S----------------+', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| COMMAND               | DESCRIPTION                          |', MESSAGE_COLOR_GOLD);
+        p.WriteConsole('+-----------------------+--------------------------------------+', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| !play / !start        | start a run                          |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| !freerun / !delta     | you can move freely around           |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| !fail / !quit         |                                      |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| !stop / !giveup       | stops a run                          |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| !add                  | adds you to the queue                |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| !del                  | removes you from the queue           |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| !queue                | players in the queue                 |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| !bestrun              | shows times of the best run          |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| !search map/player ?  | searches for the map or player <?>   |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| !search achievement ? | searches for the achievement <?>     |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| !achievement ?        | info about achievement ID <?>        |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| !last10 achievements  | your last 10 achievements            |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| !last10 runs          | your last 10 runs                    |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| !maps / !mapslist     | up to 75 maps from mapslist          |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| !top !top10           | the top on current map               |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| !top ? / !top10 ?     | top players on map <?>               |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| !runs                 | list runs of online players          |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| !help / !info         | a litte info about the game          |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| !rules                | rules for this server                |', MESSAGE_COLOR_GOLD);
+        p.WriteConsole('| !profile ?            | profile of player name <?>           |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| !player ?             | profile of ID <?> from search player |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| !statistics           | some server statistics               |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| !adminlist            | server admins                        |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| !choosemap ?          | starts vote for map <?>              |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| !replay ?             + replay RunID <?> (in top [] number)  |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('+-----------------------+--------------------------------------+', MESSAGE_COLOR_GAME);
+      end;
+      '!help',
+      '!info':
+      begin
+        p.WriteConsole('+-----------R-U-N-M-O-D-E--I-N-F-O-----------+', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| Script by ExHunter, original idea by Vince |', MESSAGE_COLOR_GOLD);
+        p.WriteConsole('+--------------------------------------------+', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| This is a RunMode3 server. Try to find out |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| how   fast   you   are!   Just   pass  the |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| checkpoints  (numbers)  while  playing and |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| brag around your friends with the results! |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| Compete solo  or  in  a  versus mode, hunt |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| for achievements and medals! Be one of the |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| fastest players in Soldat!                 |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| Or you know... Just run here for fun!      |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('+--------------------------------------------+', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| Instructions for your first run:           |', MESSAGE_COLOR_GOLD);
+        p.WriteConsole('| Type !play while  nobody  else is playing, |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| then start to run  to  the next red number |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| (starting with 1).  If you pass the number |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| it will appear now as green, so you passed |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| that checkpoint. Keep doing this until get |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| moved back to spectator team! That is all! |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| You  finished  a   whole  run!  Have  fun! |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('+--------------------------------------------+', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| Type !cmds for a list of commands          |', MESSAGE_COLOR_GOLD);
+        p.WriteConsole('+--------------------------------------------+', MESSAGE_COLOR_GAME);
+      end;
       '!bestrun': ShowBestRun;
       '!statistics': ShowStatistics;
       '!choosemap': StartChooseMap(Copy(Text, 12, Length(Text) - 11));
