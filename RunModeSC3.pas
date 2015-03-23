@@ -1438,6 +1438,33 @@ begin
       '!queue': ShowQueue(p);
       '!top': ShowTop(p, Text);
       '!top10': ShowTop(p, Text);
+      '!admin': Players.WriteConsole('[RM] ' + p.Name + ' has requested an admin.', MESSAGE_COLOR_GREEN);
+      '!adminlist',
+      '!admins':
+      begin
+        p.WriteConsole('+-----A-D-M-I-N-S-----+', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| ExHunter       (EU) |', MESSAGE_COLOR_GOLD);
+        p.WriteConsole('| Toyux          (SA) |', MESSAGE_COLOR_GOLD);
+        p.WriteConsole('+---------------------+', MESSAGE_COLOR_GAME);
+      end;
+      '!rules':
+      begin
+        p.WriteConsole('+--------------D-A--R-U-L-E-S--------------+', MESSAGE_COLOR_GOLD);
+        p.WriteConsole('| 1. Do not use cheats or hacks            |', MESSAGE_COLOR_GOLD);
+        p.WriteConsole('| 2. Do not abuse bugs                     |', MESSAGE_COLOR_GOLD);
+        p.WriteConsole('| 3. Take turns                            |', MESSAGE_COLOR_GOLD);
+        p.WriteConsole('| 4. Respect other players and admins      |', MESSAGE_COLOR_GOLD);
+        p.WriteConsole('| 5. What an admin says is word            |', MESSAGE_COLOR_GOLD);
+        p.WriteConsole('|    You can argue, but do not stress it.  |', MESSAGE_COLOR_GOLD);
+        p.WriteConsole('|                                          |', MESSAGE_COLOR_GOLD);
+        p.WriteConsole('| We reserve us  the  right  to ban you on |', MESSAGE_COLOR_GOLD);
+        p.WriteConsole('| on any server  in  our  network,  if you |', MESSAGE_COLOR_GOLD);
+        p.WriteConsole('| break any  rules  here.  Also we measure |', MESSAGE_COLOR_GOLD);
+        p.WriteConsole('| on our own how  we  punish rulebreakers. |', MESSAGE_COLOR_GOLD);
+        p.WriteConsole('| This can include:  warnings, bans, stats |', MESSAGE_COLOR_GOLD);
+        p.WriteConsole('| being removed, mutes, etc.               |', MESSAGE_COLOR_GOLD);
+        p.WriteConsole('+------------------------------------------+', MESSAGE_COLOR_GOLD);
+      end;
       '!commands',
       '!cmds':
       begin
