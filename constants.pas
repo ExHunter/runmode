@@ -157,7 +157,7 @@ const
                          '    UNIQUE INDEX `combination` (`replayOrder`, `runID`), ' +
                          '    INDEX `runID` (`runID`) ' +
                          ') ' +
-                         'ENGINE=InnoDB;';
+                         'ENGINE=MyISAM;';
   SQL_CREATE_BESTRUN   = 'CREATE TABLE IF NOT EXISTS `VAL1_bestrun` ( ' +
                          '     `runID` INT(11) NOT NULL, ' +
                          '     `Lap` TINYINT(4) NOT NULL, ' +
@@ -167,7 +167,7 @@ const
                          '     INDEX `ID` (`runID`) ' +
                          ') ' +
                          'COLLATE=''utf8_general_ci'' ' +
-                         'ENGINE=InnoDB;';
+                         'ENGINE=MyISAM;';
   SQL_DELETE_REPLAY    = 'DELETE FROM `VAL1` WHERE `runID` = VAL2;';
   SQL_GET_REPLAY       = 'SELECT `KeyUp`, `KeyLeft`, `KeyRight`, `KeyJetpack`, `KeyGrenade`, `KeyChangeWeap`, `KeyThrow`, `KeyCrouch`, `KeyProne`, `AimX`, `AimY`, `PosX`, `PosY` ' +
                          'FROM `VAL1` WHERE `runID` = VAL2 ORDER BY `replayOrder` ASC;';
