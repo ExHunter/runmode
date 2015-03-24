@@ -918,7 +918,11 @@ begin
         end;
 
         Achievement_Handle_Update(1, 1, RM.Runner.PPlayer, True); // Getting Started
-      end;
+      end else
+        for j := 1 to HighID do
+          if Players[j].Active then
+            if Players[j].Human then
+              Achievement_Handle_Update(71, 1, Players[j], False); // Magnificient
   end else
   begin
     WriteLnAndConsole(NIL, '[RM] ' + RM.Runner.PPlayer.Name + ' stopped his run.', MESSAGE_COLOR_GAME);
@@ -1793,13 +1797,18 @@ begin
               EndSingleGame(False);
       end;
       '!freerun',
-      '!delta': p.Team := TEAM_FREERUNNER;
+      '!delta':
+      begin
+        p.Team := TEAM_FREERUNNER;
+        Achievement_Handle_Update(69, 1, p, False); // Keep on runnin'...
+      end;
       '!add':
       begin
         if QueuePosition(p.ID) = 0 then
         begin
           EnQueue(p.ID);
           p.WriteConsole('[RM] Successfully added to the queue!', MESSAGE_COLOR_GAME);
+          Achievement_Handle_Update(68, 1, p, False); // Queue.. cuisine? What?
         end else
           p.WriteConsole('[RM] You are already in the queue!', MESSAGE_COLOR_RED);
       end;
@@ -1817,7 +1826,11 @@ begin
       '!queue': ShowQueue(p);
       '!top': ShowTop(p, Text);
       '!top10': ShowTop(p, Text);
-      '!admin': Players.WriteConsole('[RM] ' + p.Name + ' has requested an admin.', MESSAGE_COLOR_GREEN);
+      '!admin':
+      begin
+        Players.WriteConsole('[RM] ' + p.Name + ' has requested an admin.', MESSAGE_COLOR_GREEN);
+        Achievement_Handle_Update(70, 1, p, False); // Naggers
+      end;
       '!adminlist',
       '!admins':
       begin
@@ -2168,6 +2181,7 @@ begin
     DB_PerformQuery(DB_ID, 'GameOnJoin', DB_Query_Replace_Val4(SQL_INSERT_ACTION,
       IntToStr(DB_PlayerGetIDbyHWID(p.HWID)), IntToStr(DB_SERVER_ID),
       IntToStr(ACTION_KIND_JOIN), ''));
+    Achievement_Handle_Update(67, 1, p, False); // Addicted to you
     p.WriteConsole('[HELP] Welcome to !RunMode. Type !help if you are new.', MESSAGE_COLOR_SYSTEM);
   end;
 end;
