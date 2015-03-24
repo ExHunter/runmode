@@ -190,7 +190,6 @@ begin
     begin
       for I := 1 to Queue.Tail - 1 do
         Queue.Members[I] := Queue.Members[I + 1];
-      Players.WriteConsole('[RM] It is now ' + Players[Queue.Members[1]].Name + '''s turn.', MESSAGE_COLOR_GAME);
     end else
       Queue.Members[1] := 0;
     Queue.Tail := Queue.Tail - 1;
@@ -202,10 +201,7 @@ begin
   if Queue.Tail < QUEUE_MAX_PLAYERS then
   begin
     if Queue.Tail = 0 then
-    begin
       Queue.RemainingSeconds := QUEUE_TIMER;
-      Players.WriteConsole('[RM] It is now ' + Players[NewMember].Name + '''s turn.', MESSAGE_COLOR_GAME);
-    end;
     Queue.Tail := Queue.Tail + 1;
     Queue.Members[Queue.Tail] := NewMember;
   end else
@@ -215,6 +211,15 @@ end;
 function ReQueue(): Boolean;
 begin
   Result := EnQueue(DeQueue());
+end;
+
+procedure QueueDisplayTurn();
+begin
+  if not IsQueueEmpty() then
+  begin
+    Players.WriteConsole('[RM] It is now ' + Players[Queue.Members[1]].Name + '''s turn.', MESSAGE_COLOR_GAME);
+    Queue.RemainingSeconds := QUEUE_TIMER;
+  end;
 end;
 
 procedure DoQueueUpdateOnTick();
@@ -2062,6 +2067,7 @@ begin
       Players.BigText(1, '0... Ready for next run!',
         MATH_SECOND_IN_TICKS * 2, MESSAGE_COLOR_GREEN,
         0.068, 5, 360);
+    QueueDisplayTurn;
     RM.Active := False;
   end;
 end;
