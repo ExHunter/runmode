@@ -78,6 +78,7 @@ const
   SQL_GET_ACTIVE_BANS  = 'SELECT `date`, `until`, `reason`, `admin` FROM `banlist` WHERE `until` > NOW() AND (`HWID` = ''VAL1'' OR `IP` = ''VAL2'') LIMIT 1;';
   SQL_GET_PLAYER_JOIN  = 'SELECT `name`, `adm`, `lastip` FROM `playerstats` WHERE `HWID` = ''VAL1'' LIMIT 1;';
   SQL_GET_PLR_MEDALS   = 'SELECT `gold`, `silver`, `bronze` FROM `playerstats` WHERE `ID` = VAL1 LIMIT 1;';
+  SQL_GET_MAPSLIST     = 'SELECT `mapname` FROM `rm_maps` ORDER BY RAND() LIMIT 0,75;';
   SQL_ADD_PLAYER       = 'INSERT INTO `playerstats` (`HWID`, `name`, `firstjoin`, `lastseen`, `lastip`) VALUES (''VAL1'', ''VAL2'', NOW(), NOW(), ''VAL3'');';
   SQL_UPDATE_PLR_JOIN  = 'UPDATE `playerstats` SET `name` = ''VAL1'', `lastip` = ''VAL2'' WHERE `HWID` = ''VAL3'';';
   SQL_UPDATE_PLR_SEEN  = 'UPDATE `playerstats` SET `lastseen` = NOW() WHERE `HWID` = ''VAL1'';';

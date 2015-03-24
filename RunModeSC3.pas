@@ -1541,6 +1541,48 @@ begin
     WriteLnAndConsole(p, '[RM] Could not show the statistics! Database is not connected!', MESSAGE_COLOR_SYSTEM);
 end;
 
+procedure ShowMapsList(p: TActivePlayer);
+var
+  LineOutPut: string;
+  MapName: string;
+begin
+  if DB_CONNECTED then
+  begin
+    if (DB_Query(DB_ID, SQL_GET_MAPSLIST) <> 0) then
+    begin
+      LineOutPut := '';
+      MapName    := '';
+      p.WriteConsole('+-----------------------------------------------------------------+', MESSAGE_COLOR_GAME);
+      p.WriteConsole('| MapsList (a set of up to 75 random maps)                        |', MESSAGE_COLOR_GOLD);
+      p.WriteConsole('+-----------------------------------------------------------------+', MESSAGE_COLOR_GAME);
+      while DB_NextRow(DB_ID) <> 0 do
+      begin
+        MapName := DB_GetString(DB_ID, 0); // `mapname`
+        if ((Length(LineOutPut + MapName) + 3) > 62) then
+        begin
+          while Length(LineOutPut) < 64 do
+            LineOutPut := LineOutPut + ' ';
+          p.WriteConsole('|' + LineOutPut + ' |', MESSAGE_COLOR_GAME);
+          LineOutPut := '[' + MapName + ']';
+        end else
+          LineOutPut := LineOutPut + ' [' + MapName + ']';
+      end;
+      if LineOutPut = '' then
+        p.WriteConsole('| No map has been found.                                          |', MESSAGE_COLOR_GAME)
+      else
+      begin
+        while Length(LineOutPut) < 64 do
+          LineOutPut := LineOutPut + ' ';
+        p.WriteConsole('|' + LineOutPut + ' |', MESSAGE_COLOR_GAME);
+      end;
+      p.WriteConsole('+-----------------------------------------------------------------+', MESSAGE_COLOR_GAME);
+    end else
+      WriteLnAndConsole(p, '[RM] Could not find the mapslist!', MESSAGE_COLOR_SYSTEM);
+    DB_FinishQuery(DB_ID);
+  end else
+    WriteLnAndConsole(p, '[RM] Could not show the mapslist! Database is not connected!', MESSAGE_COLOR_SYSTEM);
+end;
+
 procedure ShowBestRun(p: TActivePlayer);
 var
   I, J: Byte;
@@ -1676,6 +1718,8 @@ begin
         p.WriteConsole('+-----------------------+--------------------------------------+', MESSAGE_COLOR_GAME);
       end;
       '!last15': ShowLast15(p);
+      '!maps',
+      '!mapslist': ShowMapsList(p);
       '!help',
       '!info':
       begin
