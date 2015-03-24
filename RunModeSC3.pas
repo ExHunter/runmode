@@ -573,7 +573,7 @@ begin
         PlayerNewRank := GetPlayerRank(PlayerID, RM.Map.MapID);
 
         DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val4(SQL_INSERT_ACTION, IntToStr(PlayerID),
-          IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_RUN), Game.CurrentMap + ' (Rank: ' + IntToStr(PlayerNewRank) + ')'));
+          IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_NEW_BEST), Game.CurrentMap + ' (Rank: ' + IntToStr(PlayerNewRank) + ')'));
         if (PlayerNewRank > 0) and (PlayerNewRank < 4) then
           Achievement_Handle_Update(3, 1, p, True); // Victory!
         case PlayerNewRank of
@@ -1426,6 +1426,9 @@ begin
     ACTION_KIND_L_GOLD:   Result := Name + ' lost a gold medal on ' + Info;
     ACTION_KIND_L_SILVER: Result := Name + ' lost a silver medal on ' + Info;
     ACTION_KIND_L_BRONZE: Result := Name + ' lost a bronze medal on ' + Info;
+    ACTION_KIND_NEW_BEST: Result := Name + ' has a new best on ' + Info;
+    ACTION_KIND_JOIN:     Result := Name + ' has joined the game';
+    ACTION_KIND_LEAVE:    Result := Name + ' has left the game';
   else
     Result := 'ERROR - DEBUG DATA ' + IntToStr(Kind) + ' ' + Info + ' ' + Name;
   end;
@@ -2104,7 +2107,7 @@ begin
       PlayerName := DB_GetString(DB_ID, 0); // `name`
       if DB_GetLong(DB_ID, 1) > 0 then      // `adm`
         p.IsAdmin := True;
-      PlayerName := DB_GetString(DB_ID, 2); // `lastip`
+      PlayerIP := DB_GetString(DB_ID, 2); // `lastip`
       DB_FinishQuery(DB_ID);
 
       if (PlayerName <> p.Name) or (PlayerIP <> p.IP) then
@@ -2136,15 +2139,18 @@ begin
       if RM.Runner.PPlayer <> NIL then
         if p.ID = RM.Runner.PPlayer.ID then
           RM.Active := False;
+  if p.Team <> TEAM_SPECTATOR then
+    p.Team := TEAM_SPECTATOR;
   if p.Human then
   begin
     if RM.Map.Loaded then
       DrawCheckPoints;
     UpdatePlayerDatabase(p); // Adds the player if not in Database
+    DB_PerformQuery(DB_ID, 'GameOnJoin', DB_Query_Replace_Val4(SQL_INSERT_ACTION,
+      IntToStr(DB_PlayerGetIDbyHWID(p.HWID)), IntToStr(DB_SERVER_ID),
+      IntToStr(ACTION_KIND_JOIN), ''));
     p.WriteConsole('[HELP] Welcome to !RunMode. Type !help if you are new.', MESSAGE_COLOR_SYSTEM);
   end;
-  if p.Team <> TEAM_SPECTATOR then
-    p.Team := TEAM_SPECTATOR;
 end;
 
 procedure GameOnLeave(p: TActivePlayer; Kicked: Boolean);
@@ -2158,6 +2164,9 @@ begin
   if p.IsAdmin then
     p.IsAdmin := False;
   RemoveFromQueue(p.ID);
+  DB_PerformQuery(DB_ID, 'GameOnLeave', DB_Query_Replace_Val4(SQL_INSERT_ACTION,
+    IntToStr(DB_PlayerGetIDbyHWID(p.HWID)), IntToStr(DB_SERVER_ID),
+    IntToStr(ACTION_KIND_LEAVE), ''));
   if HighID = p.ID then
     for I := HighID - 1 downto 1 do
       if Players[I].Active then

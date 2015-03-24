@@ -215,6 +215,9 @@ const
   ACTION_KIND_L_GOLD   = 8;  // lost a gold medal   - info contains map
   ACTION_KIND_L_SILVER = 9;  // lost a silver medal - info contains map
   ACTION_KIND_L_BRONZE = 10; // lost a bronze medal - info contains map
+  ACTION_KIND_NEW_BEST = 11; // has a new best      - info contains map and time
+  ACTION_KIND_JOIN     = 12; // joins the game      - info contains nothing
+  ACTION_KIND_LEAVE    = 13; // leaves the game     - info contains nothing
 
   REPLAY_BOT_NAME      = 'ReplayBot v0.2';
   REPLAY_BOT_COL_PANTS = $000000;           // Black
