@@ -472,17 +472,19 @@ begin
   DB_Close(DB_ID_REPLAYS);
 end;
 
-function Save_RunData(HWID: string; RunnerTime: TDateTime): Integer;
+function Save_RunData(p: TActivePlayer; RunnerTime: TDateTime): Integer;
 var
   ExistingRunID: Integer;
   PlayerID: Integer;
   DataBaseTime: TDateTime;
   GoldPlayer, SilverPlayer, BronzePlayer: Integer;
   PlayerNewRank: Integer;
+  HWID: String;
 begin
   Result := 0;
   if DB_CONNECTED then
   begin
+    HWID := p.HWID;
     if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_GET_PLAYER_ID, HWID)) <> 0) and
        (DB_NextRow(DB_ID) <> 0) then
     begin
@@ -555,6 +557,7 @@ begin
         begin
           Result := DB_GetLong(DB_ID, 0); // `ID`
           DB_FinishQuery(DB_ID);
+          Achievement_Handle_Update(2, 1, p, True); // I like maps
         end;
       end;
 
@@ -567,38 +570,44 @@ begin
       // Now check for any difference in medals rankings
       if Result > 0 then // Result is over 0 if something changed
       begin
+        PlayerNewRank := GetPlayerRank(PlayerID, RM.Map.MapID);
 
-      DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val4(SQL_INSERT_ACTION, IntToStr(PlayerID),
-        IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_RUN), Game.CurrentMap + ' (Rank: )'));
+        DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val4(SQL_INSERT_ACTION, IntToStr(PlayerID),
+          IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_RUN), Game.CurrentMap + ' (Rank: ' + IntToStr(PlayerNewRank) + ')'));
+        if (PlayerNewRank > 0) and (PlayerNewRank < 4) then
+          Achievement_Handle_Update(3, 1, p, True); // Victory!
         case PlayerNewRank of
           MEDAL_GOLD:
           begin
             if PlayerID <> GoldPlayer then
               NewGoldMedal(PlayerID, GoldPlayer, SilverPlayer, BronzePlayer);
+            Achievement_Handle_Update(6, 1, p, True); // That gold is mine!
             DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val4(SQL_INSERT_ACTION, IntToStr(PlayerID),
               IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_GOLD), Game.CurrentMap));
             if GoldPlayer > 0 then
-              DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val4(SQL_INSERT_ACTION, IntToStr(PlayerID),
+              DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val4(SQL_INSERT_ACTION, IntToStr(GoldPlayer),
                 IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_L_GOLD), Game.CurrentMap));
           end;
           MEDAL_SILVER:
           begin
             if PlayerID <> SilverPlayer then
               NewSilverMedal(PlayerID, SilverPlayer, BronzePlayer);
+            Achievement_Handle_Update(5, 1, p, True); // 2nd place is the first loser
             DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val4(SQL_INSERT_ACTION, IntToStr(PlayerID),
               IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_SILVER), Game.CurrentMap));
             if SilverPlayer > 0 then
-              DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val4(SQL_INSERT_ACTION, IntToStr(PlayerID),
+              DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val4(SQL_INSERT_ACTION, IntToStr(SilverPlayer),
                 IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_L_SILVER), Game.CurrentMap));
           end;
           MEDAL_BRONZE:
           begin
             if PlayerID <> BronzePlayer then
               NewBronzeMedal(PlayerID, BronzePlayer);
+            Achievement_Handle_Update(4, 1, p, True); // Bronzification
             DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val4(SQL_INSERT_ACTION, IntToStr(PlayerID),
               IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_BRONZE), Game.CurrentMap));
             if BronzePlayer > 0 then
-              DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val4(SQL_INSERT_ACTION, IntToStr(PlayerID),
+              DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val4(SQL_INSERT_ACTION, IntToStr(BronzePlayer),
                 IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_L_BRONZE), Game.CurrentMap));
           end;
         end;
@@ -887,7 +896,7 @@ begin
         WriteLnAndConsole(NIL, '[RM] Saving ' + RM.Runner.PPlayer.Name + '''s data.. This may take several seconds...', MESSAGE_COLOR_GAME);
         SetWaitingTime(MATH_SECOND * 3);
 
-        Result_Run_ID := Save_RunData(RM.Runner.PPlayer.HWID, RunTime);
+        Result_Run_ID := Save_RunData(RM.Runner.PPlayer, RunTime);
         if Result_Run_ID > 0 then
         begin
           if Save_ReplayData(Result_Run_ID, ReplayValues) then
@@ -897,7 +906,7 @@ begin
           LoadBestRun(GetBestRunIDOnMap(RM.Map.MapID));
         end;
 
-        Achievement_Handle_Update(1, 1, RM.Runner.PPlayer, True); // Getting Started (1)
+        Achievement_Handle_Update(1, 1, RM.Runner.PPlayer, True); // Getting Started
       end;
   end else
   begin
