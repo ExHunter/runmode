@@ -97,7 +97,7 @@ const
                          'FROM `namechanges` GROUP BY `info`) AS lookuptable ' +
                          'WHERE cnt > 0 ORDER BY cnt DESC LIMIT 15;';
   SQL_LOG_NAMECHANGE   = 'INSERT INTO `namechanges` (`HWID`, `IP`, `serverID`, `log_time`, `info`) VALUES (''VAL1'', ''VAL2'', VAL3, NOW(), ''VAL4'');';
-  SQL_GET_ACHIEVE_ID   = 'SELECT `ID` FROM `rm_achievements` WHERE `chainNumber` = VAL1 AND `chainID` = VAL2 LIMIT 1;';
+  SQL_GET_ACHIEVE_ID   = 'SELECT `ID` FROM `rm_achievements` WHERE `chainNumber` = VAL2 AND `chainID` = VAL1 LIMIT 1;';
   SQL_ACHIEVE_IS_PROG  = 'SELECT `AchievementID` FROM `rm_achievements_progress` WHERE (`AchievementID` = VAL1 or `ChainID` = VAL1) AND `PlayerID` = VAL2 LIMIT 1;';
   SQL_GET_ACHIEVE_PROG = 'SELECT `Progress`, `Requirement` FROM `rm_achievements_progress` WHERE `AchievementID` = VAL1 AND `PlayerID` = VAL2 LIMIT 1;';
   SQL_ACHIEVE_PROG_ADD = 'UPDATE `rm_achievements_progress` SET `Progress` = VAL1 WHERE `AchievementID` = VAL2 AND `PlayerID` = VAL3 LIMIT 1;'; // works with SQL trigger in Database

@@ -666,6 +666,7 @@ var
   I: Byte;
 begin
   WriteLn('[RM] Starting to load map ' + MapToLoad + '...');
+  RM.TimeLeft := StrToDateTime(STR_TIME_LIMIT);
   RM.Map.Loaded := True;
   RM.BestRunLoaded := False;
   if DB_CONNECTED then
@@ -764,8 +765,6 @@ begin
 
         if RM.Map.Loaded then
           WriteLn('[RM] The Map ' + MapToLoad + ' was loaded successfully!');
-
-        RM.TimeLeft := StrToDateTime(STR_TIME_LIMIT);
 
         WriteLn('[RM] Looking for a possible nextmap...');
         if DB_Query(DB_ID, SQL_GET_RND_MAP) <> 0 then
@@ -877,6 +876,9 @@ var
   Result_Run_ID: Integer;
 begin
   RM.Active := False;
+  if not IsQueueEmpty() then
+    if QueuePosition(RM.Runner.PPlayer.ID) = 1 then
+      ReQueue();
   if BotActive then
   begin
     CurrentLoop := 0;
@@ -1139,7 +1141,7 @@ var
   VoteSumPercent: Single;
 begin
   ChooseMap.Vote_Num := ChooseMap.Vote_Num + 1;
-  VoteSumPercent := ChooseMap.Vote_Num / ChooseMap.Vote_Count * 100;
+  VoteSumPercent := ((1.0*ChooseMap.Vote_Num) / (1.0*ChooseMap.Vote_Count)) * 100.0;
   if VoteSumPercent >= VOTE_PERCENT then
   begin
     ChooseMap.VoteInProgress := False;
@@ -1156,7 +1158,7 @@ begin
     end;
   end else
     Players.WriteConsole('[RM] ' + FormatFloat('0.00', VoteSumPercent) + '% of ' +
-      FormatFloat('0.00', VOTE_PERCENT) + '%  for map ' + VotedMap + '!', MESSAGE_COLOR_GAME);
+      FormatFloat('0.00', VOTE_PERCENT) + '% for map ' + VotedMap + '!', MESSAGE_COLOR_GAME);
 end;
 
 procedure ShowTop(p: TActivePlayer; TypedCommand: String);
@@ -1520,7 +1522,7 @@ begin
             DB_GetString(DB_ID, 0) + ' (Points: ' + DB_GetString(DB_ID, 1) + ')' + FILE_NEWLINE;
       end;
       if ProfileRecentAchievements = '' then
-        p.WriteConsole('  Could not find any recent actions!', MESSAGE_COLOR_SYSTEM)
+        p.WriteConsole('  Could not find any recent achievements!', MESSAGE_COLOR_SYSTEM)
       else
         p.WriteConsole(ProfileRecentAchievements, MESSAGE_COLOR_GAME);
       p.WriteConsole('|                                                                                                 |', MESSAGE_COLOR_GAME);
@@ -1536,7 +1538,7 @@ begin
         // `serverID` = 0, `time` = 1, `Kind` = 2, `info` = 3
         while DB_NextRow(DB_ID) <> 0 do
           ProfileRecentAction := ProfileRecentAction + '  [' + DB_GetString(DB_ID, 1) + '] ' +
-            LastActionSentence(DB_GetLong(DB_ID, 2), DB_GetString(DB_ID, 3), p.Name) + FILE_NEWLINE;
+            LastActionSentence(DB_GetLong(DB_ID, 2), DB_GetString(DB_ID, 3), ProfileName) + FILE_NEWLINE;
       end;
       if ProfileRecentAction = '' then
         p.WriteConsole('  Could not find any recent actions!', MESSAGE_COLOR_SYSTEM)
@@ -1767,10 +1769,8 @@ begin
             p.Team := TEAM_RUNNER
           else
             if QueuePosition(p.ID) = 1 then
-            begin
-              p.Team := TEAM_RUNNER;
-              ReQueue();
-            end else
+              p.Team := TEAM_RUNNER
+            else
               p.WriteConsole('[RM] It''s not your turn yet! If you did not add yourself yet, do !add', MESSAGE_COLOR_RED);
       end;
       '!fail',
