@@ -206,7 +206,7 @@ begin
         0.068, 150, 240);
 
       DB_PerformQuery(DB_ID, 'Achievement_Display_Claim', DB_Query_Replace_Val4(SQL_INSERT_ACTION, IntToStr(PlayerID),
-        IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_ACHIEVE), AchievementName + ' (Points: ' + AchievementPoints + ')'));
+        IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_ACHIEVE), DB_Escape_String(AchievementName + ' (Points: ' + AchievementPoints + ')')));
       Players.WriteConsole(p.Name + ' has earned the achievement ''' + AchievementName + '''!', MESSAGE_COLOR_GOLD);
       
     end;
