@@ -1750,7 +1750,7 @@ begin
         p.WriteConsole('| !profileid ?          | profile of ID <?> from search player |', MESSAGE_COLOR_GAME);
         p.WriteConsole('| !statistics           | some server statistics               |', MESSAGE_COLOR_GAME);
         p.WriteConsole('| !adminlist            | server admins                        |', MESSAGE_COLOR_GAME);
-        p.WriteConsole('| !choosemap ?          | starts vote for map <?>              |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| !choosemap / !vote ?  | starts vote for map <?>              |', MESSAGE_COLOR_GAME);
         p.WriteConsole('| !replay ?             | replay RunID <?> (in top [] number)  |', MESSAGE_COLOR_GAME);
         p.WriteConsole('+-----------------------+--------------------------------------+', MESSAGE_COLOR_GAME);
       end;
@@ -1788,6 +1788,8 @@ begin
       '!bestrun': ShowBestRun(p);
       '!statistics': ShowStatistics(p);
       '!choosemap': StartChooseMap(Copy(Text, 12, Length(Text) - 11));
+      '!votemap':   StartChooseMap(Copy(Text, 10, Length(Text) -  9));
+      '!vote':      StartChooseMap(Copy(Text,  7, Length(Text) -  6));
       '!hnseu':
       begin
         WriteLn('Forwarding ' + p.Name + ' to !Hide and Seek EU');
