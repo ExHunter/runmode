@@ -1530,14 +1530,15 @@ begin
         p.WriteConsole('  Could not find any recent actions!', MESSAGE_COLOR_SYSTEM)
       else
         p.WriteConsole(ProfileRecentAction, MESSAGE_COLOR_GAME);
-      end;
       p.WriteConsole('|                                                                                                 |', MESSAGE_COLOR_GAME);
       p.WriteConsole('|                                                                                                 |', MESSAGE_COLOR_GAME);
       p.WriteConsole('|                                                                                                 |', MESSAGE_COLOR_GAME);
       p.WriteConsole('|                                                                                                 |', MESSAGE_COLOR_GAME);
       p.WriteConsole('+-------------------------------------------------------------------------------------------------+', MESSAGE_COLOR_GAME);
     end else
-      WriteLnAndConsole(p, '[RM] Could not search for a profile because Database is not connected!', MESSAGE_COLOR_SYSTEM);
+      p.WriteConsole('[RM] Could not find the profile you were searching for!', MESSAGE_COLOR_RED);
+  end else
+    WriteLnAndConsole(p, '[RM] Could not search for a profile because Database is not connected!', MESSAGE_COLOR_SYSTEM);
 end;
 
 procedure FindAndShowProfile(p: TActivePlayer; ProfileName: string);
@@ -1582,9 +1583,9 @@ begin
       p.WriteConsole('[RM] Points:         ' + DB_GetString(DB_ID, 4), MESSAGE_COLOR_GAME); // `rm_achievements`.`Points`
       p.WriteConsole('[RM] First achiever: ' + DB_GetString(DB_ID, 5), MESSAGE_COLOR_GAME); // `playerstats`.`Name`
       p.WriteConsole('[RM] Do you have it? ' + iif(Achievement_Has_ID_Finished(AchievementID,
-        DB_PlayerGetIDbyHWID(p.HWID)), 'YES', 'NO'), MESSAGE_COLOR_GAME); 
+        DB_PlayerGetIDbyHWID(p.HWID)), 'Yes', 'No'), MESSAGE_COLOR_GAME); 
     end else
-      p.WriteConsole('[RM] The achievement you searched for was not found!', MESSAGE_COLOR_SYSTEM);
+      p.WriteConsole('[RM] The achievement you searched for was not found!', MESSAGE_COLOR_RED);
     end else
       WriteLnAndConsole(p, '[RM] Could not search for a profile because Database is not connected!', MESSAGE_COLOR_SYSTEM);
 end;
