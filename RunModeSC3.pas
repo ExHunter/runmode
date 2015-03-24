@@ -1263,13 +1263,13 @@ var
 begin
   Text_Piece := File.CreateStringList();
   try
-    // Text_Piece.Strings[1] can be a map or player
+    // Text_Piece.Strings[1] can be a map or player or achievement
     // Text_Piece.Strings[2] is the string you are searching for
     SplitRegExpr(' ', Text, Text_Piece);
 
     if Text_Piece.Count < 3 then
     begin
-      p.WriteConsole('[RM] The command you have typed was incomplete (!search ''map''/''player'' <name>)!', MESSAGE_COLOR_RED);
+      p.WriteConsole('[RM] The command you have typed was incomplete (!search ''map''/''player''/''achievement'' <name>)!', MESSAGE_COLOR_RED);
       Exit;
     end;
 
@@ -1350,8 +1350,49 @@ begin
             DB_FinishQuery(DB_ID);
           end;
         end;
+        'achievement':
+        begin
+          if Length(Text_Piece.Strings[2]) > 16 then
+          begin
+            p.WriteConsole('[RM] The achievement name you was searching for is too long!', MESSAGE_COLOR_RED);
+            Exit;
+          end;
+
+          p.WriteConsole('+------+------------------------------------------------------------+', MESSAGE_COLOR_GAME);
+          p.WriteConsole('| ID   | Search achievement: ' + Text_Piece.Strings[2] + WHITESPACES[7 + Length(Text_Piece.Strings[2])] +
+                          '                       |', MESSAGE_COLOR_GAME);
+          p.WriteConsole('+------+------------------------------------------------------------+', MESSAGE_COLOR_GAME);
+          if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_SEARCH_ACH_BY_N, DB_Escape_String(Text_Piece.Strings[2]))) <> 0) AND
+             (DB_NextRow(DB_ID) <> 0) then
+          begin
+            ResultString := DB_GetString(DB_ID, 0);  // `mapname`
+            ResID        := DB_GetString(DB_ID, 1);  // `ID`
+            while Length(ResultString) < 58 do
+              ResultString := ResultString + ' ';
+            while Length(ResID) < 4 do
+              ResID := ResID + ' ';
+            p.WriteConsole('| ' + ResID + ' | ' + ResultString + ' |', MESSAGE_COLOR_GAME);
+            while DB_NextRow(DB_ID) <> 0 do
+            begin
+              ResultString := DB_GetString(DB_ID, 0);  // `mapname`
+              ResID        := DB_GetString(DB_ID, 1);  // `ID`
+              while Length(ResultString) < 58 do
+                ResultString := ResultString + ' ';
+              while Length(ResID) < 4 do
+                ResID := ResID + ' ';
+              p.WriteConsole('| ' + ResID + ' | ' + ResultString + ' |', MESSAGE_COLOR_GAME);
+            end;
+            p.WriteConsole('+------+------------------------------------------------------------+', MESSAGE_COLOR_GAME);
+            DB_FinishQuery(DB_ID);
+          end else
+          begin
+            p.WriteConsole('| ---- | No achievement was found.                                  |', MESSAGE_COLOR_GAME);
+            p.WriteConsole('+------+------------------------------------------------------------+', MESSAGE_COLOR_GAME);
+            DB_FinishQuery(DB_ID);
+          end;
+        end;
         else
-          p.WriteConsole('[RM] Please specify if you search a map or player! (!search ''map''/''player'' <name>)', MESSAGE_COLOR_RED);
+          p.WriteConsole('[RM] Please specify if you search a map or player! (!search ''map''/''player''/''achievement'' <name>)', MESSAGE_COLOR_RED);
       end;
     end else
       WriteLnAndConsole(p, '[RM] Could not perform a search! Database is not connected!', MESSAGE_COLOR_SYSTEM);

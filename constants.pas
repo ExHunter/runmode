@@ -85,6 +85,7 @@ const
   SQL_UPDATE_GOLDS     = 'UPDATE `playerstats` SET `gold` = VAL1 WHERE `ID` = VAL2;';
   SQL_UPDATE_SILVERS   = 'UPDATE `playerstats` SET `silver` = VAL1 WHERE `ID` = VAL2;';
   SQL_UPDATE_BRONZES   = 'UPDATE `playerstats` SET `bronze` = VAL1 WHERE `ID` = VAL2;';
+  SQL_SEARCH_ACH_BY_N  = 'SELECT `Name`, `ID` FROM `rm_achievements` WHERE `Name` LIKE ''%VAL1%'' LIMIT 15;';
   SQL_SEARCH_MAP_BY_N  = 'SELECT `mapname` FROM `rm_maps` WHERE `mapname` LIKE ''%VAL1%'' LIMIT 15;';
   SQL_SEARCH_PLR_BY_N  = 'SELECT `ID`, `name`, `gold`, `silver`, `bronze` FROM `playerstats` WHERE `name` LIKE ''%VAL1%'' LIMIT 15;';
   SQL_SEARCH_PLR_BY_ID = 'SELECT `ID`, `name`, `gold`, `silver`, `bronze`, `firstjoin`, `lastseen` FROM `playerstats` WHERE `ID` = VAL1 LIMIT 1;';
