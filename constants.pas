@@ -70,8 +70,8 @@ const
                          'FROM `rm_maps`, `rm_mapstats`, `rm_achievements` ' +
                          'LIMIT 1;';
   SQL_GET_RANK_1_OF_2  = 'SET @rownum := 0;';
-  SQL_GET_RANK_2_OF_2  = 'SELECT `rank`, `playerID` ' +
-                         'FROM (SELECT @rownum := @rownum + 1 AS rank, `runtime`, `playerID` ' +
+  SQL_GET_RANK_2_OF_2  = 'SELECT `rank`, `playerID`, `runtime`, `rundate`, `ID` ' +
+                         'FROM (SELECT @rownum := @rownum + 1 AS rank, `runtime`, `rundate`, `ID`, `playerID` ' +
                                'FROM `rm_mapstats` WHERE `mapID` = VAL1 ORDER BY `runtime` ASC' +
                                ') as result WHERE `playerID` = VAL2;';
   SQL_GET_PLAYER_ID    = 'SELECT `ID` FROM `playerstats` WHERE `HWID` = ''VAL1'' LIMIT 1;';

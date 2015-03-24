@@ -1583,6 +1583,43 @@ begin
     WriteLnAndConsole(p, '[RM] Could not show the mapslist! Database is not connected!', MESSAGE_COLOR_SYSTEM);
 end;
 
+procedure ShowRuns(p: TActivePlayer);
+var
+  I: Byte;
+  RankID: Integer;
+  PlayerName: string;
+begin
+  if DB_CONNECTED then
+  begin
+    p.WriteConsole('+-------------------------------------------------------------------------+', MESSAGE_COLOR_GAME);
+    p.WriteConsole('| List of runs for online players on current map                          |', MESSAGE_COLOR_GOLD);
+    p.WriteConsole('+------+--------------------------+-----------------+---------------------+', MESSAGE_COLOR_GAME);
+    p.WriteConsole('| Rank | Name                     | Time (H:M:S.ms) | Date (Y-M-D H:M:S)  |', MESSAGE_COLOR_GAME);
+    p.WriteConsole('+------+--------------------------+-----------------+---------------------+', MESSAGE_COLOR_GAME);
+    PlayerName := '';
+    for I := 1 to HighID do
+      if Players[I].Human then
+      begin
+        if (DB_Query(DB_ID, SQL_GET_RANK_1_OF_2) <> 0) and
+           (DB_Query(DB_ID, DB_Query_Replace_Val2(SQL_GET_RANK_2_OF_2, IntToStr(RM.Map.MapID),
+            IntToStr(DB_PlayerGetIDbyHWID(Players[I].HWID)))) <> 0) and
+           (DB_NextRow(DB_ID) <> 0) then
+        begin
+          // `rank` = 0, `playerID` = 1, `runtime` = 2, `rundate` = 3, `ID` = 4
+          RankID := DB_GetLong(DB_ID, 0); // `rank`
+          PlayerName := Players[I].Name;
+          p.WriteConsole('| #' + IntToStr(RankID) + WHITESPACES[20 + Length(IntToStr(RankID))] + ' | ' + PlayerName + WHITESPACES[Length(PlayerName) - 1] + ' | ' +
+            DB_GetString(DB_ID, 2) + 's   | ' + DB_GetString(DB_ID, 3) + ' | [' + DB_GetString(DB_ID, 4) + ']', Medal_Color_by_Rank(RankID));
+        end;
+        DB_FinishQuery(DB_ID);
+      end;
+      if PlayerName = '' then
+        p.WriteConsole('| Nobody online has made a run on this map.                               |', MESSAGE_COLOR_GAME);
+    p.WriteConsole('+------+--------------------------+-----------------+---------------------+', MESSAGE_COLOR_GAME);
+  end else
+    WriteLnAndConsole(p, '[RM] Could not show the runs! Database is not connected!', MESSAGE_COLOR_SYSTEM);
+end;
+
 procedure ShowBestRun(p: TActivePlayer);
 var
   I, J: Byte;
@@ -1720,6 +1757,7 @@ begin
       '!last15': ShowLast15(p);
       '!maps',
       '!mapslist': ShowMapsList(p);
+      '!runs': ShowRuns(p);
       '!help',
       '!info':
       begin
