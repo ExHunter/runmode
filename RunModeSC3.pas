@@ -883,7 +883,11 @@ begin
   RM.Active := False;
   if not IsQueueEmpty() then
     if QueuePosition(RM.Runner.PPlayer.ID) = 1 then
-      ReQueue();
+      ReQueue()
+    else
+      if ReplayBot <> NIL then
+        if RM.Runner.PPlayer.ID = ReplayBot.ID then
+          ReQueue();
   if BotActive then
   begin
     CurrentLoop := 0;
@@ -1944,7 +1948,16 @@ begin
       '!replay':
       begin
         if not RM.Active and RM.Map.Loaded then
-          LoadReplay(p, Copy(Text, 9, Length(Text)));
+        begin
+          if IsQueueEmpty() then
+            LoadReplay(p, Copy(Text, 9, Length(Text)))
+          else
+            if QueuePosition(p.ID) = 1 then
+              LoadReplay(p, Copy(Text, 9, Length(Text)))
+            else
+              p.WriteConsole('[GAME] You cannot start a replay right now! Please wait for your turn to come!', MESSAGE_COLOR_RED);
+        end else
+          p.WriteConsole('[GAME] You cannot start a replay right now!', MESSAGE_COLOR_RED);
       end;
       '!search': PerformSearch(p, Text);
       else
