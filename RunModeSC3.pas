@@ -75,6 +75,7 @@ type
   TQueue = record
     Tail: Byte;
     Members: Array[1..QUEUE_MAX_PLAYERS] of Byte;
+    RemainingSeconds: Byte;
     end;
 
   TChooseMap = record
@@ -170,6 +171,7 @@ begin
           Queue.Members[I] := 0;
       Queue.Tail := Queue.Tail - 1;
       Result := True;
+      Players.WriteConsole('[RM] ' + Players[MemberID].Name + ' has been removed from the queue.', MESSAGE_COLOR_GAME);
     end;
   end;
 end;
@@ -183,6 +185,7 @@ begin
   else
   begin
     Result := Queue.Members[1];
+    Queue.RemainingSeconds := QUEUE_TIMER;
     if Queue.Tail > 1 then
     begin
       for I := 1 to Queue.Tail - 1 do
@@ -197,6 +200,8 @@ function EnQueue(NewMember: Byte): Boolean;
 begin
   if Queue.Tail < QUEUE_MAX_PLAYERS then
   begin
+    if Queue.Tail = 0 then
+      Queue.RemainingSeconds := QUEUE_TIMER;
     Queue.Tail := Queue.Tail + 1;
     Queue.Members[Queue.Tail] := NewMember;
   end else
@@ -206,6 +211,25 @@ end;
 function ReQueue(): Boolean;
 begin
   Result := EnQueue(DeQueue());
+end;
+
+procedure DoQueueUpdateOnTick();
+begin
+  if not IsQueueEmpty then
+  begin
+    if Queue.RemainingSeconds > 0 then
+    begin
+      Players.BigText(1, IntToStr(Queue.RemainingSeconds) + 's left for ' + Players[Queue.Members[1]].Name + '!',
+        MATH_SECOND_IN_TICKS * 2, iif(Queue.RemainingSeconds > QUEUE_COLOR_YELLOW, MESSAGE_COLOR_GREEN,
+        iif(Queue.RemainingSeconds > QUEUE_COLOR_RED, MESSAGE_COLOR_YELLOW, MESSAGE_COLOR_RED)),
+        0.068, 5, 360);
+      Queue.RemainingSeconds := Queue.RemainingSeconds - 1;
+    end else
+    begin
+      Players.WriteConsole('[RM] ' + Players[Queue.Members[1]].Name + ' took too long and was removed from the queue.', MESSAGE_COLOR_GAME);
+      DeQueue;
+    end;
+  end;
 end;
 
 function Explode_ReplayData(runID: Integer): Array of TReplay;
@@ -1896,15 +1920,18 @@ begin
     if t mod 60 = 0 then
     begin
       if Game.NumPlayers - Game.NumBots > 0 then
-        RM.TimeLeft := RM.TimeLeft - StrToDateTime(STR_TIME_SECOND);
-      if RM.TimeLeft <= 0 then
       begin
-        Map.SetMap(RM.Map.NextMap);
-        SetWaitingTime(MATH_SECOND * 6);
-      end else
-        Players.BigText(5, 'Time Left: ' + FormatDateTime('nn:ss', RM.TimeLeft),
-          MATH_SECOND_IN_TICKS * 3, MESSAGE_COLOR_GAME,
-          0.068, 5, 405);
+        RM.TimeLeft := RM.TimeLeft - StrToDateTime(STR_TIME_SECOND);
+        if RM.TimeLeft <= 0 then
+        begin
+          Map.SetMap(RM.Map.NextMap);
+          SetWaitingTime(MATH_SECOND * 6);
+        end else
+          Players.BigText(5, 'Time Left: ' + FormatDateTime('nn:ss', RM.TimeLeft),
+            MATH_SECOND_IN_TICKS * 3, MESSAGE_COLOR_GAME,
+            0.068, 5, 405);
+        DoQueueUpdateOnTick;
+      end;
     end;
 end;
 
@@ -2041,6 +2068,7 @@ begin
         EndSingleGame(False);
   if p.IsAdmin then
     p.IsAdmin := False;
+  RemoveFromQueue(p.ID);
   if HighID = p.ID then
     for I := HighID - 1 downto 1 do
       if Players[I].Active then
