@@ -89,6 +89,10 @@ const
   SQL_SEARCH_MAP_BY_N  = 'SELECT `mapname` FROM `rm_maps` WHERE `mapname` LIKE ''%VAL1%'' LIMIT 15;';
   SQL_SEARCH_PLR_BY_N  = 'SELECT `ID`, `name`, `gold`, `silver`, `bronze` FROM `playerstats` WHERE `name` LIKE ''%VAL1%'' LIMIT 15;';
   SQL_SEARCH_PLR_BY_ID = 'SELECT `ID`, `name`, `gold`, `silver`, `bronze`, `firstjoin`, `lastseen` FROM `playerstats` WHERE `ID` = VAL1 LIMIT 1;';
+  SQL_SEARCH_ACH_BY_ID = 'SELECT `rm_achievements`.`ID`, `rm_achievements`.`Name`, `rm_achievements`.`Description`, `rm_achievements`.`ObjectiveText`, `rm_achievements`.`Points`, `playerstats`.`Name` ' +
+                         'FROM `rm_achievements` LEFT JOIN `playerstats` ' +
+                         'ON `rm_achievements`.`firstPlayerID` = `playerstats`.`ID` ' +
+                         'WHERE `rm_achievements`.`ID` = VAL1 LIMIT 1;';
   SQL_SEARCH_ALT_NAME  = 'SELECT `info`, cnt FROM (SELECT `info`, SUM(CASE WHEN `HWID` = ''VAL1'' THEN 1 ELSE 0 END) as cnt ' +
                          'FROM `namechanges` GROUP BY `info`) AS lookuptable ' +
                          'WHERE cnt > 0 ORDER BY cnt DESC LIMIT 15;';

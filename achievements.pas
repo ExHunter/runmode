@@ -13,6 +13,7 @@ interface
 uses
   constants, libdb;
 
+function Achievement_Has_ID_Finished(AchievementID, PlayerID: Integer): Boolean;
 procedure Achievement_Handle_Update(AchievementOrChainID, Progress: Integer; p: TActivePlayer; IsChain: Boolean);
 
 implementation
@@ -24,7 +25,10 @@ begin
   begin
     if (DB_Query(DB_ID, DB_Query_Replace_Val2(SQL_ACH_FIN, IntToStr(AchievementID), IntToStr(PlayerID))) <> 0) and
        (DB_NextRow(DB_ID) <> 0) then
+      Result := True
+    else
       Result := False;
+    WriteLn(DB_GetString(DB_ID, 0));
     DB_FinishQuery(DB_ID);
   end else
     WriteLn('[RM] Error in Achievement_Has_ID_Finished: Database is not connected!');
@@ -208,7 +212,7 @@ begin
     end;
     DB_FinishQuery(DB_ID);
   end else
-    WriteLn('[RM] Error in Achievement_Has_ID_Finished: Database is not connected!');
+    WriteLn('[RM] Error in Achievement_Display_Claim: Database is not connected!');
 end;
 
 procedure Achievement_Handle_Update(AchievementOrChainID, Progress: Integer; p: TActivePlayer; IsChain: Boolean);

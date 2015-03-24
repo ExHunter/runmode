@@ -1556,6 +1556,39 @@ begin
       WriteLnAndConsole(p, '[RM] Could not search for a profile because Database is not connected!', MESSAGE_COLOR_SYSTEM);
 end;
 
+procedure ShowAchievement(p: TActivePlayer; AchievementIDText: string);
+var
+  AchievementID: Integer;
+begin
+  try
+    AchievementID := StrToInt(AchievementIDText);
+  except
+    p.WriteConsole('[RM] Could not load achievement ''' + AchievementIDText + '''! It is not a numeric value!', MESSAGE_COLOR_RED);
+    Exit;
+  end;
+  if AchievementID <= 0 then
+  begin
+    p.WriteConsole('[RM] Could not load achievement ''' + AchievementIDText + '''! The ID needs to be 1 or higher!', MESSAGE_COLOR_RED);
+    Exit;
+  end;
+  if DB_CONNECTED then
+  begin
+    if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_SEARCH_ACH_BY_ID, AchievementIDText)) <> 0) AND
+       (DB_NextRow(DB_ID) <> 0) then
+    begin
+      p.WriteConsole('[RM] Name:           ' + DB_GetString(DB_ID, 1), MESSAGE_COLOR_GAME); // `rm_achievements`.`Name`
+      p.WriteConsole('[RM] Description:    ' + DB_GetString(DB_ID, 2), MESSAGE_COLOR_GAME); // `rm_achievements`.`Description`
+      p.WriteConsole('[RM] Objective:      ' + DB_GetString(DB_ID, 3), MESSAGE_COLOR_GAME); // `rm_achievements`.``ObjectiveText`
+      p.WriteConsole('[RM] Points:         ' + DB_GetString(DB_ID, 4), MESSAGE_COLOR_GAME); // `rm_achievements`.`Points`
+      p.WriteConsole('[RM] First achiever: ' + DB_GetString(DB_ID, 5), MESSAGE_COLOR_GAME); // `playerstats`.`Name`
+      p.WriteConsole('[RM] Do you have it? ' + iif(Achievement_Has_ID_Finished(AchievementID,
+        DB_PlayerGetIDbyHWID(p.HWID)), 'YES', 'NO'), MESSAGE_COLOR_GAME); 
+    end else
+      p.WriteConsole('[RM] The achievement you searched for was not found!', MESSAGE_COLOR_SYSTEM);
+    end else
+      WriteLnAndConsole(p, '[RM] Could not search for a profile because Database is not connected!', MESSAGE_COLOR_SYSTEM);
+end;
+
 procedure ShowQueue(p: TActivePlayer);
 var
   I: Byte;
@@ -1791,6 +1824,7 @@ begin
       end;
       '!profile': FindAndShowProfile(p, Copy(Text, 10, Length(Text) - 9));
       '!profileid': ShowProfile(p, Copy(Text, 12, Length(Text) - 11));
+      '!achievementid': ShowAchievement(p, Copy(Text, 16, Length(Text) - 15));
       '!commands',
       '!cmds':
       begin
@@ -1807,7 +1841,7 @@ begin
         p.WriteConsole('| !bestrun              | shows times of the best run          |', MESSAGE_COLOR_GAME);
         p.WriteConsole('| !search map/player ?  | searches for the map or player <?>   |', MESSAGE_COLOR_GAME);
         p.WriteConsole('| !search achievement ? | searches for the achievement <?>     |', MESSAGE_COLOR_GAME);
-        p.WriteConsole('| !achievement ?        | info about achievement ID <?>        |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| !achievementid ?      | info about achievement ID <?>        |', MESSAGE_COLOR_GAME);
         p.WriteConsole('| !last15               | your last 15 actions                 |', MESSAGE_COLOR_GAME);
         p.WriteConsole('| !maps / !mapslist     | up to 75 maps from mapslist          |', MESSAGE_COLOR_GAME);
         p.WriteConsole('| !top !top10           | the top on current map               |', MESSAGE_COLOR_GAME);
