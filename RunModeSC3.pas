@@ -1692,10 +1692,10 @@ begin
         begin
           while Length(LineOutPut) < 64 do
             LineOutPut := LineOutPut + ' ';
-          p.WriteConsole('|' + LineOutPut + ' |', MESSAGE_COLOR_GAME);
-          LineOutPut := '[' + MapName + ']';
+          p.WriteConsole('| ' + LineOutPut + '|', MESSAGE_COLOR_GAME);
+          LineOutPut := '[' + MapName + '] ';
         end else
-          LineOutPut := LineOutPut + ' [' + MapName + ']';
+          LineOutPut := LineOutPut + '[' + MapName + '] ';
       end;
       if LineOutPut = '' then
         p.WriteConsole('| No map has been found.                                          |', MESSAGE_COLOR_GAME)
@@ -1703,7 +1703,7 @@ begin
       begin
         while Length(LineOutPut) < 64 do
           LineOutPut := LineOutPut + ' ';
-        p.WriteConsole('|' + LineOutPut + ' |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| ' + LineOutPut + '|', MESSAGE_COLOR_GAME);
       end;
       p.WriteConsole('+-----------------------------------------------------------------+', MESSAGE_COLOR_GAME);
     end else

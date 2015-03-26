@@ -257,7 +257,9 @@ end;
 function DB_Escape_String(Input: string): string;
 begin
   Result := ReplaceRegExpr('''', Input, '''''', False);
-  Result := ReplaceRegExpr('\\',  Result, '\\',  False);
+  Result := ReplaceRegExpr('\\',  Result, '\\', False);
+  Result := ReplaceRegExpr('"',  Result, '\"',  False);
+  Result := ReplaceRegExpr('%',  Result, '\%',  False);
 end;
 
 procedure DB_PerformQuery(DatabaseID: Integer; used_loc: string; Query: PChar);

@@ -28,7 +28,6 @@ begin
       Result := True
     else
       Result := False;
-    WriteLn(DB_GetString(DB_ID, 0));
     DB_FinishQuery(DB_ID);
   end else
     WriteLn('[RM] Error in Achievement_Has_ID_Finished: Database is not connected!');
