@@ -136,6 +136,19 @@ const
   SQL_RECENT_ACTIONS5  = 'SELECT `serverID`, `time`, `Kind`, `info` FROM `rm_activity` WHERE `PlayerID` = VAL1 ORDER BY `time` DESC LIMIT 5;';
   SQL_RECENT_ACTIONS15 = 'SELECT `serverID`, `time`, `Kind`, `info` FROM `rm_activity` WHERE `PlayerID` = VAL1 ORDER BY `time` DESC LIMIT 15;';
   SQL_INSERT_ACTION    = 'INSERT INTO `rm_activity` (`playerID`, `serverID`, `time`, `kind`, `info`) VALUES (VAL1, VAL2, NOW(), VAL3, ''VAL4'');';
+  SQL_GET_ACHIEVE_LIST = 'SELECT `rm_achievements`.`ID`, `rm_achievements`.`Name`, `rm_achievements`.`Points`, ' +
+                         '       `rm_achievements_claim`.`ClaimDate`, ' +
+                         '       `rm_achievements_progress`.`Progress`, `rm_achievements_progress`.`Requirement` ' +
+                         'FROM `rm_achievements` ' +
+                         'LEFT JOIN `rm_achievements_claim` ' +
+                         'ON (`rm_achievements`.`ID` = `rm_achievements_claim`.`AchievementID`) AND ' +
+                         '   (`rm_achievements_claim`.`playerID` = VAL1) ' +
+                         'LEFT JOIN `rm_achievements_progress` ' +
+                         'ON (`rm_achievements_claim`.`playerID` IS NULL) AND ' +
+                         '   (`rm_achievements_progress`.`playerID` = VAL1) AND ' +
+                         '   (`rm_achievements`.`ID` = `rm_achievements_progress`.`AchievementID`) ' +
+                         'ORDER BY `ID` ASC ' +
+                         'LIMIT VAL2, 20;';
 
   // SQL queries for replays
  SQL_CREATE_REPLAY_TBL = 'CREATE TABLE IF NOT EXISTS `VAL1` ( ' +

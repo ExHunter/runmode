@@ -1619,8 +1619,111 @@ begin
         DB_PlayerGetIDbyHWID(p.HWID)), 'Yes', 'No'), MESSAGE_COLOR_GAME); 
     end else
       p.WriteConsole('[RM] The achievement you searched for was not found!', MESSAGE_COLOR_RED);
+  end else
+    WriteLnAndConsole(p, '[RM] Could not search for a profile because Database is not connected!', MESSAGE_COLOR_SYSTEM);
+end;
+
+procedure ShowAchievementList(p: TActivePlayer; AdditionalText: string);
+var
+  GetPage: Integer;
+  PlayerID: Integer;
+  OutPutLine: string;
+  ResString: string;
+  OutColor: Cardinal;
+  BOX_LINE_LENGTH: Byte;
+begin
+  if Length(AdditionalText) > 0 then
+  begin
+    try
+      GetPage := StrToInt(AdditionalText);
+    except
+      p.WriteConsole('[RM] Could not load achievement page ''' + AdditionalText + '''! It is not a numeric value!', MESSAGE_COLOR_RED);
+      Exit;
+    end;
+
+    if GetPage <= 0 then
+    begin
+      p.WriteConsole('[RM] Could not load achievement page ''' + AdditionalText + '''! The Page needs to be 1 or higher!', MESSAGE_COLOR_RED);
+      Exit;
+    end;
+
+    // Even tho we do not have that many achievement pages. Just being sure.
+    if GetPage > 20 then
+    begin
+      p.WriteConsole('[RM] Could not load achievement page ''' + AdditionalText + '''! The Page needs to be maximal 20!', MESSAGE_COLOR_RED);
+      Exit;
+    end;
+  end else
+    GetPage := 1;
+
+  if DB_CONNECTED then
+  begin
+    BOX_LINE_LENGTH := 77;
+    PlayerID := DB_PlayerGetIDbyHWID(p.HWID);
+    // 20 results per Page, that's why GetPage * 20
+    if (DB_Query(DB_ID, DB_Query_Replace_Val2(SQL_GET_ACHIEVE_LIST, IntToStr(PlayerID), IntToStr((GetPage-1) * 20))) <> 0) then
+    begin
+      // `rm_achievements`.`ID` = 0, `rm_achievements`.`Name` = 1, `rm_achievements`.`Points` = 2,
+      // `rm_achievements_claim`.`ClaimDate` = 3,
+      // `rm_achievements_progress`.`Progress` = 4, `rm_achievements_progress`.`Requirement` = 5
+      OutPutLine := 'Achievements List (Page ' + IntToStr(GetPage) + ')                                                 ';
+      while Length(OutPutLine) < BOX_LINE_LENGTH do
+        OutPutLine := OutPutLine + ' ';
+      p.WriteConsole('+-------------------------------------------------------------------------------+', MESSAGE_COLOR_GAME);
+      p.WriteConsole('| ' + OutPutLine + ' |', MESSAGE_COLOR_GAME);
+      p.WriteConsole('+------+-----------------------------------------------+--------+---------------+', MESSAGE_COLOR_GAME);
+      p.WriteConsole('| ID   | Name                                          | Points | Progress      |', MESSAGE_COLOR_GAME);
+      p.WriteConsole('+------+-----------------------------------------------+--------+---------------+', MESSAGE_COLOR_GAME);
+      OutPutLine := '';
+      while DB_NextRow(DB_ID) <> 0 do
+      begin
+        ResString := DB_GetString(DB_ID, 0);
+        while Length(ResString) < 4 do
+          ResString := ResString + ' ';
+        OutPutLine := ResString + ' |';
+
+        ResString := DB_GetString(DB_ID, 1);
+        while Length(ResString) < 45 do
+          ResString := ResString + ' ';
+        OutPutLine := OutPutLine + ' ' + ResString + ' |';
+
+        ResString := DB_GetString(DB_ID, 2);
+        while Length(ResString) < 6 do
+          ResString := ResString + ' ';
+        OutPutLine := OutPutLine + ' ' + ResString + ' |';
+
+        ResString := DB_GetString(DB_ID, 3);
+        // If has not yet finished
+        if ResString = '' then
+        begin
+          ResString := DB_GetString(DB_ID, 4);
+          // If has not in progress
+          if ResString = '' then
+          begin
+            OutPutLine := OutPutLine + ' Not started  ';
+            OutColor := MESSAGE_COLOR_GAME;
+          end else
+          begin
+            OutPutLine := OutPutLine + ' ' + ResString + '/' + DB_GetString(DB_ID, 5);
+            while Length(OutPutLine) < BOX_LINE_LENGTH do
+              OutPutLine := OutPutLine + ' ';
+            OutColor := MESSAGE_COLOR_YELLOW;
+          end;
+        end else
+        begin
+          OutPutLine := OutPutLine + ' Finished     ';
+          OutColor := MESSAGE_COLOR_GREEN;
+        end;
+
+        p.WriteConsole('| ' + OutPutLine + ' |', OutColor);
+      end;
+      if OutPutLine = '' then
+        p.WriteConsole('| This page seems to be quite empty. Maybe try a previous page.                 |', MESSAGE_COLOR_GAME);
+      p.WriteConsole('+------+-----------------------------------------------+--------+---------------+', MESSAGE_COLOR_GAME);
     end else
-      WriteLnAndConsole(p, '[RM] Could not search for a profile because Database is not connected!', MESSAGE_COLOR_SYSTEM);
+      WriteLnAndConsole(p, '[RM] Error: Could not Display any achievements (' + DB_Error() + ')!', MESSAGE_COLOR_SYSTEM);
+  end else
+    WriteLnAndConsole(p, '[RM] Could not search for a profile because Database is not connected!', MESSAGE_COLOR_SYSTEM);
 end;
 
 procedure ShowQueue(p: TActivePlayer);
@@ -1865,6 +1968,7 @@ begin
       end;
       '!profile': FindAndShowProfile(p, Copy(Text, 10, Length(Text) - 9));
       '!profileid': ShowProfile(p, Copy(Text, 12, Length(Text) - 11));
+      '!achievements': ShowAchievementList(p, Copy(Text, 15, Length(Text) - 14));
       '!achievementid': ShowAchievement(p, Copy(Text, 16, Length(Text) - 15));
       '!commands',
       '!cmds':
@@ -1882,6 +1986,7 @@ begin
         p.WriteConsole('| !bestrun              | shows times of the best run          |', MESSAGE_COLOR_GAME);
         p.WriteConsole('| !search map/player ?  | searches for the map or player <?>   |', MESSAGE_COLOR_GAME);
         p.WriteConsole('| !search achievement ? | searches for the achievement <?>     |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| !achievements ?       | achievementlist, <optional:?> = page |', MESSAGE_COLOR_GAME);
         p.WriteConsole('| !achievementid ?      | info about achievement ID <?>        |', MESSAGE_COLOR_GAME);
         p.WriteConsole('| !last15               | your last 15 actions                 |', MESSAGE_COLOR_GAME);
         p.WriteConsole('| !maps / !mapslist     | up to 75 maps from mapslist          |', MESSAGE_COLOR_GAME);
@@ -1890,7 +1995,7 @@ begin
         p.WriteConsole('| !runs                 | list runs of online players          |', MESSAGE_COLOR_GAME);
         p.WriteConsole('| !help / !info         | a litte info about the game          |', MESSAGE_COLOR_GAME);
         p.WriteConsole('| !rules                | rules for this server                |', MESSAGE_COLOR_GOLD);
-        p.WriteConsole('| !profile ?            | profile of player name <?>           |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| !profile ?            | profile of player name <optional:?>  |', MESSAGE_COLOR_GAME);
         p.WriteConsole('| !profileid ?          | profile of ID <?> from search player |', MESSAGE_COLOR_GAME);
         p.WriteConsole('| !statistics           | some server statistics               |', MESSAGE_COLOR_GAME);
         p.WriteConsole('| !adminlist            | server admins                        |', MESSAGE_COLOR_GAME);
