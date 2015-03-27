@@ -2738,6 +2738,19 @@ begin
       Result := True;
       Players.WriteConsole(Copy(Command, 6, Length(Command) - 5), MESSAGE_COLOR_GREEN);
     end;
+    '/timer':
+    begin
+      if Length(Command) = 15 then
+      begin
+        try
+          RM.TimeLeft := StrToDateTime(Copy(Command, 8, Length(Command) - 7));
+          WriteLnAndConsole(NIL, '[RM] Remaining time changed to ' + Copy(Command, 8, Length(Command) - 7) + '.', MESSAGE_COLOR_GAME);
+        except
+          DecideIfWriteLnOrConsole(p, '[RM] The input ''' + Copy(Command, 8, Length(Command) - 7) + ''' is not a valid time.', MESSAGE_COLOR_RED);
+        end;
+      end else
+        DecideIfWriteLnOrConsole(p, '[RM] The input ''' + Copy(Command, 8, Length(Command) - 7) + ''' needs to have the format ''HH:MM:SS''!', MESSAGE_COLOR_RED);
+    end;
     '/as':
     begin
       if p = NIL then
