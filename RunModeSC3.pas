@@ -164,6 +164,8 @@ begin
       Result := False
     else
     begin
+      if QueuePosResult = 1 then
+        Queue.RemainingSeconds := QUEUE_TIMER;
       for I := QueuePosResult to Queue.Tail do
         if I < QUEUE_MAX_PLAYERS then
           Queue.Members[I] := Queue.Members[I + 1]
