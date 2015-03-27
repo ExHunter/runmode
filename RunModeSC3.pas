@@ -975,6 +975,12 @@ procedure RecordKeys();
 var
   Len: Integer;
 begin
+  if RM.Runner.PPlayer.KeyReload then
+  begin
+    EndSingleGame(False);
+    Exit;
+  end;
+
   Len := GetArrayLength(ReplayValues);
   if Len = 0 then
   begin
