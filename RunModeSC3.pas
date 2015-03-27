@@ -975,12 +975,6 @@ procedure RecordKeys();
 var
   Len: Integer;
 begin
-  if RM.Runner.PPlayer.KeyReload then
-  begin
-    EndSingleGame(False);
-    Exit;
-  end;
-
   Len := GetArrayLength(ReplayValues);
   if Len = 0 then
   begin
@@ -1025,6 +1019,12 @@ i,j: byte;
 Distances: Single;
 RunTime: TDateTime;
 begin
+  if RM.Runner.PPlayer.KeyReload then
+  begin
+    EndSingleGame(False);
+    Exit;
+  end;
+
   for i := 0 to RM.Map.AmountOfCheckpoints-1 do
     if not RM.Map.CheckPoints[i].Checked then
     begin
