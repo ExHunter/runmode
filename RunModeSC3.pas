@@ -2751,6 +2751,15 @@ begin
       end else
         DecideIfWriteLnOrConsole(p, '[RM] The input ''' + Copy(Command, 8, Length(Command) - 7) + ''' needs to have the format ''HH:MM:SS''!', MESSAGE_COLOR_RED);
     end;
+    '/map':
+    begin
+      if RM.Active then
+      begin
+        DecideIfWriteLnOrConsole(p, '[RM] You cannot change the map while somebody is running.', MESSAGE_COLOR_GAME);
+        Result := True;
+      end else
+        SetWaitingTime(MATH_SECOND * 6);
+    end;
     '/as':
     begin
       if p = NIL then
