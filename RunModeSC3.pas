@@ -2753,6 +2753,25 @@ begin
       end else
         DecideIfWriteLnOrConsole(p, '[RM] The input ''' + Copy(Command, 8, Length(Command) - 7) + ''' needs to have the format ''HH:MM:SS''!', MESSAGE_COLOR_RED);
     end;
+    '/reload':
+    begin
+      if RM.Active then
+        DecideIfWriteLnOrConsole(p, '[RM] You cannot reload the map while somebody is running.', MESSAGE_COLOR_GAME)
+      else
+        LoadMapSettings(Game.CurrentMap);
+    end;
+    '/nextmap':
+    begin
+      Result := True;
+      if RM.Active then
+        DecideIfWriteLnOrConsole(p, '[RM] You cannot change the map while somebody is running.', MESSAGE_COLOR_GAME)
+      else
+      begin
+        Map.SetMap(RM.Map.NextMap);
+        SetWaitingTime(MATH_SECOND * 6);
+      end;
+    end;
+    '/restart',
     '/map':
     begin
       if RM.Active then
