@@ -771,7 +771,9 @@ begin
           end;
 
         if RM.Map.Loaded then
-          WriteLn('[RM] The Map ' + MapToLoad + ' was loaded successfully!');
+          WriteLnAndConsole(NIL, '[RM] The Map ' + MapToLoad + ' was loaded successfully!', MESSAGE_COLOR_GAME)
+        else
+          WriteLnAndConsole(NIL, '[RM] The Map ' + MapToLoad + ' could not been loaded!', MESSAGE_COLOR_RED);
 
         WriteLn('[RM] Looking for a possible nextmap...');
         if DB_Query(DB_ID, SQL_GET_RND_MAP) <> 0 then
