@@ -1208,7 +1208,7 @@ begin
     begin
       if DB_CONNECTED then
       begin
-        if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_GET_MAP_ID_BY_N, DB_Escape_String(Text_Piece.Strings[1]))) <> 0) and
+        if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_GET_MAP_ID_BY_N, DB_Escape_String_Select(Text_Piece.Strings[1]))) <> 0) and
          (DB_NextRow(DB_ID) <> 0) then
         begin
           SearchedMapID := DB_GetLong(DB_ID, 0); // `ID`
@@ -1321,7 +1321,7 @@ begin
           p.WriteConsole('+------------------------------+', MESSAGE_COLOR_GAME);
           p.WriteConsole('| Search map: ' + Text_Piece.Strings[2] + WHITESPACES[7 + Length(Text_Piece.Strings[2])] + ' |', MESSAGE_COLOR_GAME);
           p.WriteConsole('+------------------------------+', MESSAGE_COLOR_GAME);
-          if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_SEARCH_MAP_BY_N, DB_Escape_String(Text_Piece.Strings[2]))) <> 0) AND
+          if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_SEARCH_MAP_BY_N, DB_Escape_String_Select(Text_Piece.Strings[2]))) <> 0) AND
              (DB_NextRow(DB_ID) <> 0) then
           begin
             ResultString := DB_GetString(DB_ID, 0);  // `mapname`
@@ -1353,7 +1353,7 @@ begin
           p.WriteConsole('+---------+--------------------------+--------+--------+--------+', MESSAGE_COLOR_GAME);
           p.WriteConsole('| ID      | Name                     | Gold   | Silver | Bronze |', MESSAGE_COLOR_GAME);
           p.WriteConsole('+---------+--------------------------+--------+--------+--------+', MESSAGE_COLOR_GAME);
-          if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_SEARCH_PLR_BY_N, DB_Escape_String(Text_Piece.Strings[2]))) <> 0) AND
+          if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_SEARCH_PLR_BY_N, DB_Escape_String_Select(Text_Piece.Strings[2]))) <> 0) AND
              (DB_NextRow(DB_ID) <> 0) then
           begin
             ResID        := DB_GetString(DB_ID, 0); // `ID`
@@ -1396,7 +1396,7 @@ begin
           p.WriteConsole('| ID   | Search achievement: ' + Text_Piece.Strings[2] + WHITESPACES[7 + Length(Text_Piece.Strings[2])] +
                           '                       |', MESSAGE_COLOR_GAME);
           p.WriteConsole('+------+------------------------------------------------------------+', MESSAGE_COLOR_GAME);
-          if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_SEARCH_ACH_BY_N, DB_Escape_String(Text_Piece.Strings[2]))) <> 0) AND
+          if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_SEARCH_ACH_BY_N, DB_Escape_String_Select(Text_Piece.Strings[2]))) <> 0) AND
              (DB_NextRow(DB_ID) <> 0) then
           begin
             ResultString := DB_GetString(DB_ID, 0);  // `mapname`
@@ -1738,13 +1738,13 @@ begin
     p.WriteConsole('[RM] The queue is empty!', MESSAGE_COLOR_GAME)
   else
   begin
-    p.WriteConsole('+--------------------------+', MESSAGE_COLOR_GAME);
-    p.WriteConsole('| Players in queue         |', MESSAGE_COLOR_GAME);
-    p.WriteConsole('+--------------------------+', MESSAGE_COLOR_GAME);
+    p.WriteConsole('+-----------------------------+', MESSAGE_COLOR_GAME);
+    p.WriteConsole('| Players in queue            |', MESSAGE_COLOR_GAME);
+    p.WriteConsole('+-----------------------------+', MESSAGE_COLOR_GAME);
     for I := 1 to Queue.Tail do
-      p.WriteConsole('| ' + Players[Queue.Members[I]].Name +
+      p.WriteConsole('| ' + IntToStr(I) + '. ' + Players[Queue.Members[I]].Name +
         WHITESPACES[Length(Players[Queue.Members[I]].Name) - 1] + ' |', Medal_Color_by_Rank(I));
-    p.WriteConsole('+--------------------------+', MESSAGE_COLOR_GAME);
+    p.WriteConsole('+-----------------------------+', MESSAGE_COLOR_GAME);
   end;
 end;
 
@@ -1950,6 +1950,8 @@ begin
         p.WriteConsole('+-----A-D-M-I-N-S-----+', MESSAGE_COLOR_GAME);
         p.WriteConsole('| ExHunter       (EU) |', MESSAGE_COLOR_GOLD);
         p.WriteConsole('| Toyux          (SA) |', MESSAGE_COLOR_GOLD);
+        p.WriteConsole('+---------------------+', MESSAGE_COLOR_GAME);
+        p.WriteConsole('| HaSte          (EU) |', MESSAGE_COLOR_GAME);
         p.WriteConsole('+---------------------+', MESSAGE_COLOR_GAME);
       end;
       '!rules':
@@ -2416,12 +2418,7 @@ end;
 
 function ErrorHandler(ErrorCode: TErrorType; Message, UnitName, FunctionName: string; Row, Col: Cardinal): Boolean;
 begin
-  WriteLn('-------------------------');
-  WriteLn('[ERROR-UNIT] ' + UnitName);
-  WriteLn('[ERROR-FUNC] ' + FunctionName);
-  WriteLn('[ERROR-POS ] ' + IntToStr(Col) + ' - ' + IntToStr(Row));
-  WriteLn('[ERROR-MSG ] ' + Message);
-  WriteLn('-------------------------');
+  // TODO: LOG ERRORS IN SEPARATE FILES AND NOT CONSOLE
   result := True;
 end;
 

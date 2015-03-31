@@ -193,6 +193,7 @@ procedure DB_Establish_Connection();
 procedure DB_Ping_Server();
 
 function DB_Escape_String(input: string): string;
+function DB_Escape_String_Select(Input: string): string;
 procedure DB_PerformQuery(DatabaseID: Integer; used_loc: string; Query: PChar);
 procedure DB_PerformConnectedQuery(used_loc: string; Query: PChar);
 
@@ -259,6 +260,14 @@ begin
   Result := ReplaceRegExpr('''', Input, '''''', False);
   Result := ReplaceRegExpr('\\',  Result, '\\', False);
   Result := ReplaceRegExpr('"',  Result, '\"',  False);
+end;
+
+function DB_Escape_String_Select(Input: string): string;
+begin
+  Result := ReplaceRegExpr('''', Input, '''''', False);
+  Result := ReplaceRegExpr('\\',  Result, '\\', False);
+  Result := ReplaceRegExpr('"',  Result, '\"',  False);
+  Result := ReplaceRegExpr('_',  Result, '\_',  False);
   Result := ReplaceRegExpr('%',  Result, '\%',  False);
 end;
 
