@@ -1208,7 +1208,7 @@ begin
     begin
       if DB_CONNECTED then
       begin
-        if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_GET_MAP_ID_BY_N, DB_Escape_String_Select(Text_Piece.Strings[1]))) <> 0) and
+        if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_GET_MAP_ID_BY_N, DB_Escape_String(Text_Piece.Strings[1]))) <> 0) and
          (DB_NextRow(DB_ID) <> 0) then
         begin
           SearchedMapID := DB_GetLong(DB_ID, 0); // `ID`
