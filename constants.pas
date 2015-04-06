@@ -152,24 +152,19 @@ const
 
   // SQL queries for replays
  SQL_CREATE_REPLAY_TBL = 'CREATE TABLE IF NOT EXISTS `VAL1` ( ' +
-                         '    `replayOrder` SMALLINT(6) NOT NULL, ' +
-                         '    `runID` INT(11) NOT NULL, ' +
-                         '    `KeyUp` TINYINT(1) NOT NULL DEFAULT ''0'', ' +
-                         '    `KeyLeft` TINYINT(1) NOT NULL DEFAULT ''0'', ' +
-                         '    `KeyRight` TINYINT(1) NOT NULL DEFAULT ''0'', ' +
-                         '    `KeyJetpack` TINYINT(1) NOT NULL DEFAULT ''0'', ' +
-                         '    `KeyGrenade` TINYINT(1) NOT NULL DEFAULT ''0'', ' +
-                         '    `KeyChangeWeap` TINYINT(1) NOT NULL DEFAULT ''0'', ' +
-                         '    `KeyThrow` TINYINT(1) NOT NULL DEFAULT ''0'', ' +
-                         '    `KeyCrouch` TINYINT(1) NOT NULL DEFAULT ''0'', ' +
-                         '    `KeyProne` TINYINT(1) NOT NULL DEFAULT ''0'', ' +
-                         '    `AimX` SMALLINT(6) NOT NULL DEFAULT ''0'', ' +
-                         '    `AimY` SMALLINT(6) NOT NULL DEFAULT ''0'', ' +
-                         '    `PosX` FLOAT NOT NULL DEFAULT ''0'', ' +
-                         '    `PosY` FLOAT NOT NULL DEFAULT ''0'', ' +
-                         '    UNIQUE INDEX `combination` (`replayOrder`, `runID`), ' +
-                         '    INDEX `runID` (`runID`) ' +
+                         '`replayOrder` SMALLINT(6) NOT NULL, ' +
+                         '`runID` INT(11) NOT NULL, ' +
+                         '`Keys` SMALLINT(6) NOT NULL DEFAULT ''0'', ' +
+                         '`AimX` SMALLINT(6) NOT NULL DEFAULT ''0'', ' +
+                         '`AimY` SMALLINT(6) NOT NULL DEFAULT ''0'', ' +
+                         '`PosX` FLOAT NOT NULL DEFAULT ''0'', ' +
+                         '`PosY` FLOAT NOT NULL DEFAULT ''0'', ' +
+                         '`VelX` FLOAT NOT NULL DEFAULT ''0'', ' +
+                         '`VelY` FLOAT NOT NULL DEFAULT ''0'', ' +
+                         'UNIQUE INDEX `combination` (`replayOrder`, `runID`), ' +
+                         'INDEX `runID` (`runID`) ' +
                          ') ' +
+                         'COLLATE=''utf8_general_ci'' ' +
                          'ENGINE=MyISAM;';
   SQL_CREATE_BESTRUN   = 'CREATE TABLE IF NOT EXISTS `VAL1_bestrun` ( ' +
                          '     `runID` INT(11) NOT NULL, ' +
@@ -182,7 +177,7 @@ const
                          'COLLATE=''utf8_general_ci'' ' +
                          'ENGINE=MyISAM;';
   SQL_DELETE_REPLAY    = 'DELETE FROM `VAL1` WHERE `runID` = VAL2;';
-  SQL_GET_REPLAY       = 'SELECT `KeyUp`, `KeyLeft`, `KeyRight`, `KeyJetpack`, `KeyGrenade`, `KeyChangeWeap`, `KeyThrow`, `KeyCrouch`, `KeyProne`, `AimX`, `AimY`, `PosX`, `PosY` ' +
+  SQL_GET_REPLAY       = 'SELECT `Keys`, `AimX`, `AimY`, `PosX`, `PosY`, `VelX`, `VelY` ' +
                          'FROM `VAL1` WHERE `runID` = VAL2 ORDER BY `replayOrder` ASC;';
   SQL_DELETE_BESTRUN   = 'DELETE FROM `VAL1_bestrun` WHERE `runID` = VAL2;';
   SQL_GET_BESTRUN      = 'SELECT `runID`, `Lap`, `CheckPoint`, `Time` FROM `VAL1_bestrun` WHERE `runID` = VAL2';
@@ -269,6 +264,24 @@ const
 
   STR_TIME_SECOND      = '00:00:01';
   STR_TIME_LIMIT       = '00:05:00';
+
+  // Key binary ops
+  BINARY_1             = 1;       // KeyUp
+  BINARY_2             = 2;       // KeyLeft
+  BINARY_3             = 4;       // KeyRight
+  BINARY_4             = 8;       // KeyJetpack
+  BINARY_5             = 16;      // KeyGrenade
+  BINARY_6             = 32;      // KeyChangeWeap
+  BINARY_7             = 64;      // KeyThrow
+  BINARY_8             = 128;     // KeyCrouch
+  BINARY_9             = 256;     // KeyProne
+  BINARY_10            = 512;     // KeyShoot
+  BINARY_11            = 1024;    // UNUSED
+  BINARY_12            = 2048;    // UNUSED
+  BINARY_13            = 4096;    // UNUSED
+  BINARY_14            = 8192;    // UNUSED
+  BINARY_15            = 16384;   // UNUSED
+  BINARY_16            = 32768;   // UNUSED
 
 implementation
 

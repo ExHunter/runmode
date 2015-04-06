@@ -63,9 +63,10 @@ type
     end;
 
   TReplay = record
-    KeyUp, KeyLeft, KeyRight, KeyJetpack, KeyGrenade, KeyChangeWeap, KeyThrow, KeyCrouch, KeyProne: Boolean;
+    KeyMask: Word;
     AimX, AimY: SmallInt;
     PosX, PosY: Single;
+    VelX, VelY: Single;
     end;
 
   TPointers = record
@@ -257,19 +258,13 @@ begin
         while DB_NextRow(DB_ID_REPLAYS) <> 0 do
         begin
           SetArrayLength(Result, Length + 1);
-          Result[Length].KeyUp         := DB_GetLong(DB_ID_REPLAYS, 0) = 1; // `KeyUp`
-          Result[Length].KeyLeft       := DB_GetLong(DB_ID_REPLAYS, 1) = 1; // `KeyLeft`
-          Result[Length].KeyRight      := DB_GetLong(DB_ID_REPLAYS, 2) = 1; // `KeyRight`
-          Result[Length].KeyJetpack    := DB_GetLong(DB_ID_REPLAYS, 3) = 1; // `KeyJetpack`
-          Result[Length].KeyGrenade    := DB_GetLong(DB_ID_REPLAYS, 4) = 1; // `KeyGrenade`
-          Result[Length].KeyChangeWeap := DB_GetLong(DB_ID_REPLAYS, 5) = 1; // `KeyChangeWeap`
-          Result[Length].KeyThrow      := DB_GetLong(DB_ID_REPLAYS, 6) = 1; // `KeyThrow`
-          Result[Length].KeyCrouch     := DB_GetLong(DB_ID_REPLAYS, 7) = 1; // `KeyCrouch`
-          Result[Length].KeyProne      := DB_GetLong(DB_ID_REPLAYS, 8) = 1; // `KeyProne`
-          Result[Length].AimX          := DB_GetLong(DB_ID_REPLAYS, 9);     // `AimX`
-          Result[Length].AimY          := DB_GetLong(DB_ID_REPLAYS, 10);    // `AimY`
-          Result[Length].PosX          := DB_GetFloat(DB_ID_REPLAYS, 11);   // `PosX`
-          Result[Length].PosY          := DB_GetFloat(DB_ID_REPLAYS, 12);   // `PosY`
+          Result[Length].KeyMask := DB_GetLong(DB_ID_REPLAYS,  0); // `Keys`
+          Result[Length].AimX    := DB_GetLong(DB_ID_REPLAYS,  1); // `AimX`
+          Result[Length].AimY    := DB_GetLong(DB_ID_REPLAYS,  2); // `AimY`
+          Result[Length].PosX    := DB_GetFloat(DB_ID_REPLAYS, 3); // `PosX`
+          Result[Length].PosY    := DB_GetFloat(DB_ID_REPLAYS, 4); // `PosY`
+          Result[Length].VelX    := DB_GetFloat(DB_ID_REPLAYS, 5); // `VelX`
+          Result[Length].VelY    := DB_GetFloat(DB_ID_REPLAYS, 6); // `VelY`
           Length := Length + 1;
         end;
         DB_FinishQuery(DB_ID_REPLAYS);
@@ -650,7 +645,12 @@ begin
     DB_PerformQuery(DB_ID_REPLAYS, 'Save_ReplayData', DB_Query_Replace_Val2(SQL_DELETE_REPLAY, Game.CurrentMap, runIDString));
     WriteLn('[RM] Inserting new replay data...');
 
-    DB_PerformQuery(DB_ID_REPLAYS, 'Save_ReplayData', DB_Query_Replace_Val1(ReplayString, runIDString));
+    DB_FinishQuery(DB_ID_REPLAYS);
+
+    DB_PerformQuery(DB_ID_REPLAYS, 'Save_ReplayData', 'SET @RUNID := ' + runIDString + ';');
+    DB_PerformQuery(DB_ID_REPLAYS, 'Save_ReplayData', ReplayString);
+
+    DB_FinishQuery(DB_ID_REPLAYS);
 
     // Save CheckPoint data
     DB_PerformQuery(DB_ID_REPLAYS, 'Save_ReplayData', DB_Query_Replace_Val2(SQL_DELETE_BESTRUN, Game.CurrentMap, runIDString));
@@ -659,6 +659,7 @@ begin
         DB_PerformQuery(DB_ID_REPLAYS, 'Save_ReplayData', DB_Query_Replace_Val5(SQL_ADD_BESTRUN, Game.CurrentMap,
           runIDString, IntToStr(I + 1), IntToStr(J + 1), FormatDateTime('hh:nn:ss.zzz', RM.CurrentRunLap[I].Checkpoint[J])));
 
+    DB_FinishQuery(DB_ID_REPLAYS);
     DB_Close(DB_ID_REPLAYS);
     WriteLn('[RM] Finished... Database closed!');
   end else
@@ -960,60 +961,73 @@ begin
     EndSingleGame(False);
     Exit;
   end;
-  ReplayBot.KeyUp         := ReplayValues[CurrentLoop].KeyUp;
-  ReplayBot.KeyLeft       := ReplayValues[CurrentLoop].KeyLeft;
-  ReplayBot.KeyRight      := ReplayValues[CurrentLoop].KeyRight;
-  ReplayBot.KeyJetpack    := ReplayValues[CurrentLoop].KeyJetpack;
-  ReplayBot.KeyGrenade    := ReplayValues[CurrentLoop].KeyGrenade;
-  ReplayBot.KeyChangeWeap := ReplayValues[CurrentLoop].KeyChangeWeap;
-  ReplayBot.KeyThrow      := ReplayValues[CurrentLoop].KeyThrow;
-  ReplayBot.KeyCrouch     := ReplayValues[CurrentLoop].KeyCrouch;
-  ReplayBot.KeyProne      := ReplayValues[CurrentLoop].KeyProne;
+  ReplayBot.KeyUp         := ReplayValues[CurrentLoop].KeyMask and BINARY_1  = BINARY_1;
+  ReplayBot.KeyLeft       := ReplayValues[CurrentLoop].KeyMask and BINARY_2  = BINARY_2;
+  ReplayBot.KeyRight      := ReplayValues[CurrentLoop].KeyMask and BINARY_3  = BINARY_3;
+  ReplayBot.KeyJetpack    := ReplayValues[CurrentLoop].KeyMask and BINARY_4  = BINARY_4;
+  ReplayBot.KeyGrenade    := ReplayValues[CurrentLoop].KeyMask and BINARY_5  = BINARY_5;
+  ReplayBot.KeyChangeWeap := ReplayValues[CurrentLoop].KeyMask and BINARY_6  = BINARY_6;
+  ReplayBot.KeyThrow      := ReplayValues[CurrentLoop].KeyMask and BINARY_7  = BINARY_7;
+  ReplayBot.KeyCrouch     := ReplayValues[CurrentLoop].KeyMask and BINARY_8  = BINARY_8;
+  ReplayBot.KeyProne      := ReplayValues[CurrentLoop].KeyMask and BINARY_9  = BINARY_9;
+  ReplayBot.KeyShoot      := ReplayValues[CurrentLoop].KeyMask and BINARY_10 = BINARY_10;
   ReplayBot.MouseAimX     := ReplayValues[CurrentLoop].AimX;
   ReplayBot.MouseAimY     := ReplayValues[CurrentLoop].AimY;
 
   ReplayBot.Move(ReplayValues[CurrentLoop].PosX, ReplayValues[CurrentLoop].PosY);
+  ReplayBot.SetVelocity(ReplayValues[CurrentLoop].VelX, ReplayValues[CurrentLoop].VelY);
 end;
 
 procedure RecordKeys();
 var
   Len: Integer;
+  KeyMask: Word;
 begin
   Len := GetArrayLength(ReplayValues);
+
+  KeyMask := 0;
+  if RM.Runner.PPlayer.KeyUp then
+    KeyMask := KeyMask or BINARY_1;
+  if RM.Runner.PPlayer.KeyLeft then
+    KeyMask := KeyMask or BINARY_2;
+  if RM.Runner.PPlayer.KeyRight then
+    KeyMask := KeyMask or BINARY_3;
+  if RM.Runner.PPlayer.KeyJetpack then
+    KeyMask := KeyMask or BINARY_4;
+  if RM.Runner.PPlayer.KeyGrenade then
+    KeyMask := KeyMask or BINARY_5;
+  if RM.Runner.PPlayer.KeyChangeWeap then
+    KeyMask := KeyMask or BINARY_6;
+  if RM.Runner.PPlayer.KeyThrow then
+    KeyMask := KeyMask or BINARY_7;
+  if RM.Runner.PPlayer.KeyCrouch then
+    KeyMask := KeyMask or BINARY_8;
+  if RM.Runner.PPlayer.KeyProne then
+    KeyMask := KeyMask or BINARY_9;
+  if RM.Runner.PPlayer.KeyShoot then
+    KeyMask := KeyMask or BINARY_10;
+
   if Len = 0 then
   begin
     ReplayString := 'INSERT INTO `' + Game.CurrentMap +
-    '` (`replayOrder`, `runID`, `KeyUp`, `KeyLeft`, `KeyRight`, `KeyJetpack`, `KeyGrenade`,' +
-    ' `KeyChangeWeap`, `KeyThrow`, `KeyCrouch`, `KeyProne`, `AimX`, `AimY`, `PosX`, `PosY`) VALUES' + FILE_NEWLINE;
-    ReplayString := ReplayString + FILE_NEWLINE + '(' + IntToStr(Len) + ', ' + 'VAL1' + ', ' +
-                                                  iif(RM.Runner.PPlayer.KeyUp, '1', '0') + ', ' +
-                                                  iif(RM.Runner.PPlayer.KeyLeft, '1', '0') + ', ' +
-                                                  iif(RM.Runner.PPlayer.KeyRight, '1', '0') + ', ' +
-                                                  iif(RM.Runner.PPlayer.KeyJetpack, '1', '0') + ', ' +
-                                                  iif(RM.Runner.PPlayer.KeyGrenade, '1', '0') + ', ' +
-                                                  iif(RM.Runner.PPlayer.KeyChangeWeap, '1', '0') + ', ' +
-                                                  iif(RM.Runner.PPlayer.KeyThrow, '1', '0') + ', ' +
-                                                  iif(RM.Runner.PPlayer.KeyCrouch, '1', '0') + ', ' +
-                                                  iif(RM.Runner.PPlayer.KeyProne, '1', '0') + ', ' +
+    '` (`replayOrder`, `runID`, `Keys`, `AimX`, `AimY`, `PosX`, `PosY`, `VelX`, `VelY`) VALUES' + FILE_NEWLINE;
+    ReplayString := ReplayString + FILE_NEWLINE + '(' + IntToStr(Len) + ', ' + '@RUNID' + ', ' +
+                                                  IntToStr(KeyMask) + ', ' +
                                                   IntToStr(RM.Runner.PPlayer.MouseAimX) + ', ' +
                                                   IntToStr(RM.Runner.PPlayer.MouseAimY) + ', ' +
                                                   FloatToStr(RM.Runner.PPlayer.X) + ', ' +
-                                                  FloatToStr(RM.Runner.PPlayer.Y) + ')';
+                                                  FloatToStr(RM.Runner.PPlayer.Y) + ', ' +
+                                                  FloatToStr(RM.Runner.PPlayer.VelX) + ', ' +
+                                                  FloatToStr(RM.Runner.PPlayer.VelY) + ')';
   end else
-    ReplayString := ReplayString + ', ' + FILE_NEWLINE + '(' + IntToStr(Len) + ', ' + 'VAL1' + ', ' +
-                                                         iif(RM.Runner.PPlayer.KeyUp, '1', '0') + ', ' +
-                                                         iif(RM.Runner.PPlayer.KeyLeft, '1', '0') + ', ' +
-                                                         iif(RM.Runner.PPlayer.KeyRight, '1', '0') + ', ' +
-                                                         iif(RM.Runner.PPlayer.KeyJetpack, '1', '0') + ', ' +
-                                                         iif(RM.Runner.PPlayer.KeyGrenade, '1', '0') + ', ' +
-                                                         iif(RM.Runner.PPlayer.KeyChangeWeap, '1', '0') + ', ' +
-                                                         iif(RM.Runner.PPlayer.KeyThrow, '1', '0') + ', ' +
-                                                         iif(RM.Runner.PPlayer.KeyCrouch, '1', '0') + ', ' +
-                                                         iif(RM.Runner.PPlayer.KeyProne, '1', '0') + ', ' +
+    ReplayString := ReplayString + ', ' + FILE_NEWLINE + '(' + IntToStr(Len) + ', ' + '@RUNID' + ', ' +
+                                                         IntToStr(KeyMask) + ', ' +
                                                          IntToStr(RM.Runner.PPlayer.MouseAimX) + ', ' +
                                                          IntToStr(RM.Runner.PPlayer.MouseAimY) + ', ' +
                                                          FloatToStr(RM.Runner.PPlayer.X) + ', ' +
-                                                         FloatToStr(RM.Runner.PPlayer.Y) + ')';
+                                                         FloatToStr(RM.Runner.PPlayer.Y) + ', ' +
+                                                         FloatToStr(RM.Runner.PPlayer.VelX) + ', ' +
+                                                         FloatToStr(RM.Runner.PPlayer.VelY) + ')';
   SetArrayLength(ReplayValues, Len + 1);
 end;
 
