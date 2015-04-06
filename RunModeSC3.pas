@@ -563,8 +563,8 @@ begin
         end;
       end;
 
-      DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val4(SQL_INSERT_ACTION, IntToStr(PlayerID), IntToStr(DB_SERVER_ID),
-        IntToStr(ACTION_KIND_RUN), Game.CurrentMap + ' (Time: ' + FormatDateTime('nn:ss.zzz', RunnerTime) + ')'));
+      DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val5(SQL_INSERT_ACTION, IntToStr(PlayerID), IntToStr(DB_SERVER_ID),
+        IntToStr(ACTION_KIND_RUN), Game.CurrentMap, FormatDateTime('nn:ss.zzz', RunnerTime)));
 
       DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val1(SQL_INC_RUNSNUM, IntToStr(RM.Map.MapID)));
       DB_FinishQuery(DB_ID);
@@ -574,8 +574,8 @@ begin
       begin
         PlayerNewRank := GetPlayerRank(PlayerID, RM.Map.MapID);
 
-        DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val4(SQL_INSERT_ACTION, IntToStr(PlayerID),
-          IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_NEW_BEST), Game.CurrentMap + ' (Rank: ' + IntToStr(PlayerNewRank) + ')'));
+        DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val5(SQL_INSERT_ACTION, IntToStr(PlayerID),
+          IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_NEW_BEST), Game.CurrentMap, IntToStr(PlayerNewRank)));
         if (PlayerNewRank > 0) and (PlayerNewRank < 4) then
           Achievement_Handle_Update(3, 1, p, True); // Victory!
         case PlayerNewRank of
@@ -584,33 +584,33 @@ begin
             if PlayerID <> GoldPlayer then
               NewGoldMedal(PlayerID, GoldPlayer, SilverPlayer, BronzePlayer);
             Achievement_Handle_Update(6, 1, p, True); // That gold is mine!
-            DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val4(SQL_INSERT_ACTION, IntToStr(PlayerID),
-              IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_GOLD), Game.CurrentMap));
+            DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val5(SQL_INSERT_ACTION, IntToStr(PlayerID),
+              IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_GOLD), Game.CurrentMap, 'gold'));
             if GoldPlayer > 0 then
-              DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val4(SQL_INSERT_ACTION, IntToStr(GoldPlayer),
-                IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_L_GOLD), Game.CurrentMap));
+              DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val5(SQL_INSERT_ACTION, IntToStr(GoldPlayer),
+                IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_L_GOLD), Game.CurrentMap, 'gold'));
           end;
           MEDAL_SILVER:
           begin
             if PlayerID <> SilverPlayer then
               NewSilverMedal(PlayerID, SilverPlayer, BronzePlayer);
             Achievement_Handle_Update(5, 1, p, True); // 2nd place is the first loser
-            DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val4(SQL_INSERT_ACTION, IntToStr(PlayerID),
-              IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_SILVER), Game.CurrentMap));
+            DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val5(SQL_INSERT_ACTION, IntToStr(PlayerID),
+              IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_SILVER), Game.CurrentMap, 'silver'));
             if SilverPlayer > 0 then
-              DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val4(SQL_INSERT_ACTION, IntToStr(SilverPlayer),
-                IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_L_SILVER), Game.CurrentMap));
+              DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val5(SQL_INSERT_ACTION, IntToStr(SilverPlayer),
+                IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_L_SILVER), Game.CurrentMap, 'silver'));
           end;
           MEDAL_BRONZE:
           begin
             if PlayerID <> BronzePlayer then
               NewBronzeMedal(PlayerID, BronzePlayer);
             Achievement_Handle_Update(4, 1, p, True); // Bronzification
-            DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val4(SQL_INSERT_ACTION, IntToStr(PlayerID),
-              IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_BRONZE), Game.CurrentMap));
+            DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val5(SQL_INSERT_ACTION, IntToStr(PlayerID),
+              IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_BRONZE), Game.CurrentMap, 'bronze'));
             if BronzePlayer > 0 then
-              DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val4(SQL_INSERT_ACTION, IntToStr(BronzePlayer),
-                IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_L_BRONZE), Game.CurrentMap));
+              DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val5(SQL_INSERT_ACTION, IntToStr(BronzePlayer),
+                IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_L_BRONZE), Game.CurrentMap, 'bronze'));
           end;
         end;
       end;
@@ -932,9 +932,9 @@ begin
   begin
     WriteLnAndConsole(NIL, '[RM] ' + RM.Runner.PPlayer.Name + ' stopped his run.', MESSAGE_COLOR_GAME);
     DB_PerformConnectedQuery('EndSingleGame', DB_Query_Replace_Val1(SQL_INC_FAILSNUM, IntToStr(RM.Map.MapID)));
-    DB_PerformConnectedQuery('EndSingleGame', DB_Query_Replace_Val4(SQL_INSERT_ACTION,
+    DB_PerformConnectedQuery('EndSingleGame', DB_Query_Replace_Val5(SQL_INSERT_ACTION,
       IntToStr(DB_PlayerGetIDbyHWID(RM.Runner.PPlayer.HWID)), IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_FAIL),
-      Game.CurrentMap));
+      Game.CurrentMap, ''));
     SetWaitingTime(MATH_SECOND * 1);
     DB_FinishQuery(DB_ID);
   end;
@@ -2309,9 +2309,9 @@ begin
     if RM.Map.Loaded then
       DrawCheckPoints;
     UpdatePlayerDatabase(p); // Adds the player if not in Database
-    DB_PerformQuery(DB_ID, 'GameOnJoin', DB_Query_Replace_Val4(SQL_INSERT_ACTION,
+    DB_PerformQuery(DB_ID, 'GameOnJoin', DB_Query_Replace_Val5(SQL_INSERT_ACTION,
       IntToStr(DB_PlayerGetIDbyHWID(p.HWID)), IntToStr(DB_SERVER_ID),
-      IntToStr(ACTION_KIND_JOIN), ''));
+      IntToStr(ACTION_KIND_JOIN), '', ''));
     Achievement_Handle_Update(67, 1, p, False); // Addicted to you
     p.WriteConsole('[HELP] Welcome to !RunMode. Type !help if you are new.', MESSAGE_COLOR_SYSTEM);
   end;
@@ -2328,9 +2328,9 @@ begin
   if p.IsAdmin then
     p.IsAdmin := False;
   RemoveFromQueue(p.ID);
-  DB_PerformQuery(DB_ID, 'GameOnLeave', DB_Query_Replace_Val4(SQL_INSERT_ACTION,
+  DB_PerformQuery(DB_ID, 'GameOnLeave', DB_Query_Replace_Val5(SQL_INSERT_ACTION,
     IntToStr(DB_PlayerGetIDbyHWID(p.HWID)), IntToStr(DB_SERVER_ID),
-    IntToStr(ACTION_KIND_LEAVE), ''));
+    IntToStr(ACTION_KIND_LEAVE), '', ''));
   if HighID = p.ID then
     for I := HighID - 1 downto 1 do
       if Players[I].Active then
