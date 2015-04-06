@@ -1451,21 +1451,21 @@ begin
   end;
 end;
 
-function LastActionSentence(Kind: Byte; Info, Name: string): string;
+function LastActionSentence(Kind: Byte; Info, Info2, Name: string): string;
 begin
   case Kind of
-    ACTION_KIND_RUN:      Result := Name + ' finished a run on ' + Info;
+    ACTION_KIND_RUN:      Result := Name + ' finished a run on ' + Info + ' in ' + Info2;
     ACTION_KIND_FAIL:     Result := Name + ' stopped a run on ' + Info;
     ACTION_KIND_VS_WON:   Result := Name + ' won a vs race on ' + Info;
     ACTION_KIND_VS_LOST:  Result := Name + ' lost a vs race on ' + Info;
     ACTION_KIND_ACHIEVE:  Result := Name + ' earned the achievement ' + Info;
-    ACTION_KIND_GOLD:     Result := Name + ' got a gold medal on ' + Info;
-    ACTION_KIND_SILVER:   Result := Name + ' got a silver medal on ' + Info;
-    ACTION_KIND_BRONZE:   Result := Name + ' got a bronze medal on ' + Info;
-    ACTION_KIND_L_GOLD:   Result := Name + ' lost a gold medal on ' + Info;
-    ACTION_KIND_L_SILVER: Result := Name + ' lost a silver medal on ' + Info;
-    ACTION_KIND_L_BRONZE: Result := Name + ' lost a bronze medal on ' + Info;
-    ACTION_KIND_NEW_BEST: Result := Name + ' has a new best on ' + Info;
+    ACTION_KIND_GOLD,
+    ACTION_KIND_SILVER,
+    ACTION_KIND_BRONZE:   Result := Name + ' got a ' + Info2 + ' medal on ' + Info;
+    ACTION_KIND_L_GOLD,
+    ACTION_KIND_L_SILVER,
+    ACTION_KIND_L_BRONZE: Result := Name + ' lost a ' + Info2 + ' medal on ' + Info;
+    ACTION_KIND_NEW_BEST: Result := Name + ' has a new best (Rank: ' + Info2 + ') on ' + Info;
     ACTION_KIND_JOIN:     Result := Name + ' has joined the game';
     ACTION_KIND_LEAVE:    Result := Name + ' has left the game';
   else
@@ -1480,10 +1480,10 @@ begin
     if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_RECENT_ACTIONS15, IntToStr(DB_PlayerGetIDbyHWID(p.HWID)))) <> 0) THEN
     begin
       p.WriteConsole('[RM] Your last 15 actions:', MESSAGE_COLOR_GAME);
-      // `serverID` = 0, `time` = 1, `Kind` = 2, `info` = 3
+      // `serverID` = 0, `time` = 1, `Kind` = 2, `info` = 3, `info2` = 4
       while DB_NextRow(DB_ID) <> 0 do
         p.WriteConsole('[' + DB_GetString(DB_ID, 1) + '] ' + LastActionSentence(DB_GetLong(DB_ID, 2),
-          DB_GetString(DB_ID, 3), p.Name), MESSAGE_COLOR_GAME);
+          DB_GetString(DB_ID, 3), DB_GetString(DB_ID, 4), p.Name), MESSAGE_COLOR_GAME);
       p.WriteConsole('[RM] That''s all.', MESSAGE_COLOR_GAME);
     end else
     begin
@@ -1572,10 +1572,10 @@ begin
       ProfileRecentAction := '';
       if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_RECENT_ACTIONS5, IntToStr(ProfileID))) <> 0) then
       begin
-        // `serverID` = 0, `time` = 1, `Kind` = 2, `info` = 3
+        // `serverID` = 0, `time` = 1, `Kind` = 2, `info` = 3, `info2` = 4
         while DB_NextRow(DB_ID) <> 0 do
           ProfileRecentAction := ProfileRecentAction + '  [' + DB_GetString(DB_ID, 1) + '] ' +
-            LastActionSentence(DB_GetLong(DB_ID, 2), DB_GetString(DB_ID, 3), ProfileName) + FILE_NEWLINE;
+            LastActionSentence(DB_GetLong(DB_ID, 2), DB_GetString(DB_ID, 3), DB_GetString(DB_ID, 4), ProfileName) + FILE_NEWLINE;
       end;
       if ProfileRecentAction = '' then
         p.WriteConsole('  Could not find any recent actions!', MESSAGE_COLOR_SYSTEM)

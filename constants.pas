@@ -133,8 +133,8 @@ const
   SQL_ACH_FIN          = 'SELECT `AchievementID` FROM `rm_achievements_claim` WHERE `AchievementID` = VAL1 AND `playerID` = VAL2;';
   SQL_ACHIEVE_INFO_1   = 'SELECT `Name`, `Points`, `FirstPlayerID` FROM `rm_achievements` WHERE `ID` = VAL1 LIMIT 1;';
   SQL_ACHIEVE_INFO_2   = 'SELECT `name` FROM `playerstats` WHERE `ID` = VAL1 LIMIT 1;';
-  SQL_RECENT_ACTIONS5  = 'SELECT `serverID`, `time`, `Kind`, `info` FROM `rm_activity` WHERE `PlayerID` = VAL1 ORDER BY `time` DESC LIMIT 5;';
-  SQL_RECENT_ACTIONS15 = 'SELECT `serverID`, `time`, `Kind`, `info` FROM `rm_activity` WHERE `PlayerID` = VAL1 ORDER BY `time` DESC LIMIT 15;';
+  SQL_RECENT_ACTIONS5  = 'SELECT `serverID`, `time`, `Kind`, `info`, `info2` FROM `rm_activity` WHERE `PlayerID` = VAL1 ORDER BY `time` DESC LIMIT 5;';
+  SQL_RECENT_ACTIONS15 = 'SELECT `serverID`, `time`, `Kind`, `info`, `info2` FROM `rm_activity` WHERE `PlayerID` = VAL1 ORDER BY `time` DESC LIMIT 15;';
   SQL_INSERT_ACTION    = 'INSERT INTO `rm_activity` (`playerID`, `serverID`, `time`, `kind`, `info`, `info2`) VALUES (VAL1, VAL2, NOW(), VAL3, ''VAL4'', ''VAL5'');';
   SQL_GET_ACHIEVE_LIST = 'SELECT `rm_achievements`.`ID`, `rm_achievements`.`Name`, `rm_achievements`.`Points`, ' +
                          '       `rm_achievements_claim`.`ClaimDate`, ' +
