@@ -1157,7 +1157,7 @@ begin
   if DB_CONNECTED then
   begin
     if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_GET_MAP_ID_BY_N, DB_Escape_String(ChosenMap))) <> 0) and
-       (DB_NextRow(DB_ID) <> 0) then
+       (DB_NextRow(DB_ID) <> 0) and (File.Exists('maps/' + ChosenMap + '.pms')) then
     begin
       ChooseMap.Vote_Num       := 0;
       ChooseMap.Vote_Count     := Game.NumPlayers - Game.NumBots;
@@ -2828,7 +2828,7 @@ begin
     '/reload':
     begin
       if RM.Active then
-        DecideIfWriteLnOrConsole(p, '[RM] You cannot reload the map while somebody is running.', MESSAGE_COLOR_GAME)
+        DecideIfWriteLnOrConsole(p, '[RM] You cannot reload the map while somebody is running.', MESSAGE_COLOR_RED)
       else
         LoadMapSettings(Game.CurrentMap);
     end;
@@ -2836,7 +2836,7 @@ begin
     begin
       Result := True;
       if RM.Active then
-        DecideIfWriteLnOrConsole(p, '[RM] You cannot change the map while somebody is running.', MESSAGE_COLOR_GAME)
+        DecideIfWriteLnOrConsole(p, '[RM] You cannot change the map while somebody is running.', MESSAGE_COLOR_RED)
       else
       begin
         Map.SetMap(RM.Map.NextMap);
@@ -2848,10 +2848,13 @@ begin
     begin
       if RM.Active then
       begin
-        DecideIfWriteLnOrConsole(p, '[RM] You cannot change the map while somebody is running.', MESSAGE_COLOR_GAME);
+        DecideIfWriteLnOrConsole(p, '[RM] You cannot change the map while somebody is running.', MESSAGE_COLOR_RED);
         Result := True;
       end else
-        SetWaitingTime(MATH_SECOND * 6);
+        if File.Exists('maps/' + Copy(Command, 6, Length(Command) - 5) + '.pms') then
+          SetWaitingTime(MATH_SECOND * 6)
+        else
+          DecideIfWriteLnOrConsole(p, '[RM] The map ''' + Copy(Command, 6, Length(Command) - 5) + ''' does not exist.', MESSAGE_COLOR_RED);
     end;
     '/as':
     begin
