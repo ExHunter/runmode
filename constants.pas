@@ -150,6 +150,7 @@ const
                          'ORDER BY `ID` ASC ' +
                          'LIMIT VAL2, 20;';
   SQL_ADMINLIST        = 'SELECT `name`, `adm` FROM `playerstats` WHERE `adm` > 0 ORDER BY `adm` DESC, `ID` ASC;';
+  SQL_RANDOM_AD        = 'SELECT `Line1`, `Line2`, `Color1`, `Color2` FROM `ads` WHERE `active` = 1  ORDER BY RAND() LIMIT 0,1;';
 
   // SQL queries for replays
  SQL_CREATE_REPLAY_TBL = 'CREATE TABLE IF NOT EXISTS `VAL1` ( ' +

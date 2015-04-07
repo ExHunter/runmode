@@ -675,6 +675,22 @@ begin
   end;
 end;
 
+procedure PlayAd();
+begin
+  if DB_CONNECTED then
+  begin
+    if (DB_Query(DB_ID, SQL_RANDOM_AD) <> 0) and
+       (DB_NextRow(DB_ID) <> 0) then
+    begin
+      // `Line1` = 0, `Line2` = 1, `Color1` = 2, `Color2` = 3
+      Players.WriteConsole(FILE_NEWLINE + '     ' + DB_GetString(DB_ID, 0), DB_GetLong(DB_ID, 2));
+      Players.WriteConsole(               '[AD] ' + DB_GetString(DB_ID, 1), DB_GetLong(DB_ID, 3));
+    end else
+      WriteLn('[RM] Could not find any ads to display (' + DB_Error() + ')!');
+  end else
+    WriteLn('[RM] Could not display an ad. Database is not connected!');
+end;
+
 procedure LoadMapSettings(MapToLoad: string);
 var
   I: Byte;
@@ -2200,8 +2216,12 @@ begin
   begin
     if RM.Map.Loaded then
       DrawCheckPoints;
-    if t mod (MATH_MINUTE_IN_TICKS * 15) = 0 then
-      DB_Ping_Server;
+    if t mod MATH_MINUTE_IN_TICKS = 0 then
+    begin
+      PlayAd;
+      if t mod (MATH_MINUTE_IN_TICKS * 15) = 0 then
+        DB_Ping_Server;
+    end;
     if ChooseMap.VoteInProgress then
     begin
       ChooseMap.Time_Remaining := ChooseMap.Time_Remaining - (MATH_SECOND * 5);
