@@ -264,6 +264,7 @@ const
   REGEXP_FIRST_WORD    = '\s\s*[^\s]*';
 
   STR_TIME_SECOND      = '00:00:01';
+  STR_TIME_3_SECONDS   = '00:00:03';
   STR_TIME_LIMIT       = '00:05:00';
 
   // Key binary ops

@@ -907,11 +907,10 @@ begin
   for j := 0 to RM.Map.AmountOfCheckpoints-1 do
     RM.Map.CheckPoints[j].Checked := False;
   RM.Runner.PPlayer.Team := TEAM_SPECTATOR;
+  RunTime := RM.CurrentRunLap[RM.Map.AmountOfLaps - 1].CheckPoint[RM.Map.AmountOfCheckPoints - 1];
   if Successfull then
   begin
-    RunTime := RM.CurrentRunLap[RM.Map.AmountOfLaps - 1].CheckPoint[RM.Map.AmountOfCheckPoints - 1];
-
-    WriteLnAndConsole(NIL, '[RM] ' + RM.Runner.PPlayer.Name + ' has finished a run in ' + FormatDateTime('nn:ss.zzz', RunTime), MESSAGE_COLOR_GAME);
+     WriteLnAndConsole(NIL, '[RM] ' + RM.Runner.PPlayer.Name + ' has finished a run in ' + FormatDateTime('nn:ss.zzz', RunTime), MESSAGE_COLOR_GAME);
     if ReplayBot <> NIL then
       if RM.Runner.PPlayer.ID <> ReplayBot.ID then
       begin
@@ -937,10 +936,14 @@ begin
   end else
   begin
     WriteLnAndConsole(NIL, '[RM] ' + RM.Runner.PPlayer.Name + ' stopped his run.', MESSAGE_COLOR_GAME);
-    DB_PerformConnectedQuery('EndSingleGame', DB_Query_Replace_Val1(SQL_INC_FAILSNUM, IntToStr(RM.Map.MapID)));
-    DB_PerformConnectedQuery('EndSingleGame', DB_Query_Replace_Val5(SQL_INSERT_ACTION,
-      IntToStr(DB_PlayerGetIDbyHWID(RM.Runner.PPlayer.HWID)), IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_FAIL),
-      Game.CurrentMap, ''));
+    // only add fails for 3+ seconds run
+    if RunTime - StrToDateTime(STR_TIME_3_SECONDS) > 0 then
+    begin
+      DB_PerformConnectedQuery('EndSingleGame', DB_Query_Replace_Val1(SQL_INC_FAILSNUM, IntToStr(RM.Map.MapID)));
+      DB_PerformConnectedQuery('EndSingleGame', DB_Query_Replace_Val5(SQL_INSERT_ACTION,
+        IntToStr(DB_PlayerGetIDbyHWID(RM.Runner.PPlayer.HWID)), IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_FAIL),
+        Game.CurrentMap, ''));
+    end;
     SetWaitingTime(MATH_SECOND * 1);
     DB_FinishQuery(DB_ID);
   end;
