@@ -1458,7 +1458,15 @@ begin
     ACTION_KIND_FAIL:     Result := Name + ' stopped a run on ' + Info;
     ACTION_KIND_VS_WON:   Result := Name + ' won a vs race on ' + Info;
     ACTION_KIND_VS_LOST:  Result := Name + ' lost a vs race on ' + Info;
-    ACTION_KIND_ACHIEVE:  Result := Name + ' earned the achievement ' + Info;
+    ACTION_KIND_ACHIEVE:
+    begin
+      if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_ACHIEVE_INFO_1, DB_Escape_String(Info))) <> 0) and
+         (DB_NextRow(DB_ID) <> 0) then
+        Result := Name + ' earned the achievement ' + DB_GetString(DB_ID, 0) + ' (' + DB_GetString(DB_ID, 1) + ' points)'
+      else
+        Result := 'An error happened while displaying AchievementID ' + Info + '!';
+      DB_FinishQuery(DB_ID);
+    end;
     ACTION_KIND_GOLD,
     ACTION_KIND_SILVER,
     ACTION_KIND_BRONZE:   Result := Name + ' got a ' + Info2 + ' medal on ' + Info;
