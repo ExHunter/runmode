@@ -2439,6 +2439,8 @@ begin
     RM.Runner.CP := 0;
     RM.Runner.SumArrayDistance := 0;
     RM.Runner.PositionArrayDistance := 1;
+    RM.Runner.LastPos.X := RM.Map.RunnerStartSpawn.X;
+    RM.Runner.LastPos.Y := RM.Map.RunnerStartSpawn.Y;
     RM.Active := True;
   end
   else
