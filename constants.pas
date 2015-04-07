@@ -149,6 +149,7 @@ const
                          '   (`rm_achievements`.`ID` = `rm_achievements_progress`.`AchievementID`) ' +
                          'ORDER BY `ID` ASC ' +
                          'LIMIT VAL2, 20;';
+  SQL_ADMINLIST        = 'SELECT `name`, `adm` FROM `playerstats` WHERE `adm` > 0 ORDER BY `adm` DESC, `ID` ASC;';
 
   // SQL queries for replays
  SQL_CREATE_REPLAY_TBL = 'CREATE TABLE IF NOT EXISTS `VAL1` ( ' +
@@ -282,6 +283,10 @@ const
   BINARY_14            = 8192;    // UNUSED
   BINARY_15            = 16384;   // UNUSED
   BINARY_16            = 32768;   // UNUSED
+
+  ADMIN_LEVEL_HEAD     = 3;
+  ADMIN_LEVEL_TCP      = 2;
+  ADMIN_LEVEL_REMOTE   = 1;
 
 implementation
 

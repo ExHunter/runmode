@@ -1885,6 +1885,54 @@ begin
     WriteLnAndConsole(p, '[RM] Could not show the runs! Database is not connected!', MESSAGE_COLOR_SYSTEM);
 end;
 
+procedure ShowAdminList(p: TActivePlayer);
+var
+  ResColor: Cardinal;
+  OldLevel, NewLevel: Byte;
+  AdminName: string;
+begin
+  if DB_CONNECTED then
+  begin
+    if DB_Query(DB_ID, SQL_ADMINLIST) <> 0 then
+    begin
+      p.WriteConsole('+--------A-D-M-I-N-S--------+', MESSAGE_COLOR_GAME);
+      OldLevel := 0;
+      while DB_NextRow(DB_ID) <> 0 do
+      begin
+        NewLevel := DB_GetLong(DB_ID, 1); // `adm`
+        case NewLevel of
+          ADMIN_LEVEL_HEAD:   ResColor := MESSAGE_COLOR_GOLD;
+          ADMIN_LEVEL_TCP:    ResColor := MESSAGE_COLOR_SILVER;
+          ADMIN_LEVEL_REMOTE: ResColor := MESSAGE_COLOR_BRONZE;
+          else
+            ResColor := MESSAGE_COLOR_GAME;
+        end;
+        if NewLevel <> OldLevel then
+        begin
+          if OldLevel <> 0 then
+            p.WriteConsole('+---------------------------+', MESSAGE_COLOR_GAME);
+          OldLevel := NewLevel;
+        end;
+        AdminName := DB_GetString(DB_ID, 0); // `name`
+        while Length(AdminName) < 25 do
+          AdminName := AdminName + ' ';
+        p.WriteConsole('| ' + AdminName + ' |', ResColor);
+      end;
+      if OldLevel = 0 then
+      begin
+        p.WriteConsole('| Could not find any admins |', MESSAGE_COLOR_GAME);
+        p.WriteConsole('+---------------------------+', MESSAGE_COLOR_GAME);
+      end else
+        p.WriteConsole('+---------------------------+', MESSAGE_COLOR_GAME);
+    end else
+    begin
+      WriteLn('[RM] Could not show the adminlist! Some error happened (' + DB_Error() + ')!');
+      p.WriteConsole('[RM] Could not show the adminlist! Some error happened!', MESSAGE_COLOR_GAME);
+    end;
+  end else
+    WriteLnAndConsole(p, '[RM] Could not show the adminlist! Database is not connected!', MESSAGE_COLOR_SYSTEM);
+end;
+
 procedure ShowBestRun(p: TActivePlayer);
 var
   I, J: Byte;
@@ -1967,15 +2015,7 @@ begin
         Achievement_Handle_Update(70, 1, p, False); // Naggers
       end;
       '!adminlist',
-      '!admins':
-      begin
-        p.WriteConsole('+-----A-D-M-I-N-S-----+', MESSAGE_COLOR_GAME);
-        p.WriteConsole('| ExHunter       (EU) |', MESSAGE_COLOR_GOLD);
-        p.WriteConsole('| Toyux          (SA) |', MESSAGE_COLOR_GOLD);
-        p.WriteConsole('+---------------------+', MESSAGE_COLOR_GAME);
-        p.WriteConsole('| HaSte          (EU) |', MESSAGE_COLOR_GAME);
-        p.WriteConsole('+---------------------+', MESSAGE_COLOR_GAME);
-      end;
+      '!admins': ShowAdminList(p);
       '!rules':
       begin
         p.WriteConsole('+--------------D-A--R-U-L-E-S--------------+', MESSAGE_COLOR_GOLD);
