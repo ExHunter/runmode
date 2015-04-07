@@ -2917,7 +2917,13 @@ end;
 function RequestHandlerBan(Ip, Hw: string; Port: Word; State: Byte; Forwarded: Boolean; Password: string): Integer;
 begin
   if State = REQUEST_STATE_BANNED then
+  begin
+    if Game.BanLists.IsBannedHW(Hw) then
+      Game.BanLists.DelHWBan(Hw);
+    if Game.BanLists.IsBannedIP(Ip) then
+      Game.BanLists.DelIPBan(Ip);
     State := REQUEST_STATE_OK;
+  end;
   if DB_CONNECTED then
   begin
     if (DB_Query(DB_ID, DB_Query_Replace_Val2(SQL_GET_ACTIVE_BANS, Hw, Ip)) <> 0) then
