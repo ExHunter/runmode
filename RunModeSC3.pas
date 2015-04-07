@@ -938,7 +938,7 @@ begin
   begin
     WriteLnAndConsole(NIL, '[RM] ' + RM.Runner.PPlayer.Name + ' stopped his run.', MESSAGE_COLOR_GAME);
     // only add fails for 3+ seconds run
-    RunTime := Now - RM.Runner.StartTime
+    RunTime := Now - RM.Runner.StartTime;
     if RunTime - StrToDateTime(STR_TIME_3_SECONDS) > 0 then
     begin
       DB_PerformConnectedQuery('EndSingleGame', DB_Query_Replace_Val1(SQL_INC_FAILSNUM, IntToStr(RM.Map.MapID)));
