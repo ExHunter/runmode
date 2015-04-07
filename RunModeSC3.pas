@@ -582,35 +582,41 @@ begin
           MEDAL_GOLD:
           begin
             if PlayerID <> GoldPlayer then
+            begin
               NewGoldMedal(PlayerID, GoldPlayer, SilverPlayer, BronzePlayer);
-            Achievement_Handle_Update(6, 1, p, True); // That gold is mine!
+              if GoldPlayer > 0 then
+                DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val5(SQL_INSERT_ACTION, IntToStr(GoldPlayer),
+                  IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_L_GOLD), Game.CurrentMap, 'gold'));
+            end;
             DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val5(SQL_INSERT_ACTION, IntToStr(PlayerID),
               IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_GOLD), Game.CurrentMap, 'gold'));
-            if GoldPlayer > 0 then
-              DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val5(SQL_INSERT_ACTION, IntToStr(GoldPlayer),
-                IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_L_GOLD), Game.CurrentMap, 'gold'));
+            Achievement_Handle_Update(6, 1, p, True); // That gold is mine!
           end;
           MEDAL_SILVER:
           begin
             if PlayerID <> SilverPlayer then
+            begin
               NewSilverMedal(PlayerID, SilverPlayer, BronzePlayer);
-            Achievement_Handle_Update(5, 1, p, True); // 2nd place is the first loser
+              if SilverPlayer > 0 then
+                DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val5(SQL_INSERT_ACTION, IntToStr(SilverPlayer),
+                  IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_L_SILVER), Game.CurrentMap, 'silver'));
+            end;
             DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val5(SQL_INSERT_ACTION, IntToStr(PlayerID),
               IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_SILVER), Game.CurrentMap, 'silver'));
-            if SilverPlayer > 0 then
-              DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val5(SQL_INSERT_ACTION, IntToStr(SilverPlayer),
-                IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_L_SILVER), Game.CurrentMap, 'silver'));
+            Achievement_Handle_Update(5, 1, p, True); // 2nd place is the first loser
           end;
           MEDAL_BRONZE:
           begin
             if PlayerID <> BronzePlayer then
+            begin
               NewBronzeMedal(PlayerID, BronzePlayer);
-            Achievement_Handle_Update(4, 1, p, True); // Bronzification
+              if BronzePlayer > 0 then
+                DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val5(SQL_INSERT_ACTION, IntToStr(BronzePlayer),
+                  IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_L_BRONZE), Game.CurrentMap, 'bronze'));
+            end;
             DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val5(SQL_INSERT_ACTION, IntToStr(PlayerID),
               IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_BRONZE), Game.CurrentMap, 'bronze'));
-            if BronzePlayer > 0 then
-              DB_PerformQuery(DB_ID, 'Save_RunData', DB_Query_Replace_Val5(SQL_INSERT_ACTION, IntToStr(BronzePlayer),
-                IntToStr(DB_SERVER_ID), IntToStr(ACTION_KIND_L_BRONZE), Game.CurrentMap, 'bronze'));
+            Achievement_Handle_Update(4, 1, p, True); // Bronzification
           end;
         end;
       end;
