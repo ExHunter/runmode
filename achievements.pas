@@ -364,7 +364,7 @@ begin
       case MapID of
         17: // Bridge
         begin
-          if Data1 < 2 then
+          if Data1 < 4 then
             Achievement_Handle_Update(83, 1, p, False); // Medic!
         end;
         else
