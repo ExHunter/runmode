@@ -15,6 +15,8 @@ uses
 
 function Achievement_Has_ID_Finished(AchievementID, PlayerID: Integer): Boolean;
 procedure Achievement_Handle_Update(AchievementOrChainID, Progress: Integer; p: TActivePlayer; IsChain: Boolean);
+procedure Achievement_Handle_Map(Kind: Byte; MapID: Integer; p: TActivePlayer; Data1, Data2: Variant);
+function Map_Has_Achievement_Kind(Kind: Byte; Mask: Word): Boolean;
 
 implementation
 
@@ -247,6 +249,143 @@ begin
     Achievement_Display_Claim(UpdatingAchievementID, PlayerID, p);
     Achievement_End_Progress(UpdatingAchievementID, PlayerID);
     Achievement_Add_Next_Chain_If_Exists(UpdatingAchievementID, PlayerID);
+  end;
+end;
+
+function Achievement_Lagrange_84_Criteria_Met(RunID: Integer): Boolean;
+begin
+  Result := False;
+  if DB_Open(DB_ID_REPLAYS, DB_CON_STRING_REPLAY, '', '', DB_Plugin_ODBC) <> 0 then
+  begin
+    if DB_Query(DB_ID_REPLAYS, DB_Query_Replace_Val2(SQL_GET_REPLAY, Game.CurrentMap, IntToStr(runID))) <> 0 then
+    begin
+      Result := True;
+      while DB_NextRow(DB_ID_REPLAYS) <> 0 do
+      begin
+        // `Keys` - KeyJetpack mask
+        if DB_GetLong(DB_ID_REPLAYS, 0) and BINARY_4 = BINARY_4 then
+        begin
+          DB_FinishQuery(DB_ID_REPLAYS);
+          DB_Close(DB_ID_REPLAYS);
+          Result := False;
+          Exit;
+        end;
+      end;
+      DB_FinishQuery(DB_ID_REPLAYS);
+      DB_Close(DB_ID_REPLAYS);
+    end else
+      WriteLn('[RM] Error in Achievement_Lagrange_84_Criteria_Met: ' + DB_Error());
+  end else
+    WriteLn('[RM] Error in Achievement_Lagrange_84_Criteria_Met: Could not open replay Database!');
+end;
+
+procedure Achievement_Handle_Map(Kind: Byte; MapID: Integer; p: TActivePlayer; Data1, Data2: Variant);
+begin
+  // TODO: LOAD MAP IDs FROM DB INSTEAD OF HARDCODE? Or keep it like this for performance?
+  //       Could make an achievement conditions table, which is loaded and processed here.
+  case Kind of
+    ACH_MAP_KIND_CP:
+    // Data1 - CheckpointID - Byte
+    // Data2 - Time - TDateTime
+    begin
+      case MapID of
+        6: // inf_Moonshine
+        begin
+          if Data1 = 2 then // 2nd checkpoint
+            if Data2 - StrToDateTime(STR_TIME_10_SECONDS) < 0 then
+              Achievement_Handle_Update(86, 1, p, False); // The shining moon
+        end;
+        else
+          WriteLn('[DB] MapID ''' + IntToStr(MapID) + ''' has no checkpoint achievements!');
+      end;
+    end;
+    ACH_MAP_KIND_LAP:
+    // Data1 - LapNum - Byte
+    // Data2 - Time - TDateTime
+    begin
+      case MapID of
+        1: // ctf_Ash
+        begin
+          if Data1 = 1 then // 1st lap
+            if Data2 - StrToDateTime(STR_TIME_10_SECONDS) < 0 then
+              Achievement_Handle_Update(82, 1, p, False); // Ash to ash, dust to dust
+        end;
+        else
+          WriteLn('[DB] MapID ''' + IntToStr(MapID) + ''' has no lap achievements!');
+      end;
+    end;
+    ACH_MAP_KIND_SPEED:
+    // Data1 - km/h - Float
+    begin
+      case MapID of
+        2: // ctf_Cobra
+        begin
+          if Data1 >= 175.0 then // 175 km/h
+            Achievement_Handle_Update(85, 1, p, False); // Booster!
+        end;
+        9: // ctf_Blade
+        begin
+          if Data1 >= 250.0 then // 250 km/h
+            Achievement_Handle_Update(88, 1, p, False); // Holiday on ice
+        end;
+        13: // freetime12
+        begin
+          if Data1 >= 150.0 then // 150 km/h
+            Achievement_Handle_Update(81, 1, p, False); // Speedtrap!
+        end;
+        else
+          WriteLn('[DB] MapID ''' + IntToStr(MapID) + ''' has no speed achievements!');
+      end;
+    end;
+    ACH_MAP_KIND_FINISH:
+    // Data1 - Time - TDateTime
+    // Data2 - Variant (can be different for each map)
+    begin
+      case MapID of
+        8: // Lagrange
+        // Data2 - RunID - Integer
+        begin
+          if Achievement_Lagrange_84_Criteria_Met(Data2) then
+            Achievement_Handle_Update(84, 1, p, False); // Cannonball is for noobs!
+        end;
+        10: // ctf_Kampf
+        // Data2 - BestRunTime - TDateTime
+        begin
+          if Data1 - Data2 >= StrToDateTime('00:00:19.900') then
+            Achievement_Handle_Update(87, 1, p, False); // I also like to live dangerously
+        end;
+        else
+          WriteLn('[DB] MapID ''' + IntToStr(MapID) + ''' has no run finish achievements!');
+      end;
+    end;
+    ACH_MAP_KIND_HP:
+    // Data1 - HP - Integer
+    begin
+      case MapID of
+        17: // Bridge
+        begin
+          if Data1 < 2 then
+            Achievement_Handle_Update(83, 1, p, False); // Medic!
+        end;
+        else
+          WriteLn('[DB] MapID ''' + IntToStr(MapID) + ''' has no HP achievements!');
+      end;
+    end;
+    else
+      WriteLn('[DB] Error in Achievement_Handle_Map: Kind was not found!');
+  end;
+end;
+
+function Map_Has_Achievement_Kind(Kind: Byte; Mask: Word): Boolean;
+begin
+  case Kind of
+    ACH_MAP_KIND_CP:     Result := Mask and BINARY_1 = BINARY_1;
+    ACH_MAP_KIND_LAP:    Result := Mask and BINARY_2 = BINARY_2;
+    ACH_MAP_KIND_SPEED:  Result := Mask and BINARY_3 = BINARY_3;
+    ACH_MAP_KIND_FINISH: Result := Mask and BINARY_4 = BINARY_4;
+    ACH_MAP_KIND_HP:     Result := Mask and BINARY_5 = BINARY_5;
+    else
+      Result := False;
   end;
 end;
 

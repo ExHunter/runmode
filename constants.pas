@@ -36,7 +36,7 @@ const
   // SQL STUFF - USING LATER ON STRREPLACE TO REPLACE VAL<num>
   SQL_PING_SERVER      = '/* ping */ SELECT 1;';
   SQL_GET_RND_MAP      = 'SELECT `mapname` FROM `rm_maps` ORDER BY RAND() LIMIT 0,1;';
-  SQL_GET_MAP_ID_BY_N  = 'SELECT `ID`, `checknum`, `roundnum` FROM `rm_maps` WHERE `mapname` = ''VAL1'' LIMIT 1;';
+  SQL_GET_MAP_ID_BY_N  = 'SELECT `ID`, `checknum`, `roundnum`, `AchievementMask` FROM `rm_maps` WHERE `mapname` = ''VAL1'' LIMIT 1;';
   SQL_GET_MAP_CPS      = 'SELECT `checkpointID`, `posX`, `posY`, `distance` FROM `rm_checkpoints` WHERE `mapID` = VAL1 AND `courseID` = 1 ORDER BY `checkpointID` ASC;';
   SQL_ADD_MAP          = 'INSERT INTO `rm_maps` (`mapname`, `datecreated`) ' +
                                         'VALUES (''VAL1'', NOW());';
@@ -193,6 +193,7 @@ const
   DB_CON_STRING_REPLAY = 'DB_RM';   // insert ODBC connection string to replay database
   DB_ID = 0;                        // keep it for all files 0
   DB_ID_REPLAYS = 1;                // used for replays loading (different database)
+  DB_ID_ACTIONSENTENCE = 2;         // Last actions sentence.. needs a separate db..
   DB_SERVER_ID = 1;                 // used in database, hns eu has 2... rm na 3.. etc..
 
   TEAM_EDITOR          = 1;
@@ -266,29 +267,36 @@ const
 
   STR_TIME_SECOND      = '00:00:01';
   STR_TIME_3_SECONDS   = '00:00:03';
+  STR_TIME_10_SECONDS  = '00:00:10';
   STR_TIME_LIMIT       = '00:05:00';
 
-  // Key binary ops
-  BINARY_1             = 1;       // KeyUp
-  BINARY_2             = 2;       // KeyLeft
-  BINARY_3             = 4;       // KeyRight
-  BINARY_4             = 8;       // KeyJetpack
-  BINARY_5             = 16;      // KeyGrenade
-  BINARY_6             = 32;      // KeyChangeWeap
-  BINARY_7             = 64;      // KeyThrow
-  BINARY_8             = 128;     // KeyCrouch
-  BINARY_9             = 256;     // KeyProne
-  BINARY_10            = 512;     // KeyShoot
-  BINARY_11            = 1024;    // UNUSED
-  BINARY_12            = 2048;    // UNUSED
-  BINARY_13            = 4096;    // UNUSED
-  BINARY_14            = 8192;    // UNUSED
-  BINARY_15            = 16384;   // UNUSED
-  BINARY_16            = 32768;   // UNUSED
+  // binary ops                      Keys          | Achievements (map specific)
+  BINARY_1             = 1;       // KeyUp         | ACH_MAP_KIND_CP     - Map has CP Achievements
+  BINARY_2             = 2;       // KeyLeft       | ACH_MAP_KIND_LAP    - Map has Lap Achievements
+  BINARY_3             = 4;       // KeyRight      | ACH_MAP_KIND_SPEED  - Map has Speed Achievements
+  BINARY_4             = 8;       // KeyJetpack    | ACH_MAP_KIND_FINISH - Map has Finish Achievements
+  BINARY_5             = 16;      // KeyGrenade    | ACH_MAP_KIND_HP     - Map has HP Achievements
+  BINARY_6             = 32;      // KeyChangeWeap | UNUSED
+  BINARY_7             = 64;      // KeyThrow      | UNUSED
+  BINARY_8             = 128;     // KeyCrouch     | UNUSED
+  BINARY_9             = 256;     // KeyProne      | UNUSED
+  BINARY_10            = 512;     // KeyShoot      | UNUSED
+  BINARY_11            = 1024;    // UNUSED        | UNUSED
+  BINARY_12            = 2048;    // UNUSED        | UNUSED
+  BINARY_13            = 4096;    // UNUSED        | UNUSED
+  BINARY_14            = 8192;    // UNUSED        | UNUSED
+  BINARY_15            = 16384;   // UNUSED        | UNUSED
+  BINARY_16            = 32768;   // UNUSED        | UNUSED
 
   ADMIN_LEVEL_HEAD     = 3;
   ADMIN_LEVEL_TCP      = 2;
   ADMIN_LEVEL_REMOTE   = 1;
+
+  ACH_MAP_KIND_CP      = 1;
+  ACH_MAP_KIND_LAP     = 2;
+  ACH_MAP_KIND_SPEED   = 3;
+  ACH_MAP_KIND_FINISH  = 4;
+  ACH_MAP_KIND_HP      = 5;
 
 implementation
 

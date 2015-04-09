@@ -32,6 +32,7 @@ type
     AmountOfLaps: Byte;
     CurrentLap: Byte;
     NextMap: string;
+    AchievementMask: Word;
     end;
 
   TBestRun = record
@@ -707,6 +708,7 @@ begin
       RM.Map.MapID               := DB_GetLong(DB_ID, 0); // `ID`
       RM.Map.AmountOfCheckpoints := DB_GetLong(DB_ID, 1); // `checknum`
       RM.Map.AmountOfLaps        := DB_GetLong(DB_ID, 2); // `roundnum`
+      RM.Map.AchievementMask     := DB_GetLong(DB_ID, 3); // `AchievementMask`
       SetArrayLength(RM.Map.CheckPoints, RM.Map.AmountOfCheckpoints);
 
       DB_FinishQuery(DB_ID);
@@ -906,6 +908,7 @@ var
   j: Byte;
   RunTime: TDateTime;
   Result_Run_ID: Integer;
+  RunnerHealth: Integer; // Workaround for HEALTH Achievements
 begin
   RM.Active := False;
   if not IsQueueEmpty() then
@@ -922,6 +925,7 @@ begin
   end;
   for j := 0 to RM.Map.AmountOfCheckpoints-1 do
     RM.Map.CheckPoints[j].Checked := False;
+  RunnerHealth := RM.Runner.PPlayer.Health;
   RM.Runner.PPlayer.Team := TEAM_SPECTATOR;
   if Successfull then
   begin
@@ -935,7 +939,12 @@ begin
         SetWaitingTime(MATH_SECOND * 3);
 
         Result_Run_ID := Save_RunData(RM.Runner.PPlayer, RunTime);
-        if Result_Run_ID > 0 then
+        // Usually we only save replays when the new run is better,
+        // But for Achievement 84 on Lagrange (MapID = 8), we should
+        // Save the latest run, too. So that we can parse the replay
+        // if the JetPack key was pressed. Anything else would be
+        // just more of a "hack" than this. RunID 0 won't overwrite anything else.
+        if (Result_Run_ID > 0) or (RM.Map.MapID = 8) then
         begin
           if Save_ReplayData(Result_Run_ID, ReplayValues) then
             WriteLn('[RM] Saved the replay!')
@@ -945,6 +954,16 @@ begin
         end;
 
         Achievement_Handle_Update(1, 1, RM.Runner.PPlayer, True); // Getting Started
+
+        if Map_Has_Achievement_Kind(ACH_MAP_KIND_FINISH, RM.Map.AchievementMask) then
+          if RM.Map.MapID = 8 then // Lagrange
+            Achievement_Handle_Map(ACH_MAP_KIND_FINISH, RM.Map.MapID, RM.Runner.PPlayer, RunTime, Result_Run_ID)
+          else
+            if RM.BestRunLoaded then // ctf_Kampf
+              Achievement_Handle_Map(ACH_MAP_KIND_FINISH, RM.Map.MapID, RM.Runner.PPlayer, RunTime,
+                RM.BestRunLap[RM.Map.AmountOfLaps - 1].CheckPoint[RM.Map.AmountOfCheckPoints - 1]);
+        if Map_Has_Achievement_Kind(ACH_MAP_KIND_HP, RM.Map.AchievementMask) then
+          Achievement_Handle_Map(ACH_MAP_KIND_HP, RM.Map.MapID, RM.Runner.PPlayer, RunnerHealth, '');
       end else
         for j := 1 to HighID do
           if Players[j].Active then
@@ -1094,13 +1113,18 @@ begin
       Players.WorldText(0, FormatDateTime('nn:ss.zzz', RunTime), MATH_SECOND_IN_TICKS * 2,
         MESSAGE_COLOR_GAME, 0.068, RM.Map.CheckPoints[i].X - 65, RM.Map.CheckPoints[i].Y + 50);
       RM.CurrentRunLap[RM.Runner.Laps].CheckPoint[i] := RunTime;
-      if RM.BestRunLoaded and not BotActive then
-        if RunTime > RM.BestRunLap[RM.Runner.Laps].CheckPoint[i] then
-          Players.WorldText(1, '+' + FormatDateTime('nn:ss.zzz', RunTime - RM.BestRunLap[RM.Runner.Laps].CheckPoint[i]), MATH_SECOND_IN_TICKS * 2,
-            MESSAGE_COLOR_RED,   0.068, RM.Map.CheckPoints[i].X - 85, RM.Map.CheckPoints[i].Y + 70)
-        else
-          Players.WorldText(1, '-' + FormatDateTime('nn:ss.zzz', RM.BestRunLap[RM.Runner.Laps].CheckPoint[i] - RunTime), MATH_SECOND_IN_TICKS * 2,
-            MESSAGE_COLOR_GREEN, 0.068, RM.Map.CheckPoints[i].X - 75, RM.Map.CheckPoints[i].Y + 70);
+      if not BotActive then
+      begin
+        if RM.BestRunLoaded then
+          if RunTime > RM.BestRunLap[RM.Runner.Laps].CheckPoint[i] then
+            Players.WorldText(1, '+' + FormatDateTime('nn:ss.zzz', RunTime - RM.BestRunLap[RM.Runner.Laps].CheckPoint[i]), MATH_SECOND_IN_TICKS * 2,
+              MESSAGE_COLOR_RED,   0.068, RM.Map.CheckPoints[i].X - 85, RM.Map.CheckPoints[i].Y + 70)
+          else
+            Players.WorldText(1, '-' + FormatDateTime('nn:ss.zzz', RM.BestRunLap[RM.Runner.Laps].CheckPoint[i] - RunTime), MATH_SECOND_IN_TICKS * 2,
+              MESSAGE_COLOR_GREEN, 0.068, RM.Map.CheckPoints[i].X - 75, RM.Map.CheckPoints[i].Y + 70);
+        if Map_Has_Achievement_Kind(ACH_MAP_KIND_CP, RM.Map.AchievementMask) then
+          Achievement_Handle_Map(ACH_MAP_KIND_CP, RM.Map.MapID, RM.Runner.PPlayer, RM.Runner.CP, RunTime);
+      end;
       if i = 0 then
         RM.Map.CheckPoints[RM.Map.AmountOfCheckpoints-1].Checked := False;
       DrawCheckPoints;
@@ -1114,6 +1138,9 @@ begin
       RM.Map.CheckPoints[RM.Map.AmountOfCheckpoints-1].Checked := True;
       DrawCheckPoints;
       RM.CurrentRunLap[RM.Runner.Laps - 1].CheckPoint[i] := RunTime;
+      if not BotActive then
+        if Map_Has_Achievement_Kind(ACH_MAP_KIND_LAP, RM.Map.AchievementMask) then
+          Achievement_Handle_Map(ACH_MAP_KIND_LAP, RM.Map.MapID, RM.Runner.PPlayer, RM.Runner.Laps, RunTime);
       if RM.Runner.Laps = RM.Map.AmountOfLaps then
         EndSingleGame(True)
       else
@@ -1487,12 +1514,20 @@ begin
     ACTION_KIND_VS_LOST:  Result := Name + ' lost a vs race on ' + Info;
     ACTION_KIND_ACHIEVE:
     begin
-      if (DB_Query(DB_ID, DB_Query_Replace_Val1(SQL_ACHIEVE_INFO_1, DB_Escape_String(Info))) <> 0) and
-         (DB_NextRow(DB_ID) <> 0) then
-        Result := Name + ' earned the achievement ' + DB_GetString(DB_ID, 0) + ' (' + DB_GetString(DB_ID, 1) + ' points)'
-      else
+      // Workaround Need to open a different database, otherwise
+      // last actions query will be interrupted...
+      if DB_Open(DB_ID_ACTIONSENTENCE, DB_CONNECTION_STRING, DB_USER, DB_PASS, DB_Plugin_ODBC) <> 0 then
+      begin
+        if (DB_Query(DB_ID_ACTIONSENTENCE, DB_Query_Replace_Val1(SQL_ACHIEVE_INFO_1, DB_Escape_String(Info))) <> 0) and
+           (DB_NextRow(DB_ID_ACTIONSENTENCE) <> 0) then
+          Result := Name + ' earned the achievement ' + DB_GetString(DB_ID_ACTIONSENTENCE, 0) +
+                           ' (' + DB_GetString(DB_ID_ACTIONSENTENCE, 1) + ' points)'
+        else
+          Result := 'An error happened while displaying AchievementID ' + Info + '!';
+        DB_FinishQuery(DB_ID_ACTIONSENTENCE);
+        DB_Close(DB_ID_ACTIONSENTENCE);
+      end else
         Result := 'An error happened while displaying AchievementID ' + Info + '!';
-      DB_FinishQuery(DB_ID);
     end;
     ACTION_KIND_GOLD,
     ACTION_KIND_SILVER,
@@ -2189,7 +2224,12 @@ begin
   if p.PPlayer <> NIL then
   begin
     if p.PositionArrayDistance = 60 then
-      p.PositionArrayDistance := 1
+    begin
+      p.PositionArrayDistance := 1;
+      if not BotActive then
+        if Map_Has_Achievement_Kind(ACH_MAP_KIND_SPEED, RM.Map.AchievementMask) then
+          Achievement_Handle_Map(ACH_MAP_KIND_SPEED, RM.Map.MapID, p.PPlayer, ((p.SumArrayDistance / 60) * 60 * 3600 / 10000), '');
+    end
     else
       p.PositionArrayDistance := p.PositionArrayDistance + 1;
     p.SumArrayDistance := p.SumArrayDistance - p.LastDistances[p.PositionArrayDistance];
