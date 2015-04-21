@@ -1505,6 +1505,151 @@ begin
   end;
 end;
 
+procedure DisplayRankings(p: TActivePlayer; Text: string);
+var
+  Text_Piece: TStringList;
+  ResultString: string;
+  RankIterator: Byte;
+  ResValue: string;
+begin
+  Text_Piece := File.CreateStringList();
+  try
+    // Text_Piece.Strings[1] can be time, gold, silver, bronze or achievement
+    SplitRegExpr(' ', Text, Text_Piece);
+
+    if Text_Piece.Count < 2 then
+    begin
+      p.WriteConsole('[RM] The command you have typed was incomplete (!ranking ''time''/''gold''/''silver''/''bronze''/''achievements'')!', MESSAGE_COLOR_RED);
+      Exit;
+    end;
+
+    if DB_CONNECTED then
+    begin
+      case LowerCase(Text_Piece.Strings[1]) of
+        'gold':
+        begin
+          p.WriteConsole('+------------------------------------------+', MESSAGE_COLOR_GAME);
+          p.WriteConsole('| Ranking by GOLD medals                   |', MESSAGE_COLOR_GOLD);
+          p.WriteConsole('+------+--------------------------+--------+', MESSAGE_COLOR_GAME);
+          p.WriteConsole('| Rank | Name                     | Medals |', MESSAGE_COLOR_GAME);
+          p.WriteConsole('+------+--------------------------+--------+', MESSAGE_COLOR_GAME);
+          if (DB_Query(DB_ID, SQL_RANKING_GOLD) <> 0) then
+          begin
+            RankIterator := 0;
+            while DB_NextRow(DB_ID) <> 0 do
+            begin
+              RankIterator := RankIterator + 1;
+              ResultString := DB_GetString(DB_ID, 0); // `name`
+              ResValue     := DB_GetString(DB_ID, 1); // `gold`
+              p.WriteConsole('| #' + IntToStr(RankIterator) + WHITESPACES[20 + Length(IntToStr(RankIterator))] + ' | ' +
+                ResultString + WHITESPACES[Length(ResultString) - 1] + ' | ' + ResValue +
+                WHITESPACES[17 + Length(ResValue)] + ' |', Medal_Color_by_Rank(RankIterator));
+            end;
+            p.WriteConsole('+------+--------------------------+--------+', MESSAGE_COLOR_GAME);
+            DB_FinishQuery(DB_ID);
+          end else
+          begin
+            p.WriteConsole('| No players were found.                   |', MESSAGE_COLOR_GAME);
+            p.WriteConsole('+------+--------------------------+--------+', MESSAGE_COLOR_GAME);
+            DB_FinishQuery(DB_ID);
+          end;
+        end;
+        'silver':
+        begin
+          p.WriteConsole('+------------------------------------------+', MESSAGE_COLOR_GAME);
+          p.WriteConsole('| Ranking by SILVER medals                 |', MESSAGE_COLOR_GOLD);
+          p.WriteConsole('+------+--------------------------+--------+', MESSAGE_COLOR_GAME);
+          p.WriteConsole('| Rank | Name                     | Medals |', MESSAGE_COLOR_GAME);
+          p.WriteConsole('+------+--------------------------+--------+', MESSAGE_COLOR_GAME);
+          if (DB_Query(DB_ID, SQL_RANKING_SILVER) <> 0) then
+          begin
+            RankIterator := 0;
+            while DB_NextRow(DB_ID) <> 0 do
+            begin
+              RankIterator := RankIterator + 1;
+              ResultString := DB_GetString(DB_ID, 0); // `name`
+              ResValue     := DB_GetString(DB_ID, 1); // `silver`
+              p.WriteConsole('| #' + IntToStr(RankIterator) + WHITESPACES[20 + Length(IntToStr(RankIterator))] + ' | ' +
+                ResultString + WHITESPACES[Length(ResultString) - 1] + ' | ' + ResValue +
+                WHITESPACES[17 + Length(ResValue)] + ' |', Medal_Color_by_Rank(RankIterator));
+            end;
+            p.WriteConsole('+------+--------------------------+--------+', MESSAGE_COLOR_GAME);
+            DB_FinishQuery(DB_ID);
+          end else
+          begin
+            p.WriteConsole('| No players were found.                   |', MESSAGE_COLOR_GAME);
+            p.WriteConsole('+------+--------------------------+--------+', MESSAGE_COLOR_GAME);
+            DB_FinishQuery(DB_ID);
+          end;
+        end;
+        'bronze':
+        begin
+          p.WriteConsole('+------------------------------------------+', MESSAGE_COLOR_GAME);
+          p.WriteConsole('| Ranking by BRONZE medals                 |', MESSAGE_COLOR_GOLD);
+          p.WriteConsole('+------+--------------------------+--------+', MESSAGE_COLOR_GAME);
+          p.WriteConsole('| Rank | Name                     | Medals |', MESSAGE_COLOR_GAME);
+          p.WriteConsole('+------+--------------------------+--------+', MESSAGE_COLOR_GAME);
+          if (DB_Query(DB_ID, SQL_RANKING_BRONZE) <> 0) then
+          begin
+            RankIterator := 0;
+            while DB_NextRow(DB_ID) <> 0 do
+            begin
+              RankIterator := RankIterator + 1;
+              ResultString := DB_GetString(DB_ID, 0); // `name`
+              ResValue     := DB_GetString(DB_ID, 1); // `bronze`
+              p.WriteConsole('| #' + IntToStr(RankIterator) + WHITESPACES[20 + Length(IntToStr(RankIterator))] + ' | ' +
+                ResultString + WHITESPACES[Length(ResultString) - 1] + ' | ' + ResValue +
+                WHITESPACES[17 + Length(ResValue)] + ' |', Medal_Color_by_Rank(RankIterator));
+            end;
+            p.WriteConsole('+------+--------------------------+--------+', MESSAGE_COLOR_GAME);
+            DB_FinishQuery(DB_ID);
+          end else
+          begin
+            p.WriteConsole('| No players were found.                   |', MESSAGE_COLOR_GAME);
+            p.WriteConsole('+------+--------------------------+--------+', MESSAGE_COLOR_GAME);
+            DB_FinishQuery(DB_ID);
+          end;
+        end;
+        'achievements':
+        begin
+          p.WriteConsole('+------------------------------------------+', MESSAGE_COLOR_GAME);
+          p.WriteConsole('| Ranking by ACHIEVEMENTS                  |', MESSAGE_COLOR_GOLD);
+          p.WriteConsole('+------+--------------------------+--------+', MESSAGE_COLOR_GAME);
+          p.WriteConsole('| Rank | Name                     | Points |', MESSAGE_COLOR_GAME);
+          p.WriteConsole('+------+--------------------------+--------+', MESSAGE_COLOR_GAME);
+          if (DB_Query(DB_ID, SQL_RANKING_ACHIEVES) <> 0) then
+          begin
+            RankIterator := 0;
+            while DB_NextRow(DB_ID) <> 0 do
+            begin
+              RankIterator := RankIterator + 1;
+              ResultString := DB_GetString(DB_ID, 0); // `name`
+              ResValue     := DB_GetString(DB_ID, 1); // resPoints
+              p.WriteConsole('| #' + IntToStr(RankIterator) + WHITESPACES[20 + Length(IntToStr(RankIterator))] + ' | ' +
+                ResultString + WHITESPACES[Length(ResultString) - 1] + ' | ' + ResValue +
+                WHITESPACES[17 + Length(ResValue)] + ' |', Medal_Color_by_Rank(RankIterator));
+            end;
+            p.WriteConsole('+------+--------------------------+--------+', MESSAGE_COLOR_GAME);
+            DB_FinishQuery(DB_ID);
+          end else
+          begin
+            p.WriteConsole('| No players were found.                   |', MESSAGE_COLOR_GAME);
+            p.WriteConsole('+------+--------------------------+--------+', MESSAGE_COLOR_GAME);
+            DB_FinishQuery(DB_ID);
+          end;
+        end;
+        else
+          p.WriteConsole('[RM] Please specify what ranking you want! (!ranking ''time''/''gold''/''silver''/''bronze''/''achievements'')', MESSAGE_COLOR_RED);
+      end;
+    end else
+      WriteLnAndConsole(p, '[RM] Could not show rankings! Database is not connected!', MESSAGE_COLOR_SYSTEM);
+  except
+    WriteLn('[RM] Some error happened in DisplayRankings! Cannot figure out what...');
+  finally
+    Text_Piece.Free;
+  end;
+end;
+
 function LastActionSentence(Kind: Byte; Info, Info2, Name: string): string;
 begin
   case Kind of
@@ -2071,6 +2216,7 @@ begin
       '!queue': ShowQueue(p);
       '!top': ShowTop(p, Text);
       '!top10': ShowTop(p, Text);
+      '!ranking': DisplayRankings(p, Text);
       '!admin':
       begin
         Players.WriteConsole('[RM] ' + p.Name + ' has requested an admin.', MESSAGE_COLOR_GREEN);

@@ -151,6 +151,18 @@ const
                          'LIMIT VAL2, 20;';
   SQL_ADMINLIST        = 'SELECT `name`, `adm` FROM `playerstats` WHERE `adm` > 0 ORDER BY `adm` DESC, `ID` ASC;';
   SQL_RANDOM_AD        = 'SELECT `Line1`, `Line2`, `Color1`, `Color2` FROM `ads` WHERE `active` = 1  ORDER BY RAND() LIMIT 0,1;';
+  SQL_RANKING_GOLD     = 'SELECT `name`, `gold` FROM `playerstats` ORDER BY `gold` DESC, `ID` ASC LIMIT 15;';
+  SQL_RANKING_SILVER   = 'SELECT `name`, `silver` FROM `playerstats` ORDER BY `silver` DESC, `ID` ASC LIMIT 15;';
+  SQL_RANKING_BRONZE   = 'SELECT `name`, `bronze` FROM `playerstats` ORDER BY `bronze` DESC, `ID` ASC LIMIT 15;';
+  SQL_RANKING_ACHIEVES = 'SELECT `playerstats`.`name`, SUM(`rm_achievements`.`Points`) as resPoints ' +
+                         'FROM `playerstats` ' +
+                         'LEFT JOIN `rm_achievements_claim` ' +
+                         'ON (`playerstats`.`ID` = `rm_achievements_claim`.`playerID`) ' +
+                         'LEFT JOIN `rm_achievements` ' +
+                         'ON (`rm_achievements_claim`.`AchievementID` = `rm_achievements`.`ID`) ' +
+                         'GROUP BY `playerstats`.`ID` ' +
+                         'ORDER BY resPoints DESC ' +
+                         'LIMIT 15;';
 
   // SQL queries for replays
  SQL_CREATE_REPLAY_TBL = 'CREATE TABLE IF NOT EXISTS `VAL1` ( ' +
